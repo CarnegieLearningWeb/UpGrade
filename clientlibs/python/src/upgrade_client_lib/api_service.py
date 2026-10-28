@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
@@ -54,8 +56,11 @@ class ApiService:
         self._client_session_id = client_session_id
         self._timeout = timeout
         self._feature_flag_user_groups_for_session: FeatureFlagUserGroupsForSession | None = None
-        # Created lazily and reused across requests so connections are pooled.
+        # The sync client is created lazily and reused across requests so connections are pooled.
         self._sync_client: httpx.Client | None = None
+        # The async client only exists between open_async_pool() and aclose() (UpgradeClient's ``async with``),
+        # because an AsyncClient's connections belong to the event loop that opened them and must be closed on
+        # that loop. Outside that window each async request uses its own short-lived client.
         self._async_client: httpx.AsyncClient | None = None
         self._async_client_loop: asyncio.AbstractEventLoop | None = None
 
@@ -68,8 +73,14 @@ class ApiService:
             self._sync_client.close()
             self._sync_client = None
 
+    def open_async_pool(self) -> None:
+        """Pool async connections on the running event loop until :meth:`aclose` is awaited on it."""
+        if self._async_client is None:
+            self._async_client = httpx.AsyncClient(timeout=self._timeout)
+            self._async_client_loop = asyncio.get_running_loop()
+
     async def aclose(self) -> None:
-        """Close both pooled clients."""
+        """Close the sync pool and, if open, the async pool."""
         self.close()
         if self._async_client is not None:
             await self._async_client.aclose()
@@ -109,26 +120,26 @@ class ApiService:
             self._sync_client = httpx.Client(timeout=self._timeout)
         return self._sync_client
 
-    def _get_async_client(self) -> httpx.AsyncClient:
-        # An AsyncClient's connections are bound to the event loop that opened them, so a caller that runs
-        # each request under its own asyncio.run() gets a fresh client rather than one tied to a closed loop.
-        loop = asyncio.get_running_loop()
-        if self._async_client is None or self._async_client_loop is not loop:
-            self._async_client = httpx.AsyncClient(timeout=self._timeout)
-            self._async_client_loop = loop
-        return self._async_client
+    @asynccontextmanager
+    async def _async_client_for_request(self) -> AsyncIterator[httpx.AsyncClient]:
+        if self._async_client is not None and self._async_client_loop is asyncio.get_running_loop():
+            yield self._async_client
+        else:
+            # No pool open on this loop: use a client scoped to this one request, so nothing outlives the loop.
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                yield client
 
     async def _post_async(
         self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None
     ) -> Any:
-        response = await self._get_async_client().post(
-            self._url(path), json=body, headers=self._headers(), params=params
-        )
+        async with self._async_client_for_request() as client:
+            response = await client.post(self._url(path), json=body, headers=self._headers(), params=params)
         self._raise_for_status(response)
         return response.json()
 
     async def _patch_async(self, path: str, body: dict[str, Any]) -> Any:
-        response = await self._get_async_client().patch(self._url(path), json=body, headers=self._headers())
+        async with self._async_client_for_request() as client:
+            response = await client.patch(self._url(path), json=body, headers=self._headers())
         self._raise_for_status(response)
         return response.json()
 

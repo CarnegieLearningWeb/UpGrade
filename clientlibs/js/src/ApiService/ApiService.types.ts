@@ -4,6 +4,8 @@ export interface IApiServiceRequestParams {
   path: string;
   method: UpGradeClientEnums.REQUEST_METHOD;
   body?: any;
+  // see IHttpClientWrapperRequestConfig.retryable
+  retryable?: boolean;
 }
 
 export interface IEndpoints {

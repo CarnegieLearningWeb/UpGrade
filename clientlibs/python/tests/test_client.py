@@ -788,25 +788,55 @@ class TestSyncAndConnectionLifecycle:
         assert first is not None and client._api_service._sync_client is first
 
     @respx.mock
-    async def test_async_requests_reuse_one_http_client(self) -> None:
+    async def test_async_requests_share_a_pool_inside_async_with(self) -> None:
         respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
-        client = make_client()
-        await client.init()
-        first = client._api_service._async_client
-        await client.init()
-        assert first is not None and client._api_service._async_client is first
+        async with make_client() as client:
+            pooled = client._api_service._async_client
+            await client.init()
+            await client.init()
+            assert pooled is not None and client._api_service._async_client is pooled
+            assert not pooled.is_closed
+        assert pooled.is_closed
 
     @respx.mock
-    def test_async_calls_under_separate_asyncio_run_get_fresh_clients(self) -> None:
-        """An AsyncClient is bound to its event loop; a new loop must not reuse a client from a closed one."""
+    def test_successive_asyncio_run_calls_leave_no_open_async_clients(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Each asyncio.run() loop must not strand a connection pool that aclose() can no longer reach."""
+        import asyncio
+
+        created: list[httpx.AsyncClient] = []
+        real_async_client = httpx.AsyncClient
+
+        def tracking_async_client(*args: object, **kwargs: object) -> httpx.AsyncClient:
+            client = real_async_client(*args, **kwargs)  # type: ignore[arg-type]
+            created.append(client)
+            return client
+
+        monkeypatch.setattr(httpx, "AsyncClient", tracking_async_client)
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        asyncio.run(client.init())
+        asyncio.run(client.init())
+
+        assert len(created) == 2
+        assert all(c.is_closed for c in created)
+        assert client._api_service._async_client is None
+
+    @respx.mock
+    def test_pool_from_another_loop_is_not_used(self) -> None:
+        """A pool opened on one loop is never used from a different loop."""
         import asyncio
 
         respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
         client = make_client()
-        asyncio.run(client.init())
-        first = client._api_service._async_client
-        asyncio.run(client.init())
-        assert client._api_service._async_client is not first
+
+        async def open_pool() -> httpx.AsyncClient | None:
+            client._api_service.open_async_pool()
+            return client._api_service._async_client
+
+        foreign_pool = asyncio.run(open_pool())
+        asyncio.run(client.init())  # different loop: must use a request-scoped client instead
+        assert foreign_pool is not None and not foreign_pool.is_closed
+        assert respx.calls.call_count == 1
 
     @respx.mock
     def test_context_manager_closes_sync_client(self) -> None:

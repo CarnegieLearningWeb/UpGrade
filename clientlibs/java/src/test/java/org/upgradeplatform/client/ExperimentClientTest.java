@@ -317,6 +317,36 @@ public class ExperimentClientTest {
 	}
 
 	@Test
+	public void nonIdempotentWritesAreNotRetriedOnServerError() throws Exception {
+		statusCodes.put("/api/v6/reward", 503);
+		statusCodes.put("/api/v6/mark", 503);
+
+		CompletableFuture<SendRewardResponse> sent = new CompletableFuture<>();
+		client.sendRewardForExperiment(BinaryRewardValue.SUCCESS, "exp-1", into(sent));
+		expectThrows(ExecutionException.class, () -> await(sent));
+
+		CompletableFuture<MarkDecisionPoint> marked = new CompletableFuture<>();
+		client.markDecisionPoint("home", "banner", "control", MarkedDecisionPointStatus.CONDITION_APPLIED,
+				into(marked));
+		expectThrows(ExecutionException.class, () -> marked.get(5, TimeUnit.SECONDS));
+
+		// a resent reward would be counted twice by the server, biasing adaptive assignment
+		assertEquals(requestBodies.get("/api/v6/reward").size(), 1);
+		assertEquals(requestBodies.get("/api/v6/mark").size(), 1);
+	}
+
+	@Test
+	public void idempotentReadsAreRetriedOnceOnServerError() throws Exception {
+		statusCodes.put("/api/v6/assign", 503);
+
+		CompletableFuture<List<ExperimentsResponse>> assignments = new CompletableFuture<>();
+		client.getAllExperimentConditions(into(assignments));
+		expectThrows(ExecutionException.class, () -> assignments.get(5, TimeUnit.SECONDS));
+
+		assertEquals(requestBodies.get("/api/v6/assign").size(), 2);
+	}
+
+	@Test
 	public void nullPropertiesAreAllowed() {
 		// used to NPE in APIService.createClient
 		new ExperimentClient("user-1", "test-app", "token", "http://127.0.0.1:1", null).close();

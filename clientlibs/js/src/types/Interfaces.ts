@@ -129,6 +129,9 @@ export namespace UpGradeClientInterfaces {
       [key: string]: string | string[];
     };
     withCredentials?: boolean;
+    // true when the request is safe to resend (reads and idempotent upserts). Unset for writes that the server
+    // doesn't deduplicate (/mark, /log, /reward): resending one after a lost response can record it twice.
+    retryable?: boolean;
   }
   export interface IHttpClientWrapper {
     config?: IHttpClientWrapperRequestConfig;

@@ -78,11 +78,15 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
       const response = await axios(axiosRequestConfig);
       return response.data;
     } catch (error) {
-      // axios rejects every non-2xx response, so retry decisions are made here: retry network failures
-      // (no response, including timeouts) and 5xx; fail immediately on 4xx, since resending won't fix the request
+      // axios rejects every non-2xx response, so retry decisions are made here. Only requests ApiService marks
+      // retryable (reads and idempotent upserts) are resent: a timeout or 5xx doesn't mean the server didn't
+      // apply a write, and /mark, /log and /reward aren't deduplicated server-side. Among those, retry network
+      // failures (no response, including timeouts) and 5xx; fail immediately on 4xx, since resending won't fix it.
       const statusCode: number | undefined = error?.response?.status;
       const isRetryable =
-        (statusCode === undefined || statusCode >= 500) && !this.skipRetryOnStatusCodes.includes(statusCode);
+        options.retryable === true &&
+        (statusCode === undefined || statusCode >= 500) &&
+        !this.skipRetryOnStatusCodes.includes(statusCode);
 
       if (isRetryable && retries > 0) {
         await this.wait(backOff);

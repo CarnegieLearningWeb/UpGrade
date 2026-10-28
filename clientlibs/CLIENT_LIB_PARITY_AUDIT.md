@@ -99,7 +99,19 @@ dead branch has two more problems: it would retry **4xx** but not **5xx**, the r
 `> 400` check skips 400 itself.
 
 **Java retries non-idempotent POSTs.** It retries `/mark` and `/log` on network failure. If the first request
-reached the server, this can write duplicate log rows or marks.
+reached the server, this can write duplicate log rows or marks. *(Fixed; see the retry policy below.)*
+
+**Retry policy (both JS and Java, as of this branch):** only reads and idempotent upserts are retried:
+- `/init`, `/groupmembership`, `/workinggroup` and `/useraliases` upsert the user record.
+- `/assign` only reads.
+- `/featureflag` records exposures with `recordExposureIfNotExists`.
+
+`/mark`, `/log` and `/reward` are **never** retried. A timeout or 5xx doesn't mean the server didn't apply the write,
+and none of them are deduplicated server-side: `/mark` creates (repeated) enrollments, `/log` saves new rows, and
+`/reward` inserts a reward and bumps the posterior counts, so a duplicate biases adaptive assignment. JS's
+`ApiService` marks safe requests with `retryable: true` in the request config, which custom lite-build HTTP clients
+can also honor. Java uses `NO_RETRIES` for the three writes. Python doesn't retry at all. Retrying these writes
+safely would need server-side idempotency (e.g. a client-generated request id).
 
 ## 4. Lib-specific quality issues found along the way
 - **Python `_sync` methods use `asyncio.run()`**, which raises `RuntimeError` whenever an event loop is already
@@ -135,11 +147,13 @@ reached the server, this can write duplicate log rows or marks.
    overloads should look it up from the cached assignments, like JS and Python do.
 2. Java: rotate `assignedFactor` alongside `assignedCondition`.
 3. JS: fix `DefaultHttpClient` retries: retry network errors and 5xx, not 4xx, with the existing backoff; add a
-   default timeout.
+   default timeout. Retries are limited to idempotent requests; see the retry policy in §3.
 4. JS: add `mode`/`success` to `ISendRewardResponse`; guard `markDecisionPoint` against a null assignment cache.
 5. Java: null-safe `failed()` callbacks and `properties`.
 6. Python: route `_sync` methods through `ApiService`'s existing sync implementations instead of `asyncio.run()`;
-   reuse one `httpx` client per `UpgradeClient`.
+   reuse one `httpx` client per `UpgradeClient`. The sync client is always pooled. The async client is pooled only
+   inside `async with`, because an `AsyncClient` must be closed on the loop that opened it, and successive
+   `asyncio.run()` calls would otherwise strand one pool per loop.
 
 **Phase B: feature parity** *(done on `wip/clientlib-parity`)*
 1. Java: add reward support (request/response beans, `BinaryRewardValue` enum). *Decided shape:*

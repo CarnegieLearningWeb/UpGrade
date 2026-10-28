@@ -123,10 +123,14 @@ export default class ApiService {
     path,
     method,
     body,
+    retryable,
   }: IApiServiceRequestParams): Promise<ResponseType> {
     this.validateClient();
 
     const options = this.createOptions(path);
+    if (retryable) {
+      options.retryable = true;
+    }
 
     if (method === UpGradeClientEnums.REQUEST_METHOD.GET) {
       return this.httpClient.doGet<ResponseType>(path, options);
@@ -163,6 +167,7 @@ export default class ApiService {
 
     return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientRequests.IInitRequestBody>({
       path: this.api.init,
+      retryable: true,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
@@ -180,6 +185,7 @@ export default class ApiService {
       UpGradeClientRequests.ISetGroupMembershipRequestBody
     >({
       path: this.api.setGroupMemberShip,
+      retryable: true,
       method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       body: requestBody,
     });
@@ -195,6 +201,7 @@ export default class ApiService {
     return this.sendRequest<UpGradeClientInterfaces.IExperimentUser, UpGradeClientRequests.ISetWorkingGroupRequestBody>(
       {
         path: this.api.setWorkingGroup,
+        retryable: true,
         method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
         body: requestBody,
       }
@@ -208,6 +215,7 @@ export default class ApiService {
 
     return this.sendRequest<IUserAliases, UpGradeClientRequests.ISetAltIdsRequestBody>({
       path: this.api.altUserIds,
+      retryable: true,
       method: UpGradeClientEnums.REQUEST_METHOD.PATCH,
       body: requestBody,
     });
@@ -220,6 +228,7 @@ export default class ApiService {
 
     return this.sendRequest<IExperimentAssignment[], UpGradeClientRequests.IGetAllExperimentConditionsRequestBody>({
       path: this.api.getAllExperimentConditions,
+      retryable: true,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });
@@ -307,6 +316,7 @@ export default class ApiService {
 
     const response = await this.sendRequest<string[], never>({
       path: this.api.getAllFeatureFlag,
+      retryable: true,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });

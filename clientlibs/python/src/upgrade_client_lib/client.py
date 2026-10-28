@@ -382,12 +382,17 @@ class UpgradeClient:
     # Lifecycle
     # ------------------------------------------------------------------
 
+    # The ``_sync`` methods always share one pooled ``httpx.Client``; release it with :meth:`close` or ``with``.
+    # Async methods share a pooled ``httpx.AsyncClient`` only inside ``async with client:``, which opens and
+    # closes the pool on the same event loop.  Outside it each async request uses a short-lived client, so
+    # calling the client from successive ``asyncio.run()`` loops never strands a connection pool.
+
     def close(self) -> None:
         """Close pooled HTTP connections used by the ``_sync`` methods."""
         self._api_service.close()
 
     async def aclose(self) -> None:
-        """Close all pooled HTTP connections (sync and async)."""
+        """Close all pooled HTTP connections (sync, and async if opened by ``async with``)."""
         await self._api_service.aclose()
 
     def __enter__(self) -> UpgradeClient:
@@ -397,6 +402,7 @@ class UpgradeClient:
         self.close()
 
     async def __aenter__(self) -> UpgradeClient:
+        self._api_service.open_async_pool()
         return self
 
     async def __aexit__(self, *exc_info: object) -> None:

@@ -49,7 +49,7 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 
 **Caching:** `allExperiments` and `allFeatureFlags` are cached in-memory for the client's lifetime. No expiry. Use the `ignoreCache` overloads when fresh data is needed.
 
-**Retry logic:** `PublishingRetryCallback` retries once (max 1 retry) on network failures and 5xx errors. 4xx errors fail immediately with no retry.
+**Retry logic:** `PublishingRetryCallback` retries once (`MAX_RETRIES`) on network failures and 5xx errors, for reads and idempotent upserts only (init, group/working group, aliases, assign, feature flags). `/mark`, `/log` and `/reward` use `NO_RETRIES`: the server doesn't deduplicate them, so resending after a lost response could record a write twice (and a duplicated reward biases adaptive assignment). 4xx errors never retry.
 
 **API version is hard-coded:** All endpoints use `api/v6` (constant in `Utils.java`). Updating to a new API version requires a code change and recompile.
 

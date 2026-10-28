@@ -53,6 +53,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with just id', async () => {
@@ -120,6 +121,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and group', async () => {
@@ -150,6 +152,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and workingGroup', async () => {
@@ -179,6 +182,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and altUserIds', async () => {
@@ -206,6 +210,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and context', async () => {
@@ -558,6 +563,17 @@ describe('ApiService', () => {
     });
   });
 
+  describe('#getAllFeatureFlags', () => {
+    it('should post context to /featureflag and mark the request retryable', async () => {
+      await apiService.getAllFeatureFlags();
+
+      const [url, body, options] = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1];
+      expect(url).toEqual(`${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/featureflag`);
+      expect(body).toEqual({ context: defaultConfig.context });
+      expect(options.retryable).toBe(true);
+    });
+  });
+
   describe('#sendReward', () => {
     const rewardUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/reward`;
     const lastPost = () => mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1];
@@ -587,6 +603,12 @@ describe('ApiService', () => {
         decisionPoint: { site: 'site', target: 'target' },
       });
       expect(body).not.toHaveProperty('awaitResult');
+    });
+
+    it('should not mark the request retryable, since rewards are not deduplicated server-side', async () => {
+      await apiService.sendReward({ rewardValue: 'SUCCESS', experimentId: 'exp1' });
+
+      expect(lastPost()[2].retryable).toBeUndefined();
     });
 
     it('should not append the query param when awaitResult is false', async () => {

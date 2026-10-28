@@ -33,6 +33,9 @@ public class Utils
 	public static final String PATCH = "PATCH";
 
 	public static final int MAX_RETRIES = 1;
+	// for writes the server doesn't deduplicate (/mark, /log, /reward): a timeout or 5xx doesn't mean the write
+	// wasn't applied, so resending could record it twice
+	public static final int NO_RETRIES = 0;
 
 
 	public static enum RequestType {

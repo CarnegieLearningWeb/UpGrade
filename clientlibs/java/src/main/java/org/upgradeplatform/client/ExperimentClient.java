@@ -7,6 +7,7 @@ import static org.upgradeplatform.utils.Utils.INVALID_STUDENT_ID;
 import static org.upgradeplatform.utils.Utils.LOG_EVENT;
 import static org.upgradeplatform.utils.Utils.MARK_EXPERIMENT_POINT;
 import static org.upgradeplatform.utils.Utils.MAX_RETRIES;
+import static org.upgradeplatform.utils.Utils.NO_RETRIES;
 import static org.upgradeplatform.utils.Utils.PATCH;
 import static org.upgradeplatform.utils.Utils.REWARD;
 import static org.upgradeplatform.utils.Utils.SET_ALT_USER_IDS;
@@ -466,7 +467,7 @@ public class ExperimentClient implements AutoCloseable {
 
 		// Invoke the method
 		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+				new PublishingRetryCallback<>(invocation, requestContent, NO_RETRIES, RequestType.POST,
 						new InvocationCallback<Response>() {
 
 							@Override
@@ -621,7 +622,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<LogRequest> requestContent = Entity.json(logRequest);
 
 		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+				new PublishingRetryCallback<>(invocation, requestContent, NO_RETRIES, RequestType.POST,
 						new InvocationCallback<Response>() {
 
 							@Override
@@ -717,7 +718,7 @@ public class ExperimentClient implements AutoCloseable {
 				: this.apiService.prepareRequest(REWARD);
 		Entity<RewardRequest> requestContent = Entity.json(rewardRequest);
 		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+				new PublishingRetryCallback<>(invocation, requestContent, NO_RETRIES, RequestType.POST,
 						new InvocationCallback<Response>() {
 							@Override
 							public void completed(Response response) {

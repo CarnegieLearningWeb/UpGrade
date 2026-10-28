@@ -10,7 +10,8 @@ const httpError = (status?: number) =>
 describe('DefaultHttpClient', () => {
   let client: DefaultHttpClient;
   const url = 'http://localhost:3030/api/v6/assign';
-  const options = () => ({ headers: { 'Content-Type': 'application/json' } });
+  const options = () => ({ headers: { 'Content-Type': 'application/json' }, retryable: true });
+  const writeOptions = () => ({ headers: { 'Content-Type': 'application/json' } });
 
   beforeEach(() => {
     mockAxios.mockReset();
@@ -45,6 +46,16 @@ describe('DefaultHttpClient', () => {
     mockAxios.mockRejectedValue(httpError(400));
 
     await expect(client.doPost(url, {}, options())).rejects.toThrow();
+    expect(mockAxios).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['5xx', 503],
+    ['network failure', undefined],
+  ])('does not retry a %s on a request not marked retryable (non-idempotent write)', async (_label, status) => {
+    mockAxios.mockRejectedValue(httpError(status));
+
+    await expect(client.doPost(url, {}, writeOptions())).rejects.toThrow();
     expect(mockAxios).toHaveBeenCalledTimes(1);
   });
 

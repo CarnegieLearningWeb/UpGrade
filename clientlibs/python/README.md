@@ -241,6 +241,22 @@ UpgradeClient.BINARY_REWARD_VALUE.SUCCESS
 UpgradeClient.BINARY_REWARD_VALUE.FAILURE
 ```
 
+## Connection Reuse
+
+- **Sync methods** share one pooled `httpx.Client` per `UpgradeClient`. Release it with `client.close()` or a `with`
+  block.
+- **Async methods** share a pooled `httpx.AsyncClient` only inside `async with`, which opens and closes the pool on
+  the same event loop:
+
+  ```python
+  async with UpgradeClient("user-1", "https://upgrade.example.com", "my-app") as client:
+      await client.init()
+      flags = await client.get_all_feature_flags()
+  ```
+
+  Outside `async with`, each async request uses its own short-lived client, so it's safe to call the same
+  `UpgradeClient` from successive `asyncio.run()` loops.
+
 ## Error Handling
 
 API errors raise `upgrade_client_lib.exceptions.UpgradeApiError`:
