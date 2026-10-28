@@ -10,11 +10,12 @@ import httpx
 import pytest
 import respx
 from httpx import Response
+from pydantic import ValidationError
 
 from upgrade_client_lib.client import UpgradeClient
 from upgrade_client_lib.exceptions import UpgradeApiError
 from upgrade_client_lib.types.enums import BinaryRewardValue, ExperimentType, MarkedDecisionPointStatus
-from upgrade_client_lib.types.requests import LogInput, LogMetrics
+from upgrade_client_lib.types.requests import FeatureFlagUserGroupsForSession, LogInput, LogMetrics
 
 HOST = "https://upgrade.example.com"
 USER = "user-abc"
@@ -826,3 +827,64 @@ class TestSyncAndConnectionLifecycle:
             sync_pooled = client._api_service._sync_client
         assert async_pooled is not None and async_pooled.is_closed
         assert sync_pooled is not None and sync_pooled.is_closed
+
+
+# ---------------------------------------------------------------------------
+# Feature flag session groups
+# ---------------------------------------------------------------------------
+
+
+class TestFeatureFlagUserGroupsForSession:
+    GROUPS = {"classId": ["c1"], "schoolId": ["s1"]}
+
+    @respx.mock
+    async def test_default_body_omits_session_groups(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=[]))
+        await make_client().get_all_feature_flags()
+        body = json.loads(route.calls[0].request.content)
+        assert "groupsForSession" not in body
+        assert "includeStoredUserGroups" not in body
+
+    @respx.mock
+    async def test_constructor_kwarg_accepts_dict(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["flag"]))
+        client = make_client(
+            feature_flag_user_groups_for_session={"groupsForSession": self.GROUPS, "includeStoredUserGroups": False}
+        )
+        await client.get_all_feature_flags()
+        body = json.loads(route.calls[0].request.content)
+        assert body["context"] == CTX
+        assert body["groupsForSession"] == self.GROUPS
+        assert body["includeStoredUserGroups"] is False
+
+    @respx.mock
+    def test_setter_accepts_model_and_clears_flag_cache(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["flag"]))
+        client = make_client()
+        assert client.has_feature_flag_sync("flag") is True
+
+        client.set_feature_flag_user_groups_for_session(
+            FeatureFlagUserGroupsForSession(groupsForSession=self.GROUPS, includeStoredUserGroups=True)
+        )
+        client.has_feature_flag_sync("flag")
+
+        assert route.call_count == 2
+        body = json.loads(route.calls[1].request.content)
+        assert body["groupsForSession"] == self.GROUPS
+        assert body["includeStoredUserGroups"] is True
+
+    @respx.mock
+    async def test_setter_none_clears_session_groups(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=[]))
+        client = make_client(
+            feature_flag_user_groups_for_session={"groupsForSession": self.GROUPS, "includeStoredUserGroups": True}
+        )
+        client.set_feature_flag_user_groups_for_session(None)
+        await client.get_all_feature_flags()
+        assert "groupsForSession" not in json.loads(route.calls[0].request.content)
+
+    def test_requires_both_fields(self) -> None:
+        with pytest.raises(ValidationError):
+            make_client(feature_flag_user_groups_for_session={"groupsForSession": self.GROUPS})
+        with pytest.raises(ValidationError):
+            make_client().set_feature_flag_user_groups_for_session({"includeStoredUserGroups": True})

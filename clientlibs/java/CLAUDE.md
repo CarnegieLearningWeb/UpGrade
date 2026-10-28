@@ -40,7 +40,9 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 - `getExperimentCondition(site, cb)` / `getExperimentCondition(site, target, cb)` — site/target matched case-insensitively
 - `markDecisionPoint(site, condition, status, cb)` — many overloads adding target, clientError, uniquifier
 - `getAllFeatureFlags(cb)` / `getAllFeatureFlags(ignoreCache, cb)` / `hasFeatureFlag(key, cb)`
-- `addGroupMetrics(metrics, cb)` / `addSingleMetrics(metrics, cb)` / `log(value, cb)`
+- `setFeatureFlagUserGroupsForSession(groupsForSession, includeStoredUserGroups)` / `clearFeatureFlagUserGroupsForSession()` — session-scoped groups for feature flag evaluation; both clear the flag cache
+- `log(value, cb)`
+- `sendRewardForExperiment(value, experimentId, [awaitResult], cb)` / `sendRewardForDecisionPoint(value, context, site, target, [awaitResult], cb)` — binary reward for adaptive experiments; `context` is explicit, not the client's own
 - `close()` — implements AutoCloseable; always call this or use try-with-resources to avoid resource leaks
 
 ## Key Gotchas

@@ -63,7 +63,7 @@ if assignment:
 
 ## API Reference
 
-### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None, timeout=5.0)`
+### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None, timeout=5.0, feature_flag_user_groups_for_session=None)`
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -73,6 +73,7 @@ if assignment:
 | `token` | `str` | Optional bearer token for the `Authorization` header |
 | `client_session_id` | `str \| None` | Optional session ID; auto-generated UUID when omitted |
 | `timeout` | `float \| httpx.Timeout` | HTTP request timeout in seconds, or an `httpx.Timeout` object for fine-grained control. Defaults to `5.0` seconds, which matches httpx's own default and preserves the previous implicit behavior. |
+| `feature_flag_user_groups_for_session` | `FeatureFlagUserGroupsForSession \| dict \| None` | Optional session-scoped groups for feature flag evaluation; see [Feature Flags](#feature-flags) |
 
 To set a short timeout (e.g. for user-facing synchronous routes where you want fast failure):
 
@@ -148,6 +149,25 @@ else:
 |---|---|
 | `get_all_feature_flags(ignore_cache=False)` | Return all active `FeatureFlag` objects |
 | `has_feature_flag(key)` | Return `True` if the named flag is active for this user |
+| `set_feature_flag_user_groups_for_session(options)` | Set (or, with `None`, clear) session-scoped groups for feature flag evaluation; clears the cached flags. Not async, so there's no `_sync` variant |
+
+Session-scoped groups are sent with every feature flag request. `groupsForSession` is merged with the user's stored groups when `includeStoredUserGroups` is `True`, and replaces them when `False`. Both fields are required:
+
+```python
+from upgrade_client_lib.types import FeatureFlagUserGroupsForSession
+
+client = UpgradeClient(
+    "user-1",
+    "https://upgrade.example.com",
+    "my-app",
+    feature_flag_user_groups_for_session={"groupsForSession": {"classId": ["c1"]}, "includeStoredUserGroups": True},
+)
+
+# later, e.g. when the user switches class
+client.set_feature_flag_user_groups_for_session(
+    FeatureFlagUserGroupsForSession(groupsForSession={"classId": ["c2"]}, includeStoredUserGroups=True)
+)
+```
 
 ### Metrics & Rewards
 

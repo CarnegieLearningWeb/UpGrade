@@ -67,10 +67,21 @@ Use this function to log data
 
 > log(String key, Object value, callback)
 
-## addMetrics
-Use this function to add metrics in upgrade system
+## sendRewardForExperiment / sendRewardForDecisionPoint
+Use these functions to send a binary reward (`BinaryRewardValue.SUCCESS` / `FAILURE`) for an adaptive experiment, identified either by experiment id or by context + decision point. The context is passed explicitly; it is not filled in from the client's own context.
 
-> addMetrics(MetricUnit[] metrics, callback)
+> sendRewardForExperiment(BinaryRewardValue rewardValue, String experimentId, callback)
+
+> sendRewardForDecisionPoint(BinaryRewardValue rewardValue, String context, String site, String target, callback)
+
+By default the server queues the reward and responds immediately (`mode` = `"accepted"`). Pass `awaitResult = true` (an extra `boolean` before the callback, on either method) to wait until it is recorded (`mode` = `"processed"`). A reward that can't be recorded is then reported to `onError` as a 409.
+
+## setFeatureFlagUserGroupsForSession / clearFeatureFlagUserGroupsForSession
+Use these functions to evaluate feature flags against session-scoped groups. When `includeStoredUserGroups` is true the groups are merged with the user's stored groups; when false they replace them. Both clear the cached feature flags.
+
+> setFeatureFlagUserGroupsForSession(Map<String, List<String>> groupsForSession, boolean includeStoredUserGroups)
+
+> clearFeatureFlagUserGroupsForSession()
 
 ## getAllFeatureFlags
 Use this function to get feature flags list

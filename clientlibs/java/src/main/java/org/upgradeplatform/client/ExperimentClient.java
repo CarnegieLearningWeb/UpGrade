@@ -1,6 +1,5 @@
 package org.upgradeplatform.client;
 
-import static org.upgradeplatform.utils.Utils.ADD_MATRIC;
 import static org.upgradeplatform.utils.Utils.FEATURE_FLAGS;
 import static org.upgradeplatform.utils.Utils.GET_ALL_EXPERIMENTS;
 import static org.upgradeplatform.utils.Utils.INITIALIZE_USER;
@@ -9,6 +8,7 @@ import static org.upgradeplatform.utils.Utils.LOG_EVENT;
 import static org.upgradeplatform.utils.Utils.MARK_EXPERIMENT_POINT;
 import static org.upgradeplatform.utils.Utils.MAX_RETRIES;
 import static org.upgradeplatform.utils.Utils.PATCH;
+import static org.upgradeplatform.utils.Utils.REWARD;
 import static org.upgradeplatform.utils.Utils.SET_ALT_USER_IDS;
 import static org.upgradeplatform.utils.Utils.SET_GROUP_MEMBERSHIP;
 import static org.upgradeplatform.utils.Utils.SET_WORKING_GROUP;
@@ -32,14 +32,13 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.requestbeans.ExperimentRequest;
+import org.upgradeplatform.requestbeans.FeatureFlagRequest;
 import org.upgradeplatform.requestbeans.ExperimentUser;
-import org.upgradeplatform.requestbeans.GroupMetric;
 import org.upgradeplatform.requestbeans.LogInput;
 import org.upgradeplatform.requestbeans.LogRequest;
 import org.upgradeplatform.requestbeans.MarkExperimentRequest;
 import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
-import org.upgradeplatform.requestbeans.MetricUnitBody;
-import org.upgradeplatform.requestbeans.SingleMetric;
+import org.upgradeplatform.requestbeans.RewardRequest;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
@@ -51,10 +50,11 @@ import org.upgradeplatform.requestbeans.InitializeUser;
 import org.upgradeplatform.responsebeans.InitializeUserResponse;
 import org.upgradeplatform.responsebeans.LogEventResponse;
 import org.upgradeplatform.responsebeans.MarkDecisionPoint;
-import org.upgradeplatform.responsebeans.Metric;
+import org.upgradeplatform.responsebeans.SendRewardResponse;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
+import org.upgradeplatform.utils.Utils.BinaryRewardValue;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 import org.upgradeplatform.utils.Utils.RequestType;
 
@@ -65,6 +65,8 @@ public class ExperimentClient implements AutoCloseable {
 
 	private List<ExperimentsResponse> allExperiments;
 	private List<String> allFeatureFlags;
+	private Map<String, List<String>> featureFlagGroupsForSession;
+	private Boolean featureFlagIncludeStoredUserGroups;
 
 	/**
 	 * @param properties
@@ -494,13 +496,39 @@ public class ExperimentClient implements AutoCloseable {
 
 	}
 
+	/**
+	 * Use session-scoped groups when evaluating feature flags for this client. When
+	 * {@code includeStoredUserGroups} is true, {@code groupsForSession} is merged with the user's stored groups;
+	 * when false, it replaces them. Clears the cached feature flags so the next lookup uses the new groups.
+	 */
+	public void setFeatureFlagUserGroupsForSession(Map<String, List<String>> groupsForSession,
+			boolean includeStoredUserGroups) {
+		if (groupsForSession == null) {
+			throw new IllegalArgumentException(
+					"groupsForSession cannot be null; use clearFeatureFlagUserGroupsForSession() to remove session groups");
+		}
+		this.featureFlagGroupsForSession = groupsForSession;
+		this.featureFlagIncludeStoredUserGroups = includeStoredUserGroups;
+		this.allFeatureFlags = null;
+	}
+
+	/**
+	 * Stop sending session-scoped groups with feature flag requests, and clear the cached feature flags.
+	 */
+	public void clearFeatureFlagUserGroupsForSession() {
+		this.featureFlagGroupsForSession = null;
+		this.featureFlagIncludeStoredUserGroups = null;
+		this.allFeatureFlags = null;
+	}
+
 	public void getAllFeatureFlags(final ResponseCallback<List<String>> callbacks) {
 		getAllFeatureFlags(false, callbacks);
 	}
 
 	public void getAllFeatureFlags(boolean ignoreCache, final ResponseCallback<List<String>> callbacks) {
 		if (this.allFeatureFlags == null || ignoreCache) {
-			Entity<ExperimentRequest> requestContent = Entity.json(new ExperimentRequest(this.context));
+			Entity<FeatureFlagRequest> requestContent = Entity.json(new FeatureFlagRequest(this.context,
+					this.featureFlagGroupsForSession, this.featureFlagIncludeStoredUserGroups));
 
 			AsyncInvoker invocation = this.apiService.prepareRequest(FEATURE_FLAGS);
 			invocation.post(requestContent, new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,
@@ -585,51 +613,6 @@ public class ExperimentClient implements AutoCloseable {
 						}));
 	}
 
-	public void addGroupMetrics(final List<GroupMetric> metrics, final ResponseCallback<List<Metric>> callbacks) {
-
-		MetricUnitBody<GroupMetric> metricUnit = new MetricUnitBody<>(metrics);
-		Entity<MetricUnitBody<?>> requestContent = Entity.json(metricUnit);
-		addMetrics(requestContent, callbacks);
-	}
-
-	public void addSingleMetrics(final List<SingleMetric> metrics,
-			final ResponseCallback<List<Metric>> responseCallback) {
-
-		MetricUnitBody<SingleMetric> metricUnit = new MetricUnitBody<>(metrics);
-		Entity<MetricUnitBody<?>> requestContent = Entity.json(metricUnit);
-		addMetrics(requestContent, responseCallback);
-	}
-
-	private void addMetrics(Entity<MetricUnitBody<?>> requestContent, final ResponseCallback<List<Metric>> callbacks) {
-
-		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
-
-		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-						new InvocationCallback<Response>() {
-
-							@Override
-							public void completed(Response response) {
-								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-									readResponseToCallback(response, callbacks, new GenericType<List<Metric>>() {
-									});
-								} else {
-									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-									ErrorResponse error = new ErrorResponse(response.getStatus(),
-											response.readEntity(String.class), status);
-									if (callbacks != null)
-										callbacks.onError(error);
-								}
-							}
-
-							@Override
-							public void failed(Throwable throwable) {
-								if (callbacks != null)
-									callbacks.onError(new ErrorResponse(throwable.getMessage()));
-							}
-						}));
-	}
-
 	public void log(List<LogInput> value, final ResponseCallback<List<LogEventResponse>> callbacks) {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
@@ -670,6 +653,94 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	/**
+	 * Send a binary reward for an adaptive experiment, identified by experiment id. By default the server queues
+	 * the reward and responds immediately ({@code mode} "accepted"); see
+	 * {@link #sendRewardForExperiment(BinaryRewardValue, String, boolean, ResponseCallback)} to wait for it to be
+	 * recorded.
+	 */
+	public void sendRewardForExperiment(BinaryRewardValue rewardValue, String experimentId,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		sendRewardForExperiment(rewardValue, experimentId, false, callbacks);
+	}
+
+	/**
+	 * @param awaitResult when true, the server records the reward before responding ({@code mode} "processed")
+	 *                    and reports a reward it can't record as a 409 error, instead of only logging it
+	 */
+	public void sendRewardForExperiment(BinaryRewardValue rewardValue, String experimentId, boolean awaitResult,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		if (isStringNull(experimentId)) {
+			throw new IllegalArgumentException("experimentId cannot be null or empty");
+		}
+		sendReward(RewardRequest.forExperiment(requireRewardValue(rewardValue), experimentId), awaitResult, callbacks);
+	}
+
+	/**
+	 * Send a binary reward for an adaptive experiment, identified by context and decision point. By default the
+	 * server queues the reward and responds immediately ({@code mode} "accepted"); see
+	 * {@link #sendRewardForDecisionPoint(BinaryRewardValue, String, String, String, boolean, ResponseCallback)} to
+	 * wait for it to be recorded.
+	 */
+	public void sendRewardForDecisionPoint(BinaryRewardValue rewardValue, String context, String site, String target,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		sendRewardForDecisionPoint(rewardValue, context, site, target, false, callbacks);
+	}
+
+	/**
+	 * @param target      may be null or empty for a decision point without a target
+	 * @param awaitResult when true, the server records the reward before responding ({@code mode} "processed")
+	 *                    and reports a reward it can't record as a 409 error, instead of only logging it
+	 */
+	public void sendRewardForDecisionPoint(BinaryRewardValue rewardValue, String context, String site, String target,
+			boolean awaitResult, final ResponseCallback<SendRewardResponse> callbacks) {
+		if (isStringNull(context)) {
+			throw new IllegalArgumentException("context cannot be null or empty");
+		}
+		if (isStringNull(site)) {
+			throw new IllegalArgumentException("site cannot be null or empty");
+		}
+		sendReward(RewardRequest.forDecisionPoint(requireRewardValue(rewardValue), context, site,
+				target == null ? "" : target), awaitResult, callbacks);
+	}
+
+	private static BinaryRewardValue requireRewardValue(BinaryRewardValue rewardValue) {
+		if (rewardValue == null) {
+			throw new IllegalArgumentException("rewardValue cannot be null");
+		}
+		return rewardValue;
+	}
+
+	private void sendReward(RewardRequest rewardRequest, boolean awaitResult,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		AsyncInvoker invocation = awaitResult
+				? this.apiService.prepareRequest(REWARD, Map.of("awaitResult", true))
+				: this.apiService.prepareRequest(REWARD);
+		Entity<RewardRequest> requestContent = Entity.json(rewardRequest);
+		invocation.post(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+						new InvocationCallback<Response>() {
+							@Override
+							public void completed(Response response) {
+								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									readResponseToCallback(response, callbacks, SendRewardResponse.class);
+								} else {
+									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+									ErrorResponse error = new ErrorResponse(response.getStatus(),
+											response.readEntity(String.class), status);
+									if (callbacks != null)
+										callbacks.onError(error);
+								}
+							}
+
+							@Override
+							public void failed(Throwable throwable) {
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
+							}
+						}));
+	}
+
+	/**
 	 * helper method to include more useful information in the ErrorResponse for a
 	 * ProcessingException
 	 */
@@ -692,7 +763,6 @@ public class ExperimentClient implements AutoCloseable {
 				callback.onError(new ErrorResponse(
 						pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
 		}
-	}
 	}
 
 	/**

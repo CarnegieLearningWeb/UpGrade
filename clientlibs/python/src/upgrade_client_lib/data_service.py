@@ -82,6 +82,10 @@ class DataService:
     # Feature flags
     # ------------------------------------------------------------------
 
+    def clear_feature_flags(self) -> None:
+        """Invalidate only the feature flag cache, so the next lookup refetches."""
+        self._feature_flags = None
+
     def set_feature_flags(self, flags: list[str]) -> None:
         """Populate the feature-flag cache from a fresh API response."""
         self._feature_flags = set(flags)

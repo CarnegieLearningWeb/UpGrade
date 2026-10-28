@@ -11,7 +11,7 @@ from upgrade_client_lib.api_service import _DEFAULT_TIMEOUT, ApiService
 from upgrade_client_lib.assignment import Assignment
 from upgrade_client_lib.data_service import DataService
 from upgrade_client_lib.types.enums import BinaryRewardValue, MarkedDecisionPointStatus
-from upgrade_client_lib.types.requests import LogInput
+from upgrade_client_lib.types.requests import FeatureFlagUserGroupsForSession, LogInput
 from upgrade_client_lib.types.responses import (
     FeatureFlag,
     InitializeUserResponse,
@@ -46,6 +46,12 @@ class UpgradeClient:
         HTTP request timeout in seconds, or an ``httpx.Timeout`` object for
         fine-grained control.  Defaults to ``httpx.Timeout(5.0)``, which
         matches httpx's own default and preserves the previous implicit behavior.
+    feature_flag_user_groups_for_session:
+        Optional session-scoped groups for feature flag evaluation, as a
+        :class:`~upgrade_client_lib.types.requests.FeatureFlagUserGroupsForSession`
+        or an equivalent dict with both ``groupsForSession`` and
+        ``includeStoredUserGroups``.  Can be changed later with
+        :meth:`set_feature_flag_user_groups_for_session`.
 
     Examples
     --------
@@ -76,6 +82,7 @@ class UpgradeClient:
         token: str = "",
         client_session_id: str | None = None,
         timeout: float | httpx.Timeout = _DEFAULT_TIMEOUT,
+        feature_flag_user_groups_for_session: FeatureFlagUserGroupsForSession | dict[str, Any] | None = None,
     ) -> None:
         self._user_id = user_id
         self._context = context
@@ -88,6 +95,24 @@ class UpgradeClient:
             client_session_id=client_session_id or str(uuid.uuid4()),
             timeout=timeout,
         )
+        self.set_feature_flag_user_groups_for_session(feature_flag_user_groups_for_session)
+
+    # ------------------------------------------------------------------
+    # set_feature_flag_user_groups_for_session
+    # ------------------------------------------------------------------
+
+    def set_feature_flag_user_groups_for_session(
+        self, options: FeatureFlagUserGroupsForSession | dict[str, Any] | None
+    ) -> None:
+        """Set (or, with ``None``, clear) session-scoped groups for feature flag evaluation.
+
+        Clears the cached feature flags so the next lookup is evaluated against the new groups.
+        Raises ``pydantic.ValidationError`` unless both ``groupsForSession`` and
+        ``includeStoredUserGroups`` are provided.
+        """
+        validated = None if options is None else FeatureFlagUserGroupsForSession.model_validate(options)
+        self._api_service.set_feature_flag_user_groups_for_session(validated)
+        self._data_service.clear_feature_flags()
 
     # ------------------------------------------------------------------
     # init

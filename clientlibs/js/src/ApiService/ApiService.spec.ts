@@ -1,10 +1,4 @@
-import {
-  CaliperEnvelope,
-  EXPERIMENT_TYPE,
-  ILogRequestBody,
-  MARKED_DECISION_POINT_STATUS,
-  PAYLOAD_TYPE,
-} from 'upgrade_types';
+import { EXPERIMENT_TYPE, ILogRequestBody, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 import ApiService from './ApiService';
 import { UpGradeClientInterfaces } from './../types/Interfaces';
 import { UpGradeClientRequests } from './../types/requests';
@@ -564,32 +558,41 @@ describe('ApiService', () => {
     });
   });
 
-  describe('#logCaliper', () => {
-    const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/log/caliper`;
-    const expectedOptions = {
-      headers: {
-        'Content-Type': 'application/json',
-        'Session-Id': 'testClientSessionId',
-        URL: expectedUrl,
-        'User-Id': defaultConfig.userId,
-        'Client-Context': defaultConfig.context,
-        'Client-Version': CLIENT_VERSION,
-        Authorization: 'Bearer testToken',
-      },
-      withCredentials: false,
-    };
+  describe('#sendReward', () => {
+    const rewardUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/reward`;
+    const lastPost = () => mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1];
 
-    it('should call sendRequest with caliper envelope value', async () => {
-      const mockLogData: CaliperEnvelope = {
-        sensor: 'test',
-        sendTime: '12345678',
-        dataVersion: '1',
-        data: [],
-      };
+    it('should post to /reward without a query param by default', async () => {
+      await apiService.sendReward({ rewardValue: 'SUCCESS', experimentId: 'exp1' });
 
-      await apiService.logCaliper(mockLogData);
+      const [url, body, options] = lastPost();
+      expect(url).toEqual(rewardUrl);
+      expect(body).toEqual({ rewardValue: 'SUCCESS', experimentId: 'exp1' });
+      expect(options.headers.URL).toEqual(rewardUrl);
+    });
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogData, expectedOptions);
+    it('should append awaitResult=true and keep it out of the body when awaitResult is set', async () => {
+      await apiService.sendReward({
+        rewardValue: 'FAILURE',
+        context: 'context',
+        decisionPoint: { site: 'site', target: 'target' },
+        awaitResult: true,
+      });
+
+      const [url, body] = lastPost();
+      expect(url).toEqual(`${rewardUrl}?awaitResult=true`);
+      expect(body).toEqual({
+        rewardValue: 'FAILURE',
+        context: 'context',
+        decisionPoint: { site: 'site', target: 'target' },
+      });
+      expect(body).not.toHaveProperty('awaitResult');
+    });
+
+    it('should not append the query param when awaitResult is false', async () => {
+      await apiService.sendReward({ rewardValue: 'SUCCESS', experimentId: 'exp1', awaitResult: false });
+
+      expect(lastPost()[0]).toEqual(rewardUrl);
     });
   });
 });

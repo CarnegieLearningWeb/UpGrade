@@ -1,11 +1,5 @@
 import { UpGradeClientEnums, UpGradeClientInterfaces, UpGradeClientRequests } from '../types';
-import {
-  CaliperEnvelope,
-  IExperimentAssignment,
-  ILogInput,
-  IUserAliases,
-  ILogRequestBody,
-} from 'upgrade_types/Experiment/interfaces';
+import { IExperimentAssignment, ILogInput, IUserAliases, ILogRequestBody } from 'upgrade_types/Experiment/interfaces';
 import { DataService } from 'DataService/DataService';
 import { IApiServiceRequestParams, IEndpoints } from './ApiService.types';
 
@@ -41,7 +35,6 @@ export default class ApiService {
       setWorkingGroup: `${this.hostUrl}/api/${this.apiVersion}/workinggroup`,
       getAllFeatureFlag: `${this.hostUrl}/api/${this.apiVersion}/featureflag`,
       log: `${this.hostUrl}/api/${this.apiVersion}/log`,
-      logCaliper: `${this.hostUrl}/api/${this.apiVersion}/log/caliper`,
       altUserIds: `${this.hostUrl}/api/${this.apiVersion}/useraliases`,
       reward: `${this.hostUrl}/api/${this.apiVersion}/reward`,
     };
@@ -295,16 +288,6 @@ export default class ApiService {
     });
   }
 
-  public logCaliper(logData: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILogResponse[]> {
-    const requestBody: CaliperEnvelope = logData;
-
-    return this.sendRequest<UpGradeClientInterfaces.ILogResponse[], UpGradeClientInterfaces.ILog[]>({
-      path: this.api.logCaliper,
-      method: UpGradeClientEnums.REQUEST_METHOD.POST,
-      body: requestBody,
-    });
-  }
-
   public async getAllFeatureFlags(): Promise<string[]> {
     let requestBody: UpGradeClientRequests.IGetAllFeatureFlagsRequestBody;
 
@@ -331,12 +314,9 @@ export default class ApiService {
     return response;
   }
 
-  public sendReward(params: {
-    rewardValue: 'SUCCESS' | 'FAILURE';
-    experimentId?: string;
-    context?: string;
-    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint;
-  }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
+  public sendReward(
+    params: UpGradeClientInterfaces.ISendRewardParams
+  ): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
     const requestBody: UpGradeClientRequests.ISendRewardRequestBody = {
       rewardValue: params.rewardValue,
       experimentId: params.experimentId,
@@ -345,7 +325,7 @@ export default class ApiService {
     };
 
     return this.sendRequest<UpGradeClientInterfaces.ISendRewardResponse, UpGradeClientRequests.ISendRewardRequestBody>({
-      path: this.api.reward,
+      path: params.awaitResult ? `${this.api.reward}?awaitResult=true` : this.api.reward,
       method: UpGradeClientEnums.REQUEST_METHOD.POST,
       body: requestBody,
     });

@@ -10,7 +10,7 @@ import httpx
 
 from upgrade_client_lib.exceptions import UpgradeApiError
 from upgrade_client_lib.types.enums import BinaryRewardValue, ExperimentType, MarkedDecisionPointStatus
-from upgrade_client_lib.types.requests import LogInput
+from upgrade_client_lib.types.requests import FeatureFlagUserGroupsForSession, LogInput
 from upgrade_client_lib.types.responses import (
     ExperimentAssignment,
     InitializeUserResponse,
@@ -53,10 +53,14 @@ class ApiService:
         self._token = token
         self._client_session_id = client_session_id
         self._timeout = timeout
+        self._feature_flag_user_groups_for_session: FeatureFlagUserGroupsForSession | None = None
         # Created lazily and reused across requests so connections are pooled.
         self._sync_client: httpx.Client | None = None
         self._async_client: httpx.AsyncClient | None = None
         self._async_client_loop: asyncio.AbstractEventLoop | None = None
+
+    def set_feature_flag_user_groups_for_session(self, options: FeatureFlagUserGroupsForSession | None) -> None:
+        self._feature_flag_user_groups_for_session = options
 
     def close(self) -> None:
         """Close the pooled sync client.  The async client is closed by :meth:`aclose`."""
@@ -305,12 +309,18 @@ class ApiService:
     # ------------------------------------------------------------------
 
     async def get_all_feature_flags(self) -> list[str]:
-        data = await self._post_async("featureflag", {"context": self._context, "userId": self._user_id})
+        data = await self._post_async("featureflag", self._feature_flag_body())
         return list(data)
 
     def get_all_feature_flags_sync(self) -> list[str]:
-        data = self._post_sync("featureflag", {"context": self._context, "userId": self._user_id})
+        data = self._post_sync("featureflag", self._feature_flag_body())
         return list(data)
+
+    def _feature_flag_body(self) -> dict[str, Any]:
+        body: dict[str, Any] = {"context": self._context, "userId": self._user_id}
+        if self._feature_flag_user_groups_for_session is not None:
+            body.update(self._feature_flag_user_groups_for_session.model_dump())
+        return body
 
     # ------------------------------------------------------------------
     # log  POST /api/v6/log

@@ -28,7 +28,7 @@ public class Utils
 	public static final String FEATURE_FLAGS = apiVersion + "/featureflag";
 	public static final String LOG_EVENT= apiVersion + "/log";
 	public static final String SET_ALT_USER_IDS= apiVersion + "/useraliases";
-	public static final String ADD_MATRIC= apiVersion + "/metric";
+	public static final String REWARD = apiVersion + "/reward";
 
 	public static final String PATCH = "PATCH";
 
@@ -55,6 +55,11 @@ public class Utils
 	public static enum MetricMetaData {
 		continuous,
 		categorical
+	}
+
+	public static enum BinaryRewardValue {
+		SUCCESS,
+		FAILURE
 	}
 
 	public static enum MarkedDecisionPointStatus {

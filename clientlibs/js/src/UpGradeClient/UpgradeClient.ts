@@ -1,7 +1,6 @@
 import { UpGradeClientInterfaces } from '../types';
 import {
   ILogInput,
-  CaliperEnvelope,
   IExperimentAssignment,
   IUserAliases,
   BinaryRewardAllowedValue,
@@ -595,27 +594,6 @@ export default class UpgradeClient {
   }
 
   /**
- * Will report Caliper user outcome metrics to Upgrade, same as log() but with Caliper envelope.
- * 
- * @example
- * ```ts
- * const logRequest: CaliperEnvelope = {
-      sensor: 'test',
-      sendTime: 'test',
-      dataVersion: 'test',
-      data: [],
-    };
- *
- *
- *  const logCaliperResponse: ILog[] = await upgradeClient.logCaliper(logRequest);
- * 
- * ```
- */
-  async logCaliper(value: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILogResponse[]> {
-    return await this.apiService.logCaliper(value);
-  }
-
-  /**
    * Will set an array of alternate user ids for the user.
    *
    * @example
@@ -648,6 +626,12 @@ export default class UpgradeClient {
    * 2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment
    *
    * At least one of these methods must be provided.
+   *
+   * **Waiting for the result:**
+   *
+   * By default the server acknowledges the reward immediately (`mode: 'accepted'`) and records it in the
+   * background, so a reward that can't be recorded only shows up in the server logs. Pass `awaitResult: true`
+   * to wait until it is recorded (`mode: 'processed'`); the call then rejects with a 409 if it can't be.
    *
    * @example
    * ```ts
@@ -692,7 +676,8 @@ export default class UpgradeClient {
    *   }
    * });
    * ```
-   *  * @example
+   *
+   * @example
    * ```ts
    * // Example 5: Using decision point without target
    * const response = await upgradeClient.sendReward({
@@ -703,13 +688,21 @@ export default class UpgradeClient {
    *   }
    * });
    * ```
+   *
+   * @example
+   * ```ts
+   * // Example 6: Waiting for the reward to be recorded
+   * const response = await upgradeClient.sendReward({
+   *   rewardValue: 'SUCCESS',
+   *   experimentId: 'exp_adaptive_123',
+   *   awaitResult: true,
+   * });
+   * // response.mode === 'processed', response.success === true
+   * ```
    */
-  async sendReward(params: {
-    rewardValue: 'SUCCESS' | 'FAILURE';
-    experimentId?: string;
-    context?: string;
-    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint;
-  }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
+  async sendReward(
+    params: UpGradeClientInterfaces.ISendRewardParams
+  ): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
     return await this.apiService.sendReward(params);
   }
 }

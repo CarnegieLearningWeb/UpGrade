@@ -101,6 +101,15 @@ export namespace UpGradeClientInterfaces {
     target?: string;
   }
 
+  export interface ISendRewardParams {
+    rewardValue: 'SUCCESS' | 'FAILURE';
+    experimentId?: string;
+    context?: string;
+    decisionPoint?: IDecisionPoint;
+    // wait for the reward to be recorded and surface failures (409) instead of returning a queued receipt
+    awaitResult?: boolean;
+  }
+
   export interface ISendRewardResponse {
     // 'accepted' = queued for background processing; 'processed' = recorded synchronously (awaitResult=true)
     mode?: 'accepted' | 'processed';

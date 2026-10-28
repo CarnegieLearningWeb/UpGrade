@@ -14,7 +14,6 @@ export interface IEndpoints {
   setWorkingGroup: string;
   getAllFeatureFlag: string;
   log: string;
-  logCaliper: string;
   altUserIds: string;
   reward: string;
 }

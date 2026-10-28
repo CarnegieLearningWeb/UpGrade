@@ -5,12 +5,14 @@ import static org.upgradeplatform.utils.Utils.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
 import jakarta.ws.rs.client.AsyncInvoker;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 
 import org.glassfish.jersey.client.ClientProperties;
@@ -81,8 +83,15 @@ public class APIService implements AutoCloseable{
 	}
 
 	public AsyncInvoker prepareRequest(String apiPath) {
-		return client.target(this.baseUrl)
-				.path(apiPath)
+		return prepareRequest(apiPath, Collections.emptyMap());
+	}
+
+	public AsyncInvoker prepareRequest(String apiPath, Map<String, Object> queryParams) {
+		WebTarget target = client.target(this.baseUrl).path(apiPath);
+		for (Map.Entry<String, Object> param : queryParams.entrySet()) {
+			target = target.queryParam(param.getKey(), param.getValue());
+		}
+		return target
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer "+this.authToken)
 				.header("Session-Id", this.sessionId)
