@@ -276,21 +276,13 @@ class UpgradeClient:
         Results are cached after the first fetch.  Pass ``ignore_cache=True``
         to force a fresh fetch.
         """
-        cached_keys = None if ignore_cache else self._data_service.get_feature_flags()
-        if cached_keys is None:
-            cached_keys = await self._api_service.get_all_feature_flags()
-            self._data_service.set_feature_flags(cached_keys)
-        return [FeatureFlag(key=k) for k in cached_keys]
+        return [FeatureFlag(key=k) for k in await self._feature_flag_keys(ignore_cache)]
 
     def get_all_feature_flags_sync(
         self, ignore_cache: bool = False
     ) -> list[FeatureFlag]:
         """Synchronous variant of :meth:`get_all_feature_flags`."""
-        cached_keys = None if ignore_cache else self._data_service.get_feature_flags()
-        if cached_keys is None:
-            cached_keys = self._api_service.get_all_feature_flags_sync()
-            self._data_service.set_feature_flags(cached_keys)
-        return [FeatureFlag(key=k) for k in cached_keys]
+        return [FeatureFlag(key=k) for k in self._feature_flag_keys_sync(ignore_cache)]
 
     # ------------------------------------------------------------------
     # has_feature_flag
@@ -301,15 +293,12 @@ class UpgradeClient:
 
         Fetches all feature flags first if the cache is cold.
         """
-        if self._data_service.get_feature_flags() is None:
-            await self.get_all_feature_flags()
-        return self._data_service.has_feature_flag(key)
+        # check the keys this call fetched rather than the cache, which may have been invalidated meanwhile
+        return key in await self._feature_flag_keys(ignore_cache=False)
 
     def has_feature_flag_sync(self, key: str) -> bool:
         """Synchronous variant of :meth:`has_feature_flag`."""
-        if self._data_service.get_feature_flags() is None:
-            self.get_all_feature_flags_sync()
-        return self._data_service.has_feature_flag(key)
+        return key in self._feature_flag_keys_sync(ignore_cache=False)
 
     # ------------------------------------------------------------------
     # log
@@ -411,6 +400,25 @@ class UpgradeClient:
     # ------------------------------------------------------------------
     # Internal helpers shared by the async and sync variants
     # ------------------------------------------------------------------
+
+    async def _feature_flag_keys(self, ignore_cache: bool) -> list[str]:
+        cached = None if ignore_cache else self._data_service.get_feature_flags()
+        if cached is not None:
+            return cached
+        generation = self._data_service.get_feature_flag_generation()
+        fresh = await self._api_service.get_all_feature_flags()
+        # not cached if the session groups changed (or init() ran) while the request was in flight
+        self._data_service.set_feature_flags(fresh, generation)
+        return fresh
+
+    def _feature_flag_keys_sync(self, ignore_cache: bool) -> list[str]:
+        cached = None if ignore_cache else self._data_service.get_feature_flags()
+        if cached is not None:
+            return cached
+        generation = self._data_service.get_feature_flag_generation()
+        fresh = self._api_service.get_all_feature_flags_sync()
+        self._data_service.set_feature_flags(fresh, generation)
+        return fresh
 
     def _assignment_for(self, site: str, target: str) -> Assignment | None:
         raw = self._data_service.get_assignment(site, target)

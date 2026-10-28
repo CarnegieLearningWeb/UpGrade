@@ -65,9 +65,15 @@ public class ExperimentClient implements AutoCloseable {
 	private final String context;
 
 	private List<ExperimentsResponse> allExperiments;
+	// Feature flag cache and session groups. Guarded by featureFlagLock: responses arrive on Jersey threads while
+	// the session-group setters run on the caller's thread.
+	private final Object featureFlagLock = new Object();
 	private List<String> allFeatureFlags;
 	private Map<String, List<String>> featureFlagGroupsForSession;
 	private Boolean featureFlagIncludeStoredUserGroups;
+	// Bumped whenever the session groups change, so a response to a request sent under the previous groups is
+	// never cached over the invalidation.
+	private long featureFlagGeneration;
 
 	/**
 	 * @param properties
@@ -508,18 +514,24 @@ public class ExperimentClient implements AutoCloseable {
 			throw new IllegalArgumentException(
 					"groupsForSession cannot be null; use clearFeatureFlagUserGroupsForSession() to remove session groups");
 		}
-		this.featureFlagGroupsForSession = groupsForSession;
-		this.featureFlagIncludeStoredUserGroups = includeStoredUserGroups;
-		this.allFeatureFlags = null;
+		synchronized (featureFlagLock) {
+			this.featureFlagGroupsForSession = groupsForSession;
+			this.featureFlagIncludeStoredUserGroups = includeStoredUserGroups;
+			this.featureFlagGeneration++;
+			this.allFeatureFlags = null;
+		}
 	}
 
 	/**
 	 * Stop sending session-scoped groups with feature flag requests, and clear the cached feature flags.
 	 */
 	public void clearFeatureFlagUserGroupsForSession() {
-		this.featureFlagGroupsForSession = null;
-		this.featureFlagIncludeStoredUserGroups = null;
-		this.allFeatureFlags = null;
+		synchronized (featureFlagLock) {
+			this.featureFlagGroupsForSession = null;
+			this.featureFlagIncludeStoredUserGroups = null;
+			this.featureFlagGeneration++;
+			this.allFeatureFlags = null;
+		}
 	}
 
 	public void getAllFeatureFlags(final ResponseCallback<List<String>> callbacks) {
@@ -527,9 +539,18 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	public void getAllFeatureFlags(boolean ignoreCache, final ResponseCallback<List<String>> callbacks) {
-		if (this.allFeatureFlags == null || ignoreCache) {
-			Entity<FeatureFlagRequest> requestContent = Entity.json(new FeatureFlagRequest(this.context,
-					this.featureFlagGroupsForSession, this.featureFlagIncludeStoredUserGroups));
+		final List<String> cachedFlags;
+		final FeatureFlagRequest flagRequest;
+		final long requestGeneration;
+		synchronized (featureFlagLock) {
+			cachedFlags = this.allFeatureFlags;
+			flagRequest = new FeatureFlagRequest(this.context, this.featureFlagGroupsForSession,
+					this.featureFlagIncludeStoredUserGroups);
+			requestGeneration = this.featureFlagGeneration;
+		}
+
+		if (cachedFlags == null || ignoreCache) {
+			Entity<FeatureFlagRequest> requestContent = Entity.json(flagRequest);
 
 			AsyncInvoker invocation = this.apiService.prepareRequest(FEATURE_FLAGS);
 			invocation.post(requestContent, new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,
@@ -537,9 +558,16 @@ public class ExperimentClient implements AutoCloseable {
 						@Override
 						public void completed(Response response) {
 							if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-								// Cache featureFlag data before invoking the callback
+								// Cache featureFlag data before invoking the callback, unless the session groups changed
+								// while this request was in flight (the caller still gets the response it asked for)
 								readResponseToCallback(response, callbacks, new GenericType<List<String>>() {
-								}, flags -> allFeatureFlags = flags);
+								}, flags -> {
+									synchronized (featureFlagLock) {
+										if (requestGeneration == featureFlagGeneration) {
+											allFeatureFlags = flags;
+										}
+									}
+								});
 							} else {
 								String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 								ErrorResponse error = new ErrorResponse(response.getStatus(),
@@ -558,7 +586,7 @@ public class ExperimentClient implements AutoCloseable {
 
 		} else {
 			if (callbacks != null) {
-				callbacks.onSuccess(allFeatureFlags);
+				callbacks.onSuccess(cachedFlags);
 			}
 		}
 	}

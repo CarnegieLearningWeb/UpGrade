@@ -918,3 +918,35 @@ class TestFeatureFlagUserGroupsForSession:
             make_client(feature_flag_user_groups_for_session={"groupsForSession": self.GROUPS})
         with pytest.raises(ValidationError):
             make_client().set_feature_flag_user_groups_for_session({"includeStoredUserGroups": True})
+
+    @respx.mock
+    async def test_in_flight_response_is_not_cached_after_session_groups_change(self) -> None:
+        import asyncio
+
+        arrived = asyncio.Event()
+        release = asyncio.Event()
+        responses = iter([["old-groups-flag"], ["new-groups-flag"]])
+
+        async def held_first_response(request: httpx.Request) -> Response:
+            body = next(responses)
+            if body == ["old-groups-flag"]:
+                arrived.set()
+                await release.wait()
+            return Response(200, json=body)
+
+        route = respx.post(f"{BASE}/featureflag").mock(side_effect=held_first_response)
+        client = make_client()
+
+        in_flight = asyncio.create_task(client.has_feature_flag("old-groups-flag"))
+        await arrived.wait()
+        client.set_feature_flag_user_groups_for_session(
+            {"groupsForSession": {"classId": ["c2"]}, "includeStoredUserGroups": True}
+        )
+        release.set()
+
+        # the original caller still gets the answer for the response it asked for...
+        assert await in_flight is True
+        # ...but it isn't cached, so the next lookup refetches under the new groups
+        assert [f.key for f in await client.get_all_feature_flags()] == ["new-groups-flag"]
+        assert route.call_count == 2
+        assert json.loads(route.calls[1].request.content)["groupsForSession"] == {"classId": ["c2"]}

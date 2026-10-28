@@ -523,8 +523,10 @@ export default class UpgradeClient {
   async getAllFeatureFlags(options = { ignoreCache: false }): Promise<string[]> {
     let response = options.ignoreCache ? null : this.dataService.getFeatureFlags();
     if (response == null) {
+      const generation = this.dataService.getFeatureFlagGeneration();
       response = await this.apiService.getAllFeatureFlags();
-      if (Array.isArray(response)) {
+      // don't cache a response for session groups that were changed while the request was in flight
+      if (Array.isArray(response) && generation === this.dataService.getFeatureFlagGeneration()) {
         this.dataService.setFeatureFlags(response);
       }
     }
@@ -545,8 +547,9 @@ export default class UpgradeClient {
    * to see configurations that may affect the responses to this method
    */
   public async hasFeatureFlag(key: string): Promise<boolean> {
-    await this.getAllFeatureFlags();
-    return this.dataService.hasFeatureFlag(key);
+    // check the list this call fetched rather than the cache, which may have been invalidated meanwhile
+    const featureFlags = await this.getAllFeatureFlags();
+    return Array.isArray(featureFlags) && featureFlags.includes(key);
   }
 
   /**

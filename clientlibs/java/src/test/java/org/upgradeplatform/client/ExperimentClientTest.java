@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -65,6 +66,8 @@ public class ExperimentClientTest {
 	private final Map<String, List<String>> requestBodies = new ConcurrentHashMap<>();
 	private final Map<String, List<String>> requestQueries = new ConcurrentHashMap<>();
 	private final Map<String, Integer> statusCodes = new ConcurrentHashMap<>();
+	// when set for a path, the server signals arrival and holds its response until the release latch opens
+	private final Map<String, CountDownLatch[]> heldResponses = new ConcurrentHashMap<>();
 	private ExperimentClient client;
 
 	@BeforeMethod
@@ -74,6 +77,7 @@ public class ExperimentClientTest {
 		requestBodies.clear();
 		requestQueries.clear();
 		statusCodes.clear();
+		heldResponses.clear();
 		server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
 		server.createContext("/", exchange -> {
 			String path = exchange.getRequestURI().getPath();
@@ -84,6 +88,15 @@ public class ExperimentClientTest {
 						.add(new String(in.readAllBytes(), StandardCharsets.UTF_8));
 			}
 			byte[] body = responses.getOrDefault(path, "{}").getBytes(StandardCharsets.UTF_8);
+			CountDownLatch[] hold = heldResponses.remove(path);
+			if (hold != null) {
+				hold[0].countDown();
+				try {
+					hold[1].await(5, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
 			exchange.getResponseHeaders().add("Content-Type", "application/json");
 			exchange.sendResponseHeaders(statusCodes.getOrDefault(path, 200), body.length);
 			try (OutputStream out = exchange.getResponseBody()) {
@@ -309,6 +322,30 @@ public class ExperimentClientTest {
 
 		assertEquals(requestBodies.get("/api/v6/featureflag").size(), 3);
 		assertFalse(lastBody("/api/v6/featureflag").has("groupsForSession"));
+	}
+
+	@Test
+	public void inFlightFlagResponseDoesNotOverwriteSessionGroupChange() throws Exception {
+		responses.put("/api/v6/featureflag", "[\"old-groups-flag\"]");
+		CountDownLatch arrived = new CountDownLatch(1);
+		CountDownLatch release = new CountDownLatch(1);
+		heldResponses.put("/api/v6/featureflag", new CountDownLatch[] { arrived, release });
+
+		CompletableFuture<List<String>> inFlight = new CompletableFuture<>();
+		client.getAllFeatureFlags(into(inFlight));
+		assertTrue(arrived.await(5, TimeUnit.SECONDS));
+
+		// groups change while the first request is still waiting on the server
+		client.setFeatureFlagUserGroupsForSession(Map.of("classId", List.of("c2")), true);
+		responses.put("/api/v6/featureflag", "[\"new-groups-flag\"]");
+		release.countDown();
+
+		// the original caller still gets the response it asked for...
+		assertEquals(inFlight.get(5, TimeUnit.SECONDS), List.of("old-groups-flag"));
+		// ...but it isn't cached, so the next lookup refetches under the new groups
+		assertEquals(fetchFlags(), List.of("new-groups-flag"));
+		assertEquals(requestBodies.get("/api/v6/featureflag").size(), 2);
+		assertEquals(lastBody("/api/v6/featureflag").path("groupsForSession").path("classId").get(0).asText(), "c2");
 	}
 
 	@Test
