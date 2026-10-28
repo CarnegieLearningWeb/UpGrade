@@ -141,12 +141,24 @@ reached the server, this can write duplicate log rows or marks.
    reuse one `httpx` client per `UpgradeClient`.
 
 **Phase B: feature parity**
-1. Java: add `sendReward(...)` (beans, `BinaryRewardValue` enum, `awaitResult` overload).
+1. Java: add reward support (request/response beans, `BinaryRewardValue` enum). *Decided shape:*
+   - Two named methods, one per lookup form the backend accepts, so invalid combinations don't compile:
+     `sendRewardForExperiment(value, experimentId, cb)` and
+     `sendRewardForDecisionPoint(value, context, site, target, cb)`.
+   - `context` is passed explicitly, matching JS and Python. The client doesn't fill in its own context.
+   - `awaitResult` is a trailing boolean overload of each method (default `false`), like
+     `getAllExperimentConditions(ignoreCache, cb)`.
 2. JS: add `awaitResult` to `sendReward`.
-3. Java and Python: add feature-flag `groupsForSession` / `includeStoredUserGroups` support, mirroring JS
-   (constructor option + setter that clears the flag cache).
+3. Java and Python: add feature-flag `groupsForSession` / `includeStoredUserGroups` support. *Decided shape:*
+   - Both libs get a setter that requires both fields together (like JS's validation) and clears the flag cache.
+   - **Python** also gets a `feature_flag_user_groups_for_session=` constructor kwarg, mirroring JS.
+   - **Java** is setter-only. Java has no optional parameters, so a constructor option would double the
+     constructors (2 → 4) for no extra capability. If the constructor list keeps growing, move to a builder or
+     options object rather than adding overloads.
 4. Remove dead endpoints: JS `logCaliper`, Java `addGroupMetrics`/`addSingleMetrics`. These are breaking removals of
-   public methods, but those methods already fail with a 404 on every call.
+   public methods, but those methods already fail with a 404 on every call. *Decided:* delete them, with no version
+   bump; versions stay in lockstep and get bumped with the normal release. Confirmed that MATHia doesn't use the
+   Java methods.
 
 **Phase C: harmonize semantics (behavior changes, needs a decision on each)**
 - Site/target matching: exact everywhere, or case-insensitive everywhere.
