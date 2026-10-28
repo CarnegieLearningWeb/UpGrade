@@ -82,6 +82,8 @@ Caching is in-memory and per-process. TTLs are in **seconds**. The four per-cate
 
 These are passed straight through to the `pg` connection pool, and this process may create more than one pool. Leaving a value unset keeps `pg`'s own default: max 10, min 0, idle timeout 10 seconds, keepalive off, max lifetime never.
 
+See the node-postgres [Pool API](https://node-postgres.com/apis/pool) and [Client API](https://node-postgres.com/apis/client) documentation for details.
+
 | Variable                                           | Description                                                                                                                                                              | Allowed Values         | Example             |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------- |
 | **TYPEORM\_MAX\_CONNECTION\_POOL\_SIZE**           | Maximum number of db connections to postgres                                                                                                                             | number (default: 10)   | 20                  |
@@ -141,7 +143,7 @@ These are passed straight through to the `pg` connection pool, and this process 
 
 | Variable                          | Description                                   | Allowed Values | Example               |
 | --------------------------------- | --------------------------------------------- | -------------- | --------------------- |
-| **EMAIL\_FROM**                   | Address that email will be sent from          | string         | dev@playpowerlabs.com |
+| **EMAIL\_FROM**                   | Address that email will be sent from          | string         | example@example.com |
 | **EMAIL\_EXPIRE\_AFTER\_SECONDS** | Seconds to retain availability of email       | number         | 36000                 |
 | **EMAIL\_BUCKET**                 | S3 email bucket name deployed on aws          | string         | "upgrade-csv-upload"  |
 | **EMAIL\_TMP\_WRITEABLE\_FILE\_PATH** | Writeable path used to stage export files before upload. Optional | string path | "src/api/assets/files/" |
