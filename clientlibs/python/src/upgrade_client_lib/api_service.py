@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
@@ -52,6 +53,24 @@ class ApiService:
         self._token = token
         self._client_session_id = client_session_id
         self._timeout = timeout
+        # Created lazily and reused across requests so connections are pooled.
+        self._sync_client: httpx.Client | None = None
+        self._async_client: httpx.AsyncClient | None = None
+        self._async_client_loop: asyncio.AbstractEventLoop | None = None
+
+    def close(self) -> None:
+        """Close the pooled sync client.  The async client is closed by :meth:`aclose`."""
+        if self._sync_client is not None:
+            self._sync_client.close()
+            self._sync_client = None
+
+    async def aclose(self) -> None:
+        """Close both pooled clients."""
+        self.close()
+        if self._async_client is not None:
+            await self._async_client.aclose()
+            self._async_client = None
+            self._async_client_loop = None
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -81,29 +100,41 @@ class ApiService:
                 response_body=response.text,
             )
 
+    def _get_sync_client(self) -> httpx.Client:
+        if self._sync_client is None:
+            self._sync_client = httpx.Client(timeout=self._timeout)
+        return self._sync_client
+
+    def _get_async_client(self) -> httpx.AsyncClient:
+        # An AsyncClient's connections are bound to the event loop that opened them, so a caller that runs
+        # each request under its own asyncio.run() gets a fresh client rather than one tied to a closed loop.
+        loop = asyncio.get_running_loop()
+        if self._async_client is None or self._async_client_loop is not loop:
+            self._async_client = httpx.AsyncClient(timeout=self._timeout)
+            self._async_client_loop = loop
+        return self._async_client
+
     async def _post_async(
         self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None
     ) -> Any:
-        async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.post(self._url(path), json=body, headers=self._headers(), params=params)
+        response = await self._get_async_client().post(
+            self._url(path), json=body, headers=self._headers(), params=params
+        )
         self._raise_for_status(response)
         return response.json()
 
     async def _patch_async(self, path: str, body: dict[str, Any]) -> Any:
-        async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.patch(self._url(path), json=body, headers=self._headers())
+        response = await self._get_async_client().patch(self._url(path), json=body, headers=self._headers())
         self._raise_for_status(response)
         return response.json()
 
     def _post_sync(self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None) -> Any:
-        with httpx.Client(timeout=self._timeout) as client:
-            response = client.post(self._url(path), json=body, headers=self._headers(), params=params)
+        response = self._get_sync_client().post(self._url(path), json=body, headers=self._headers(), params=params)
         self._raise_for_status(response)
         return response.json()
 
     def _patch_sync(self, path: str, body: dict[str, Any]) -> Any:
-        with httpx.Client(timeout=self._timeout) as client:
-            response = client.patch(self._url(path), json=body, headers=self._headers())
+        response = self._get_sync_client().patch(self._url(path), json=body, headers=self._headers())
         self._raise_for_status(response)
         return response.json()
 

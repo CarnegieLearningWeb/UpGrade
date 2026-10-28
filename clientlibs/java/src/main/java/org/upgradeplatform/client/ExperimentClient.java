@@ -18,8 +18,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import jakarta.ws.rs.ProcessingException;
@@ -148,7 +148,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -180,7 +181,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -210,7 +212,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -234,11 +237,11 @@ public class ExperimentClient implements AutoCloseable {
 								@Override
 								public void completed(Response response) {
 									if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-										// Cache allExperiment data for future requests
+										// Cache allExperiment data before invoking the callback, so a mark issued from
+										// inside onSuccess already sees the cached assignment
 										readResponseToCallback(response, callbacks,
 												new GenericType<List<ExperimentsResponse>>() {
-												})
-												.ifPresent(ae -> allExperiments = ae);
+												}, ae -> allExperiments = ae);
 									} else {
 										String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 										ErrorResponse error = new ErrorResponse(response.getStatus(),
@@ -250,7 +253,8 @@ public class ExperimentClient implements AutoCloseable {
 
 								@Override
 								public void failed(Throwable throwable) {
-									callbacks.onError(new ErrorResponse(throwable.getMessage()));
+									if (callbacks != null)
+										callbacks.onError(new ErrorResponse(throwable.getMessage()));
 								}
 
 							}));
@@ -335,9 +339,9 @@ public class ExperimentClient implements AutoCloseable {
 	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> t.getSite().equalsIgnoreCase(site) &&
-						(isStringNull(target) ? isStringNull(t.getTarget().toString())
-								: t.getTarget().toString().equalsIgnoreCase(target)))
+				.filter(t -> site != null && site.equalsIgnoreCase(t.getSite()) &&
+						(isStringNull(target) ? isStringNull(t.getTarget())
+								: target.equalsIgnoreCase(t.getTarget())))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
@@ -355,20 +359,45 @@ public class ExperimentClient implements AutoCloseable {
 								.anyMatch(condition -> condition != null
 										&& experimentId.equals(condition.getExperimentId())))
 				.forEach(experiment -> {
-					Condition[] rotatedCondition = Arrays.copyOf(experiment.getAssignedCondition(),
-							experiment.getAssignedCondition().length);
-					List<Condition> rotatedList = Arrays.asList(rotatedCondition);
-					Collections.rotate(rotatedList, -1);
-					experiment.setAssignedCondition(rotatedCondition);
-					experiment.setAssignedFactor(experiment.getAssignedFactor());
+					experiment.setAssignedCondition(rotateLeft(experiment.getAssignedCondition()));
+					// factorial assignedFactor entries are index-aligned with assignedCondition, so rotate them together
+					if (experiment.getAssignedFactor() != null) {
+						experiment.setAssignedFactor(rotateLeft(experiment.getAssignedFactor()));
+					}
 				});
 	}
 
+	/**
+	 * Fills in the experiment id and condition id from the cached assignment for this decision point when the
+	 * caller didn't supply them, so the server marks the experiment the user was actually assigned instead of
+	 * re-selecting one. Leaves the request unchanged if assignments haven't been fetched yet.
+	 */
+	private MarkExperimentRequestData withCachedExperimentMetadata(MarkExperimentRequestData data) {
+		Condition requested = data.getAssignedCondition();
+		if (this.allExperiments == null || !isStringNull(requested.getExperimentId())) {
+			return data;
+		}
+		Condition[] cachedConditions = findExperimentResponse(data.getSite(), data.getTarget(), this.allExperiments)
+				.getAssignedCondition();
+		Condition cached = cachedConditions != null && cachedConditions.length > 0 ? cachedConditions[0] : null;
+		if (cached == null || isStringNull(cached.getExperimentId())) {
+			return data;
+		}
+		Condition enriched = new Condition(cached.getId(), requested.getConditionCode(), cached.getExperimentId(), null);
+		return new MarkExperimentRequestData(data.getSite(), data.getTarget(), enriched);
+	}
+
+	private static <T> T[] rotateLeft(T[] items) {
+		T[] rotated = Arrays.copyOf(items, items.length);
+		Collections.rotate(Arrays.asList(rotated), -1);
+		return rotated;
+	}
+
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
+		Condition[] assignedCondition = experimentsResponse.getAssignedCondition();
+		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget(),
 				experimentsResponse.getSite(), experimentsResponse.getExperimentType(),
-				Arrays.copyOf(experimentsResponse.getAssignedCondition(),
-						experimentsResponse.getAssignedCondition().length),
+				assignedCondition != null ? Arrays.copyOf(assignedCondition, assignedCondition.length) : null,
 				experimentsResponse.getAssignedFactor());
 		return resultCondition;
 	}
@@ -427,7 +456,8 @@ public class ExperimentClient implements AutoCloseable {
 	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError,
 			String uniquifier,
 			final ResponseCallback<MarkDecisionPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(status, data, clientError, uniquifier, this.context);
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(status, withCachedExperimentMetadata(data),
+				clientError, uniquifier, this.context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
@@ -457,7 +487,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 
@@ -477,10 +508,9 @@ public class ExperimentClient implements AutoCloseable {
 						@Override
 						public void completed(Response response) {
 							if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-								// Cache featureFlag data for future requests
+								// Cache featureFlag data before invoking the callback
 								readResponseToCallback(response, callbacks, new GenericType<List<String>>() {
-								})
-										.ifPresent(flags -> allFeatureFlags = flags);
+								}, flags -> allFeatureFlags = flags);
 							} else {
 								String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 								ErrorResponse error = new ErrorResponse(response.getStatus(),
@@ -492,7 +522,8 @@ public class ExperimentClient implements AutoCloseable {
 
 						@Override
 						public void failed(Throwable throwable) {
-							callbacks.onError(new ErrorResponse(throwable.getMessage()));
+							if (callbacks != null)
+								callbacks.onError(new ErrorResponse(throwable.getMessage()));
 						}
 					}));
 
@@ -548,7 +579,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -592,7 +624,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -616,7 +649,8 @@ public class ExperimentClient implements AutoCloseable {
 												new GenericType<List<LogEventResponse>>() {
 												});
 									} catch (Exception e) {
-										callbacks.onError(new ErrorResponse(e.toString()));
+										if (callbacks != null)
+											callbacks.onError(new ErrorResponse(e.toString()));
 									}
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -629,7 +663,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -638,18 +673,26 @@ public class ExperimentClient implements AutoCloseable {
 	 * helper method to include more useful information in the ErrorResponse for a
 	 * ProcessingException
 	 */
-	private static <T> Optional<T> readResponseToCallback(Response response, ResponseCallback<T> callback,
+	private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback,
 			GenericType<T> typeToken) {
+		readResponseToCallback(response, callback, typeToken, entity -> {
+		});
+	}
+
+	private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback,
+			GenericType<T> typeToken, Consumer<T> beforeCallback) {
 		response.bufferEntity();
 		try {
 			T entity = response.readEntity(typeToken);
-			callback.onSuccess(entity);
-			return Optional.of(entity);
+			beforeCallback.accept(entity);
+			if (callback != null)
+				callback.onSuccess(entity);
 		} catch (ProcessingException pe) {
-			callback.onError(new ErrorResponse(
-					pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
-			return Optional.empty();
+			if (callback != null)
+				callback.onError(new ErrorResponse(
+						pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
 		}
+	}
 	}
 
 	/**
@@ -668,10 +711,13 @@ public class ExperimentClient implements AutoCloseable {
 			UnaryOperator<T> finisher) {
 		response.bufferEntity();
 		try {
-			callback.onSuccess(finisher.apply(response.readEntity(clazz)));
+			T entity = finisher.apply(response.readEntity(clazz));
+			if (callback != null)
+				callback.onSuccess(entity);
 		} catch (ProcessingException pe) {
-			callback.onError(new ErrorResponse(
-					pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
+			if (callback != null)
+				callback.onError(new ErrorResponse(
+						pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
 		}
 	}
 }

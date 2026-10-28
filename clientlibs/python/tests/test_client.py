@@ -746,3 +746,83 @@ class TestMarkDecisionPointNullableCondition:
         await assignment.mark_decision_point(MarkedDecisionPointStatus.CONDITION_APPLIED)
         body = json.loads(mark_route.calls[0].request.content)
         assert body["data"]["assignedCondition"]["conditionCode"] == "control"
+
+
+# ---------------------------------------------------------------------------
+# Sync variants inside a running event loop / connection reuse / lifecycle
+# ---------------------------------------------------------------------------
+
+
+class TestSyncAndConnectionLifecycle:
+    @respx.mock
+    async def test_sync_methods_work_inside_running_event_loop(self) -> None:
+        """_sync variants must not call asyncio.run(), which raises when a loop is already running."""
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+        assert client.init_sync().id == USER
+        assignment = client.get_decision_point_assignment_sync("home", "banner")
+        assert assignment is not None and assignment.get_condition() == "control"
+        client.mark_decision_point_sync("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner")
+
+    @respx.mock
+    def test_sync_mark_sends_cached_experiment_metadata(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        make_client().mark_decision_point_sync(
+            "control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner"
+        )
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"]["experimentId"] == "exp-1"
+        assert body["data"]["assignedCondition"]["id"] == "cond-1"
+
+    @respx.mock
+    def test_sync_requests_reuse_one_http_client(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        client.init_sync()
+        first = client._api_service._sync_client
+        client.init_sync()
+        assert first is not None and client._api_service._sync_client is first
+
+    @respx.mock
+    async def test_async_requests_reuse_one_http_client(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        await client.init()
+        first = client._api_service._async_client
+        await client.init()
+        assert first is not None and client._api_service._async_client is first
+
+    @respx.mock
+    def test_async_calls_under_separate_asyncio_run_get_fresh_clients(self) -> None:
+        """An AsyncClient is bound to its event loop; a new loop must not reuse a client from a closed one."""
+        import asyncio
+
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        asyncio.run(client.init())
+        first = client._api_service._async_client
+        asyncio.run(client.init())
+        assert client._api_service._async_client is not first
+
+    @respx.mock
+    def test_context_manager_closes_sync_client(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        with make_client() as client:
+            client.init_sync()
+            pooled = client._api_service._sync_client
+        assert pooled is not None and pooled.is_closed
+        assert client._api_service._sync_client is None
+
+    @respx.mock
+    async def test_async_context_manager_closes_both_clients(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        async with make_client() as client:
+            await client.init()
+            client.init_sync()
+            async_pooled = client._api_service._async_client
+            sync_pooled = client._api_service._sync_client
+        assert async_pooled is not None and async_pooled.is_closed
+        assert sync_pooled is not None and sync_pooled.is_closed

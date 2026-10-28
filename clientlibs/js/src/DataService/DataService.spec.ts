@@ -391,6 +391,16 @@ describe('DataService', () => {
       expect(dataService.findExperimentAssignmentBySiteAndTarget('site', undefined)).toEqual(emptyAssignment);
     });
 
+    it('should return an empty assignment instead of throwing when assignment data was never loaded', () => {
+      dataService.setExperimentAssignmentData(null);
+      expect(dataService.findExperimentAssignmentBySiteAndTarget('site', 'target')).toEqual({
+        site: 'site',
+        target: 'target',
+        assignedCondition: [{ payload: null, conditionCode: null, id: null }],
+        experimentType: null,
+      });
+    });
+
     it('should return undefined if no site + target match is found', () => {
       const experimentAssignmentData: IExperimentAssignment[] = [
         {

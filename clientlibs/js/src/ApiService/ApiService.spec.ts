@@ -312,6 +312,7 @@ describe('ApiService', () => {
         status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -333,6 +334,7 @@ describe('ApiService', () => {
         uniquifier: 'unique123',
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -355,6 +357,7 @@ describe('ApiService', () => {
         clientError: 'something went wrong',
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,

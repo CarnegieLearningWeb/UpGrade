@@ -51,7 +51,7 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 
 **API version is hard-coded:** All endpoints use `api/v6` (constant in `Utils.java`). Updating to a new API version requires a code change and recompile.
 
-**Timeouts:** Hard-coded 3-second connect/read timeouts in `APIService`. Not configurable via constructor.
+**Timeouts:** 3-second connect/read defaults set in `APIService.createClient`. Override them by passing `ClientProperties.CONNECT_TIMEOUT` / `ClientProperties.READ_TIMEOUT` in the constructor's `properties` map (applied after the defaults). `properties` may be `null`.
 
 **Session ID:** Auto-generated UUID per client instance if not provided. Appears in all request headers for tracing.
 
@@ -68,7 +68,9 @@ src/main/java/org/upgradeplatform/
 
 ## Tests
 
-TestNG is the test framework but there is no `src/test/java` directory — `QuickTest.java` lives in the main source tree and is the de facto integration test. It chains calls with `CompletableFuture` to test the full flow against a running server.
+TestNG unit tests live in `src/test/java` (`ExperimentClientTest` runs `ExperimentClient` against an in-process JDK `HttpServer` with canned `/v6` responses and asserts on the request bodies). `mvn test` runs them.
+
+`QuickTest.java` (main source tree) is a separate manual integration scratchpad. It chains calls with `CompletableFuture` to test the full flow against a running server.
 
 To run a manual integration test:
 ```bash

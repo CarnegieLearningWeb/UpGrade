@@ -13,7 +13,7 @@ packages/
 clientlibs/
   js/          Multi-target TypeScript SDK (browser/node/lite)
   java/        Java client library
-  csharp/      C# client library
+  python/      Python client library (async + sync)
 ```
 
 **CRITICAL — Legacy directories:** The root-level `/backend`, `/frontend`, and `/types` directories are deprecated. Always work in `/packages/backend`, `/packages/frontend`, `/packages/types`.

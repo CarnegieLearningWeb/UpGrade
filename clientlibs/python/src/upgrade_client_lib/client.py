@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import uuid
 from typing import Any
 
@@ -109,7 +108,8 @@ class UpgradeClient:
         working_group: dict[str, str] | None = None,
     ) -> InitializeUserResponse:
         """Synchronous variant of :meth:`init`."""
-        return asyncio.run(self.init(group=group, working_group=working_group))
+        self._data_service.clear()
+        return self._api_service.init_user_sync(group=group, working_group=working_group)
 
     # ------------------------------------------------------------------
     # set_group_membership
@@ -125,7 +125,7 @@ class UpgradeClient:
         self, group: dict[str, list[str]]
     ) -> InitializeUserResponse:
         """Synchronous variant of :meth:`set_group_membership`."""
-        return asyncio.run(self.set_group_membership(group))
+        return self._api_service.set_group_membership_sync(group)
 
     # ------------------------------------------------------------------
     # set_working_group
@@ -141,7 +141,7 @@ class UpgradeClient:
         self, working_group: dict[str, str]
     ) -> InitializeUserResponse:
         """Synchronous variant of :meth:`set_working_group`."""
-        return asyncio.run(self.set_working_group(working_group))
+        return self._api_service.set_working_group_sync(working_group)
 
     # ------------------------------------------------------------------
     # get_all_experiment_conditions
@@ -157,16 +157,19 @@ class UpgradeClient:
         """
         cached = None if ignore_cache else self._data_service.get_all_assignments()
         if cached is None:
-            fresh = await self._api_service.get_all_experiment_conditions()
-            self._data_service.set_assignments(fresh)
-            cached = fresh
+            cached = await self._api_service.get_all_experiment_conditions()
+            self._data_service.set_assignments(cached)
         return [Assignment(a, self._api_service) for a in cached]
 
     def get_all_experiment_conditions_sync(
         self, ignore_cache: bool = False
     ) -> list[Assignment]:
         """Synchronous variant of :meth:`get_all_experiment_conditions`."""
-        return asyncio.run(self.get_all_experiment_conditions(ignore_cache=ignore_cache))
+        cached = None if ignore_cache else self._data_service.get_all_assignments()
+        if cached is None:
+            cached = self._api_service.get_all_experiment_conditions_sync()
+            self._data_service.set_assignments(cached)
+        return [Assignment(a, self._api_service) for a in cached]
 
     # ------------------------------------------------------------------
     # get_decision_point_assignment
@@ -182,16 +185,15 @@ class UpgradeClient:
         """
         if self._data_service.get_all_assignments() is None:
             await self.get_all_experiment_conditions()
-        raw = self._data_service.get_assignment(site, target)
-        if raw is None:
-            return None
-        return Assignment(raw, self._api_service)
+        return self._assignment_for(site, target)
 
     def get_decision_point_assignment_sync(
         self, site: str, target: str = ""
     ) -> Assignment | None:
         """Synchronous variant of :meth:`get_decision_point_assignment`."""
-        return asyncio.run(self.get_decision_point_assignment(site, target))
+        if self._data_service.get_all_assignments() is None:
+            self.get_all_experiment_conditions_sync()
+        return self._assignment_for(site, target)
 
     # ------------------------------------------------------------------
     # mark_decision_point
@@ -213,38 +215,10 @@ class UpgradeClient:
         """
         if self._data_service.get_all_assignments() is None:
             await self.get_all_experiment_conditions()
-
-        experiment_id: str | None = None
-        condition_id: str | None = None
-        experiment_type = None
-        factor_dict: dict[str, Any] | None = None
-
-        cached = self._data_service.get_assignment(site, target)
-        if cached is not None:
-            first = cached.assignedCondition[0] if cached.assignedCondition else None
-            experiment_id = first.experimentId if first else None
-            condition_id = first.id if first else None
-            experiment_type = cached.experimentType
-            factor_entry = cached.assignedFactor[0] if cached.assignedFactor else None
-            if factor_entry:
-                factor_dict = {k: v.model_dump() for k, v in factor_entry.items()}
-
         response = await self._api_service.mark_decision_point(
-            site=site,
-            target=target,
-            condition_code=condition,
-            status=status,
-            experiment_type=experiment_type,
-            experiment_id=experiment_id,
-            condition_id=condition_id,
-            assigned_factor=factor_dict,
-            uniquifier=uniquifier or None,
-            client_error=client_error or None,
+            **self._mark_request(condition, status, site, target, uniquifier, client_error)
         )
-
-        if response.experimentId:
-            self._data_service.rotate_assignments_by_experiment_id(response.experimentId)
-
+        self._rotate_after_mark(response)
         return response
 
     def mark_decision_point_sync(
@@ -257,9 +231,13 @@ class UpgradeClient:
         client_error: str = "",
     ) -> MarkDecisionPointResponse:
         """Synchronous variant of :meth:`mark_decision_point`."""
-        return asyncio.run(
-            self.mark_decision_point(condition, status, site, target, uniquifier, client_error)
+        if self._data_service.get_all_assignments() is None:
+            self.get_all_experiment_conditions_sync()
+        response = self._api_service.mark_decision_point_sync(
+            **self._mark_request(condition, status, site, target, uniquifier, client_error)
         )
+        self._rotate_after_mark(response)
+        return response
 
     # ------------------------------------------------------------------
     # get_all_feature_flags
@@ -275,16 +253,19 @@ class UpgradeClient:
         """
         cached_keys = None if ignore_cache else self._data_service.get_feature_flags()
         if cached_keys is None:
-            fresh_keys = await self._api_service.get_all_feature_flags()
-            self._data_service.set_feature_flags(fresh_keys)
-            cached_keys = fresh_keys
+            cached_keys = await self._api_service.get_all_feature_flags()
+            self._data_service.set_feature_flags(cached_keys)
         return [FeatureFlag(key=k) for k in cached_keys]
 
     def get_all_feature_flags_sync(
         self, ignore_cache: bool = False
     ) -> list[FeatureFlag]:
         """Synchronous variant of :meth:`get_all_feature_flags`."""
-        return asyncio.run(self.get_all_feature_flags(ignore_cache=ignore_cache))
+        cached_keys = None if ignore_cache else self._data_service.get_feature_flags()
+        if cached_keys is None:
+            cached_keys = self._api_service.get_all_feature_flags_sync()
+            self._data_service.set_feature_flags(cached_keys)
+        return [FeatureFlag(key=k) for k in cached_keys]
 
     # ------------------------------------------------------------------
     # has_feature_flag
@@ -301,7 +282,9 @@ class UpgradeClient:
 
     def has_feature_flag_sync(self, key: str) -> bool:
         """Synchronous variant of :meth:`has_feature_flag`."""
-        return asyncio.run(self.has_feature_flag(key))
+        if self._data_service.get_feature_flags() is None:
+            self.get_all_feature_flags_sync()
+        return self._data_service.has_feature_flag(key)
 
     # ------------------------------------------------------------------
     # log
@@ -313,7 +296,7 @@ class UpgradeClient:
 
     def log_sync(self, metrics: list[LogInput]) -> list[LogEventResponse]:
         """Synchronous variant of :meth:`log`."""
-        return asyncio.run(self.log(metrics))
+        return self._api_service.log_sync(metrics)
 
     # ------------------------------------------------------------------
     # set_alt_user_ids
@@ -325,7 +308,7 @@ class UpgradeClient:
 
     def set_alt_user_ids_sync(self, aliases: list[str]) -> UserAliasResponse:
         """Synchronous variant of :meth:`set_alt_user_ids`."""
-        return asyncio.run(self.set_alt_user_ids(aliases))
+        return self._api_service.set_alt_user_ids_sync(aliases)
 
     # ------------------------------------------------------------------
     # send_reward
@@ -362,6 +345,85 @@ class UpgradeClient:
         await_result: bool = False,
     ) -> SendRewardResponse:
         """Synchronous variant of :meth:`send_reward`."""
-        return asyncio.run(
-            self.send_reward(reward_value, experiment_id, context, decision_point, await_result=await_result)
+        return self._api_service.send_reward_sync(
+            reward_value=reward_value,
+            experiment_id=experiment_id,
+            context=context,
+            decision_point=decision_point,
+            await_result=await_result,
         )
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def close(self) -> None:
+        """Close pooled HTTP connections used by the ``_sync`` methods."""
+        self._api_service.close()
+
+    async def aclose(self) -> None:
+        """Close all pooled HTTP connections (sync and async)."""
+        await self._api_service.aclose()
+
+    def __enter__(self) -> UpgradeClient:
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
+
+    async def __aenter__(self) -> UpgradeClient:
+        return self
+
+    async def __aexit__(self, *exc_info: object) -> None:
+        await self.aclose()
+
+    # ------------------------------------------------------------------
+    # Internal helpers shared by the async and sync variants
+    # ------------------------------------------------------------------
+
+    def _assignment_for(self, site: str, target: str) -> Assignment | None:
+        raw = self._data_service.get_assignment(site, target)
+        return Assignment(raw, self._api_service) if raw is not None else None
+
+    def _mark_request(
+        self,
+        condition: str | None,
+        status: MarkedDecisionPointStatus,
+        site: str,
+        target: str,
+        uniquifier: str,
+        client_error: str,
+    ) -> dict[str, Any]:
+        """Build mark kwargs, filling experiment metadata from the cached assignment when available."""
+        experiment_id: str | None = None
+        condition_id: str | None = None
+        experiment_type = None
+        factor_dict: dict[str, Any] | None = None
+
+        cached = self._data_service.get_assignment(site, target)
+        if cached is not None:
+            first = cached.assignedCondition[0] if cached.assignedCondition else None
+            experiment_id = first.experimentId if first else None
+            condition_id = first.id if first else None
+            experiment_type = cached.experimentType
+            factor_entry = cached.assignedFactor[0] if cached.assignedFactor else None
+            if factor_entry:
+                factor_dict = {k: v.model_dump() for k, v in factor_entry.items()}
+
+        return {
+            "site": site,
+            "target": target,
+            "condition_code": condition,
+            "status": status,
+            "experiment_type": experiment_type,
+            "experiment_id": experiment_id,
+            "condition_id": condition_id,
+            "assigned_factor": factor_dict,
+            "uniquifier": uniquifier or None,
+            "client_error": client_error or None,
+        }
+
+    def _rotate_after_mark(self, response: MarkDecisionPointResponse) -> None:
+        """Rotate cached assignments for the marked experiment so within-subjects marks cycle in order."""
+        if response.experimentId:
+            self._data_service.rotate_assignments_by_experiment_id(response.experimentId)

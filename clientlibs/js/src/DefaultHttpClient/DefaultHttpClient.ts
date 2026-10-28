@@ -1,6 +1,8 @@
 import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import axios, { AxiosRequestConfig } from 'axios';
 
+const DEFAULT_TIMEOUT_MS = 5000;
+
 interface FetchDataParams {
   url: string;
   method: UpGradeClientEnums.REQUEST_METHOD;
@@ -56,56 +58,44 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
     retries = 3,
     backOff = 300,
   }: FetchDataParams): Promise<ResponseType> {
-    try {
-      options.headers['CurrentRetry'] = retries.toString();
+    options.headers['CurrentRetry'] = retries.toString();
 
-      let axiosRequestConfig: AxiosRequestConfig = {
-        url,
-        headers: options.headers,
-        method,
-      };
+    let axiosRequestConfig: AxiosRequestConfig = {
+      url,
+      headers: options.headers,
+      method,
+      timeout: DEFAULT_TIMEOUT_MS,
+    };
 
-      if (method === UpGradeClientEnums.REQUEST_METHOD.POST || method === UpGradeClientEnums.REQUEST_METHOD.PATCH) {
-        axiosRequestConfig = {
-          ...axiosRequestConfig,
-          data: body,
-        };
-      }
-
-      const response = await axios({
+    if (method === UpGradeClientEnums.REQUEST_METHOD.POST || method === UpGradeClientEnums.REQUEST_METHOD.PATCH) {
+      axiosRequestConfig = {
         ...axiosRequestConfig,
-      });
+        data: body,
+      };
+    }
 
-      const responseData = response.data;
-      const statusCode = response.status;
-
-      if (statusCode > 400 && statusCode < 500) {
-        // If response status code is in the skipRetryOnStatusCodes, or we've run out of retries, don't attempt retry
-        if (this.skipRetryOnStatusCodes.includes(statusCode) || retries <= 0) {
-          throw new Error(
-            JSON.stringify({
-              statusCode: statusCode,
-              response: responseData,
-            })
-          );
-        }
-
-        if (retries > 0) {
-          // Do retry after the backOff time
-          await this.wait(backOff);
-          return await this.fetchData({
-            url,
-            method,
-            body,
-            options,
-            retries: retries - 1,
-            backOff: backOff * 2,
-          });
-        }
-      } else {
-        return responseData;
-      }
+    try {
+      const response = await axios(axiosRequestConfig);
+      return response.data;
     } catch (error) {
+      // axios rejects every non-2xx response, so retry decisions are made here: retry network failures
+      // (no response, including timeouts) and 5xx; fail immediately on 4xx, since resending won't fix the request
+      const statusCode: number | undefined = error?.response?.status;
+      const isRetryable =
+        (statusCode === undefined || statusCode >= 500) && !this.skipRetryOnStatusCodes.includes(statusCode);
+
+      if (isRetryable && retries > 0) {
+        await this.wait(backOff);
+        return await this.fetchData({
+          url,
+          method,
+          body,
+          options,
+          retries: retries - 1,
+          backOff: backOff * 2,
+        });
+      }
+
       throw new Error(JSON.stringify(error));
     }
   }

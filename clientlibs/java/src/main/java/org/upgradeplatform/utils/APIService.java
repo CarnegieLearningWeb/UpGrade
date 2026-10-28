@@ -64,6 +64,9 @@ public class APIService implements AutoCloseable{
 		Client client = ClientBuilder.newClient(new ClientConfig().connectorProvider(new ApacheConnectorProvider()));
 		client.property(ClientProperties.CONNECT_TIMEOUT, 3000);
 		client.property(ClientProperties.READ_TIMEOUT,    3000);
+		if (properties == null) {
+			return client;
+		}
 		properties.entrySet().stream()
 		          .forEachOrdered(p -> client.property(p.getKey(),
 		                                               p.getValue()));

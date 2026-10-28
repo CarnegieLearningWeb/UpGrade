@@ -102,6 +102,10 @@ export namespace UpGradeClientInterfaces {
   }
 
   export interface ISendRewardResponse {
+    // 'accepted' = queued for background processing; 'processed' = recorded synchronously (awaitResult=true)
+    mode?: 'accepted' | 'processed';
+    // only present when mode is 'processed'
+    success?: boolean;
     message: string;
     request: {
       rewardValue: 'SUCCESS' | 'FAILURE';

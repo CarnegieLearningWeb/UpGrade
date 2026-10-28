@@ -102,8 +102,10 @@ public class Assignment {
     }
 
     public void markDecisionPoint(MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkDecisionPoint> callbacks){
-        String code = assignedCondition == null  ? null : assignedCondition.getConditionCode();
-        MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(code));
+        Condition condition = assignedCondition == null ? new Condition()
+                : new Condition(assignedCondition.getId(), assignedCondition.getConditionCode(),
+                        assignedCondition.getExperimentId(), null);
+        MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, condition);
         experimentClient.markDecisionPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
     }
 

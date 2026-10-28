@@ -72,7 +72,8 @@ export class DataService {
 
   public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignment {
     const normalizedTarget = target ?? '';
-    const assignment = this.experimentAssignmentData.find(
+    // experimentAssignmentData stays null if the preceding /assign call failed or returned a non-array
+    const assignment = this.experimentAssignmentData?.find(
       (assignment) => assignment.site === site && assignment.target === normalizedTarget
     );
 
