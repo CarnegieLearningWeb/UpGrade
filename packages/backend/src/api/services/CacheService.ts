@@ -74,6 +74,12 @@ export class CacheService {
       this.cache = await caching('memory', {
         max: env.caching?.maxKeys || 500,
         ttl: this.defaultTtl * 1000,
+        // By default, a clone of the value is made before being set
+        // The danger of setting this to false is that code reading the cached value might inadvertently mutate it, affecting other consumers of the same cached object.
+        // The benefit of setting this to false is avoiding the overhead of deep cloning, which can improve performance, especially for large objects.
+        // We can pretty safely mitigate the risk with unit-tests that will scream if any cached value is mutated unexpectedly, which we shouldn't ever have a need to do on purpose.
+        // So we can set this to false to avoid useless constant blocking when cloning cached values.
+        shouldCloneBeforeSet: false,
         // A background refresh has no caller to return a rejection to. Without this hook
         // cache-manager rethrows from inside its own catch, which surfaces as an unhandled
         // rejection instead of a log line; the stale-but-served value is unaffected either way.
