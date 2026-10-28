@@ -15,7 +15,5 @@ export const environment = {
   useHashRouting: false,
   googleClientId: '',
   domainName: '',
-  withinSubjectExperimentSupportToggle: false,
-  errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: true,
 };

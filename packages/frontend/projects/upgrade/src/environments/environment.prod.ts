@@ -10,7 +10,5 @@ export const environment: Environment = {
   useHashRouting: true,
   googleClientId: '%GOOGLE_CLIENT_ID%',
   domainName: '',
-  withinSubjectExperimentSupportToggle: false,
-  errorLogsToggle: false,
   metricAnalyticsExperimentDisplayToggle: true,
 };

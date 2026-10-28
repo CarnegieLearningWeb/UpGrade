@@ -39,7 +39,6 @@ import {
 } from 'upgrade_types';
 import { CommonModalConfig } from '@shared-component-lib/common-modal/common-modal.types';
 import { StratificationFactorsService } from '../../../../../core/stratification-factors/stratification-factors.service';
-import { ENV, Environment } from '../../../../../../environments/environment-types';
 import { SharedModule } from '../../../../../shared/shared.module';
 import { TsConfigurablePolicyParametersFormComponent } from './ts-configurable-policy-parameters-form/ts-configurable-policy-parameters-form.component';
 import { ThompsonSamplingHelperService } from '../../../../../core/experiments/thompson-sampling-helper.service';
@@ -140,6 +139,10 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
       value: ASSIGNMENT_UNIT.GROUP,
       description: 'experiments.upsert-experiment-modal.unit-of-assignment-group-description.text',
     },
+    {
+      value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
+      description: 'Condition will be assigned within subjects (e.g., participant sees multiple conditions).',
+    },
   ];
 
   consistencyRules = [
@@ -194,16 +197,8 @@ export class UpsertExperimentModalComponent implements OnInit, OnDestroy {
     private readonly experimentService: ExperimentService,
     private readonly stratificationFactorsService: StratificationFactorsService,
     private readonly thompsonSamplingHelperService: ThompsonSamplingHelperService,
-    public dialogRef: MatDialogRef<UpsertExperimentModalComponent>,
-    @Inject(ENV) private readonly environment: Environment
-  ) {
-    if (this.environment.withinSubjectExperimentSupportToggle) {
-      this.unitOfAssignments.push({
-        value: ASSIGNMENT_UNIT.WITHIN_SUBJECTS,
-        description: 'Condition will be assigned within subjects (e.g., participant sees multiple conditions).',
-      });
-    }
-  }
+    public dialogRef: MatDialogRef<UpsertExperimentModalComponent>
+  ) {}
 
   ngOnInit(): void {
     this.experimentService.fetchContextMetaData();
