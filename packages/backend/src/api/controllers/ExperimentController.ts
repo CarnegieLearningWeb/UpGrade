@@ -1217,7 +1217,7 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/:id:
+   * /experiments/{id}:
    *   put:
    *     description: Update Experiment
    *     consumes:
@@ -1402,7 +1402,7 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/{validation}:
+   * /experiments/validation:
    *    post:
    *       description: Validating Experiment
    *       consumes:
@@ -1452,7 +1452,7 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/{import}:
+   * /experiments/import:
    *    post:
    *       description: Import New Experiment
    *       consumes:
@@ -1510,23 +1510,19 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/{export}:
+   * /experiments/export:
    *    get:
    *       description: Export Experiment JSON
    *       parameters:
-   *         - in: body
-   *           name: experiments
+   *         - in: query
+   *           name: ids
    *           required: true
-   *           schema:
-   *             type: array
-   *             items:
-   *               type: object
-   *               properties:
-   *                 fileName:
-   *                   type: string
-   *                 fileContent:
-   *                   type: string
-   *           description: Experiment Files
+   *           type: array
+   *           items:
+   *             type: string
+   *             format: uuid
+   *           collectionFormat: multi
+   *           description: Ids of the experiments to export
    *       tags:
    *         - Experiments
    *       produces:
@@ -1535,14 +1531,9 @@ export class ExperimentController {
    *          '200':
    *            description: Experiment is exported
    *            schema:
-   *             type: array
-   *             items:
-   *               type: object
-   *               properties:
-   *                 fileName:
-   *                   type: string
-   *                 error:
-   *                   type: string
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/ExperimentResponse'
    *          '401':
    *            description: AuthorizationRequiredError
    *          '500':
@@ -1949,7 +1940,7 @@ export class ExperimentController {
    *        - application/json
    *      parameters:
    *        - in: path
-   *          id: Id
+   *          name: id
    *          description: Experiment Id
    *          required: true
    *          schema:
@@ -1999,7 +1990,7 @@ export class ExperimentController {
    *        - application/json
    *      parameters:
    *        - in: path
-   *          flagId: Id
+   *          name: id
    *          description: Experiment Id
    *          required: true
    *          schema:

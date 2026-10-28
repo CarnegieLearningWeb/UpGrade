@@ -916,7 +916,7 @@ export class FeatureFlagsController {
    *        - application/json
    *      parameters:
    *        - in: path
-   *          flagId: Id
+   *          name: id
    *          description: Feature Flag Id
    *          required: true
    *          schema:
@@ -1004,7 +1004,7 @@ export class FeatureFlagsController {
    *        - application/json
    *      parameters:
    *        - in: path
-   *          flagId: Id
+   *          name: id
    *          description: Feature Flag Id
    *          required: true
    *          schema:
@@ -1054,7 +1054,7 @@ export class FeatureFlagsController {
    *        - application/json
    *      parameters:
    *        - in: path
-   *          flagId: Id
+   *          name: id
    *          description: Feature Flag Id
    *          required: true
    *          schema:
