@@ -4,12 +4,12 @@ description: Details for Backend Configuration
 
 # Backend Environment
 
-Assume most variables are required unless noted otherwise; see sample [`.env.example`](https://github.com/CarnegieLearningWeb/UpGrade/blob/main/backend/packages/Upgrade/.env.example) for sample usage in order to create a local `.env` file.
+Assume most variables are required unless noted otherwise; see sample [`.env.example`](https://github.com/CarnegieLearningWeb/UpGrade/blob/main/packages/backend/.env.example) for sample usage in order to create a local `.env` file.
 
 {% hint style="info" %}
-`.env` will need to be created for running backend locally (if not using [local Docker workflow](/broken/pages/-Mg61xfUO7xJKtKCy5y0)). Note that this will not be included in build or git history. You will need to configure EV in your host environment.\
+`.env` will need to be created for running backend locally (if not using [local Docker workflow](../../quick-start-running-upgrade-with-docker-on-macos-or-linux.md)). Note that this will not be included in build or git history. You will need to configure EV in your host environment.\
 \
-If using Docker workflow for local development, you will want to make sure to set your local env vars in [`.env.local.docker`](https://github.com/CarnegieLearningWeb/UpGrade/blob/main/backend/packages/Upgrade/.env.docker.local)
+If using Docker workflow for local development, you will want to make sure to set your local env vars in [`.env.docker.local`](https://github.com/CarnegieLearningWeb/UpGrade/blob/main/packages/backend/.env.docker.local.example)
 {% endhint %}
 
 \
@@ -24,17 +24,40 @@ If using Docker workflow for local development, you will want to make sure to se
 | **APP\_ROUTE\_PREFIX** | API route prefix                                                                         | "/" + url safe string    | "/api"        |
 | **APP\_BANNER**        | console log the basic info of the application as a banner log                            | boolean                  | TRUE          |
 | **APP\_DEMO**          | deploy as demo-supporting backend. Additionally, gives access to clear DB via "/clearDB" | boolean (default: false) | FALSE         |
-| **CACHING\_ENABLED**   | Enable cached query calls (current applies to GET /segments queries)                     | boolean (default: FALSE) | TRUE          |
 | **CORS\_WHITELIST**    | domains to allow to bypass cross-domain restrictions                                     | array of strings         | localhost     |
+| **USE\_NEW\_RELIC**    | Enable New Relic APM instrumentation                                                     | boolean (default: false) | FALSE         |
+| **IS\_ECS**            | Marks the process as running under AWS ECS. Optional; not present in `.env.example`      | boolean (default: false) | FALSE         |
+| **PERF\_DIAG\_ENABLED** | Enable temporary request performance diagnostics. Optional; not present in `.env.example` | boolean (default: false) | FALSE        |
+
+
+
+**Caching**
+
+Caching is in-memory and per-process. TTLs are in **seconds**. The four per-category TTLs each fall back to `CACHING_TTL` when unset, and `CACHING_TTL` itself falls back to 900 seconds when unset or 0.
+
+| Variable                        | Description                                                                                                                             | Allowed Values            | Example |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------- |
+| **CACHING\_ENABLED**            | Enable cached query calls. Applies to experiment, feature flag, segment and setting lookups on the assignment path                       | boolean (default: FALSE)  | TRUE    |
+| **CACHING\_TTL**                | Default time-to-live for a cached entry, in seconds                                                                                     | number (default: 900)     | 10      |
+| **CACHING\_MAX\_KEYS**          | Maximum number of entries held in the cache before eviction                                                                             | number (default: 500)     | 500     |
+| **CACHING\_TTL\_EXPERIMENTS**   | TTL override for experiment lookups, in seconds                                                                                         | number (optional)         | 60      |
+| **CACHING\_TTL\_FEATURE\_FLAGS** | TTL override for feature flag lookups, in seconds                                                                                      | number (optional)         | 60      |
+| **CACHING\_TTL\_SEGMENTS**      | TTL override for segment lookups, in seconds                                                                                            | number (optional)         | 60      |
+| **CACHING\_TTL\_SETTINGS**      | TTL override for settings lookups, in seconds                                                                                           | number (optional)         | 60      |
+| **CACHING\_REFRESH\_THRESHOLD** | Refresh an entry in the background when it comes within this many seconds of expiring, so it never hard-expires. 0 or unset disables it | number (default: 0)       | 30      |
 
 
 
 **Logging**
 
-| Variable        | Description                  | Allowed Values                                                           | Example |
-| --------------- | ---------------------------- | ------------------------------------------------------------------------ | ------- |
-| **LOG\_LEVEL**  | Log level for Winston logger | "error" \| "warn" \| "info" \| "http" \| "verbose" \| "debug" \| "silly" | "debug" |
-| **LOG\_OUTPUT** | log output                   | "dev" or empty                                                           | "dev"   |
+| Variable           | Description                                                                              | Allowed Values                                                           | Example |
+| ------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------- |
+| **LOG\_LEVEL**     | Log level for Winston logger                                                             | "error" \| "warn" \| "info" \| "http" \| "verbose" \| "debug" \| "silly" | "debug" |
+| **LOG\_OUTPUT**    | log output                                                                               | "dev" or empty                                                           | "dev"   |
+| **LOG\_JSON**      | Emit logs as JSON rather than human-readable lines. Optional; not present in `.env.example` | boolean                                                                  | TRUE    |
+| **SPLUNK\_HOST**   | Splunk HEC host for direct console log forwarding. Optional; not present in `.env.example` | string                                                                   | "splunk.example.com" |
+| **SPLUNK\_TOKEN**  | Splunk HEC token. Optional; not present in `.env.example`                                | string                                                                   | xxxxxxxx |
+| **SPLUNK\_INDEX**  | Splunk index to write to. Optional; not present in `.env.example`                        | string                                                                   | "upgrade" |
 
 
 
@@ -52,7 +75,23 @@ If using Docker workflow for local development, you will want to make sure to se
 | **TYPEORM\_SYNCHRONIZE**                                  | Whether TypeORM models will synchronize with DB at startup                                                                                                                   | boolean                                                                    | FALSE                                        |
 | **TYPEORM\_LOGGING**                                      | Log level for db queries                                                                                                                                                     | "query" \| "schema" \| "error" \| "warn" \| "info" \| "log" \| "migration" | "error"                                      |
 | **TYPEORM\_MAX\_QUERY\_EXECUTION\_TIME**                  | Number of milliseconds before TypeORM will log a "slow query" message. (Note: this does not timeout a query)                                                                 | string                                                                     | 1000                                         |
-| **TYPEORM\_MAX\_CONNECTION\_POOL\_SIZE**                  | Maximum number of db connections to postgres                                                                                                                                 | string                                                                     | 20 (defaults to 10)                          |
+| **TYPEORM\_LOGGER**                                       | Which TypeORM logger implementation to use                                                                                                                                   | "advanced-console" \| "simple-console" \| "file" \| "debug"                | "advanced-console"                           |
+
+\
+**POSTGRES CONNECTION POOL**
+
+These are passed straight through to the `pg` connection pool, and this process may create more than one pool. Leaving a value unset keeps `pg`'s own default: max 10, min 0, idle timeout 10 seconds, keepalive off, max lifetime never.
+
+See the node-postgres [Pool API](https://node-postgres.com/apis/pool) and [Client API](https://node-postgres.com/apis/client) documentation for details.
+
+| Variable                                           | Description                                                                                                                                                              | Allowed Values         | Example             |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------- |
+| **TYPEORM\_MAX\_CONNECTION\_POOL\_SIZE**           | Maximum number of db connections to postgres                                                                                                                             | number (default: 10)   | 20                  |
+| **TYPEORM\_MIN\_CONNECTION\_POOL\_SIZE**           | The pool will not close an idle connection while it holds this many or fewer, regardless of the idle timeout. It does not open connections in advance                     | number (default: 0)    | 2                   |
+| **TYPEORM\_IDLE\_TIMEOUT\_SECONDS**                | Close a pooled connection once it has sat idle this long. 0 means idle connections are never closed                                                                      | number (default: 10)   | 30                  |
+| **TYPEORM\_MAX\_LIFETIME\_SECONDS**                | Close a connection this long after it was opened, so long-lived connections eventually reconnect and pick up DNS changes. Unset or 0 means never; keep it long if set    | number (default: 0)    | 3600                |
+| **TYPEORM\_KEEP\_ALIVE**                           | Enable TCP keepalive on each connection's socket, so a NAT gateway or load balancer doesn't silently drop an idle pooled connection                                      | boolean (default: off) | TRUE                |
+| **TYPEORM\_KEEP\_ALIVE\_INITIAL\_DELAY\_SECONDS**  | How long a socket sits idle before the first keepalive probe. Ignored unless keepalive is on. Unset leaves the OS default, which on Linux is 2 hours                      | number                 | 120                 |
 
 \
 **PATH STRUCTURE FOR TYPEORM**&#x20;
@@ -76,13 +115,14 @@ If using Docker workflow for local development, you will want to make sure to se
 | -------------------- | ------------------------------------------------------------------------------------------ | -------------- | ------------------------- |
 | **SWAGGER\_ENABLED** | Enables generation of swagger API docs output. (If not needed, build is faster when FALSE) | boolean        | FALSE                     |
 | **SWAGGER\_ROUTE**   | URL endpoint to access swagger docs (host + SWAGGER\_ROUTE)                                | string         | /swagger                  |
-| **SWAGGER\_API**     | Code path for swagger API source                                                           | string         | src/api/controllers/\*.ts |
+| **SWAGGER\_API**     | Code path for swagger API source                                                           | string         | \*\*/controllers/\*.ts    |
+| **SWAGGER\_JSON**    | URL endpoint serving the generated swagger.json (host + SWAGGER\_JSON)                     | string         | /swagger.json             |
 
 
 
 **Authorization Config**
 
-<table><thead><tr><th width="183.25">Variable</th><th>Description</th><th>Allowed Values</th><th>Example</th></tr></thead><tbody><tr><td><strong>GOOGLE_CLIENT_ID</strong></td><td>Google Client Id credential provided from Google Cloud Console</td><td>string or comman separated strings for multiple</td><td>&#x3C;id>.apps.googleusercontent.com</td></tr><tr><td><strong>DOMAIN_NAME</strong></td><td>Limit Google-auth JWT credential token to be granted only user logins from a specific email domain (blank will allow all domains)</td><td>string</td><td>yourDomain.com</td></tr><tr><td><strong>GOOGLE_SERVICE_ACCOUNT_ID</strong></td><td>Google Service Account key</td><td>string or comman separated strings for multiple</td><td>xxxxxxxxxx</td></tr></tbody></table>
+<table><thead><tr><th width="183.25">Variable</th><th>Description</th><th>Allowed Values</th><th>Example</th></tr></thead><tbody><tr><td><strong>GOOGLE_AUTH_TOKEN_REQUIRED</strong></td><td>Require a Google auth token on admin API requests</td><td>boolean (default: false)</td><td>false</td></tr><tr><td><strong>GOOGLE_CLIENT_ID</strong></td><td>Google Client Id credential provided from Google Cloud Console</td><td>string or comma separated strings for multiple</td><td>&#x3C;id>.apps.googleusercontent.com</td></tr><tr><td><strong>DOMAIN_NAME</strong></td><td>Limit Google-auth JWT credential token to be granted only user logins from a specific email domain (blank will allow all domains)</td><td>string</td><td>yourDomain.com</td></tr><tr><td><strong>GOOGLE_SERVICE_ACCOUNT_ID</strong></td><td>Google Service Account key</td><td>string or comma separated strings for multiple</td><td>xxxxxxxxxx</td></tr></tbody></table>
 
 
 
@@ -103,9 +143,10 @@ If using Docker workflow for local development, you will want to make sure to se
 
 | Variable                          | Description                                   | Allowed Values | Example               |
 | --------------------------------- | --------------------------------------------- | -------------- | --------------------- |
-| **EMAIL\_FROM**                   | Addess that email will be sent from           | string         | dev@playpowerlabs.com |
-| **EMAIL\_EXPIRE\_AFTER\_SECONDS** | Milliseconds to retain availability of email  | string         | 36000                 |
+| **EMAIL\_FROM**                   | Address that email will be sent from          | string         | example@example.com |
+| **EMAIL\_EXPIRE\_AFTER\_SECONDS** | Seconds to retain availability of email       | number         | 36000                 |
 | **EMAIL\_BUCKET**                 | S3 email bucket name deployed on aws          | string         | "upgrade-csv-upload"  |
+| **EMAIL\_TMP\_WRITEABLE\_FILE\_PATH** | Writeable path used to stage export files before upload. Optional | string path | "src/api/assets/files/" |
 
 
 
