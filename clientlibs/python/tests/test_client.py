@@ -5,16 +5,18 @@ exercises the full UpgradeClient → ApiService → httpx stack.
 """
 
 import json
+from typing import Any
 
 import httpx
 import pytest
 import respx
 from httpx import Response
+from pydantic import ValidationError
 
 from upgrade_client_lib.client import UpgradeClient
 from upgrade_client_lib.exceptions import UpgradeApiError
 from upgrade_client_lib.types.enums import BinaryRewardValue, ExperimentType, MarkedDecisionPointStatus
-from upgrade_client_lib.types.requests import LogInput, LogMetrics
+from upgrade_client_lib.types.requests import FeatureFlagUserGroupsForSession, LogInput, LogMetrics
 
 HOST = "https://upgrade.example.com"
 USER = "user-abc"
@@ -287,6 +289,31 @@ class TestGetDecisionPointAssignment:
 # ---------------------------------------------------------------------------
 # mark_decision_point
 # ---------------------------------------------------------------------------
+
+
+class TestDecisionPointMatching:
+    """Site/target are matched exactly, like the server's /mark and /reward lookups."""
+
+    @respx.mock
+    async def test_site_and_target_match_case_sensitively(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        client = make_client()
+        assert await client.get_decision_point_assignment("home", "banner") is not None
+        assert await client.get_decision_point_assignment("Home", "banner") is None
+        assert await client.get_decision_point_assignment("home", "Banner") is None
+
+    @respx.mock
+    async def test_none_target_matches_empty_target(self) -> None:
+        payload = [{**ASSIGNMENT_PAYLOAD[0], "target": ""}]
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=payload))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+
+        assert await client.get_decision_point_assignment("home", None) is not None
+        await client.mark_decision_point("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", None)
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["target"] == ""
+        assert body["data"]["assignedCondition"]["experimentId"] == "exp-1"
 
 
 class TestMarkDecisionPoint:
@@ -746,3 +773,317 @@ class TestMarkDecisionPointNullableCondition:
         await assignment.mark_decision_point(MarkedDecisionPointStatus.CONDITION_APPLIED)
         body = json.loads(mark_route.calls[0].request.content)
         assert body["data"]["assignedCondition"]["conditionCode"] == "control"
+
+
+# ---------------------------------------------------------------------------
+# Sync variants inside a running event loop / connection reuse / lifecycle
+# ---------------------------------------------------------------------------
+
+
+class TestSyncAndConnectionLifecycle:
+    @respx.mock
+    async def test_sync_methods_work_inside_running_event_loop(self) -> None:
+        """_sync variants must not call asyncio.run(), which raises when a loop is already running."""
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+        assert client.init_sync().id == USER
+        assignment = client.get_decision_point_assignment_sync("home", "banner")
+        assert assignment is not None and assignment.get_condition() == "control"
+        client.mark_decision_point_sync("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner")
+
+    @respx.mock
+    def test_sync_mark_sends_cached_experiment_metadata(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        make_client().mark_decision_point_sync(
+            "control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner"
+        )
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"]["experimentId"] == "exp-1"
+        assert body["data"]["assignedCondition"]["id"] == "cond-1"
+
+    @respx.mock
+    def test_sync_requests_reuse_one_http_client(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        client.init_sync()
+        first = client._api_service._sync_client
+        client.init_sync()
+        assert first is not None and client._api_service._sync_client is first
+
+    @respx.mock
+    async def test_async_requests_share_a_pool_inside_async_with(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        async with make_client() as client:
+            pooled = client._api_service._async_client
+            await client.init()
+            await client.init()
+            assert pooled is not None and client._api_service._async_client is pooled
+            assert not pooled.is_closed
+        assert pooled.is_closed
+
+    @respx.mock
+    def test_successive_asyncio_run_calls_leave_no_open_async_clients(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Each asyncio.run() loop must not strand a connection pool that aclose() can no longer reach."""
+        import asyncio
+
+        created: list[httpx.AsyncClient] = []
+        real_async_client = httpx.AsyncClient
+
+        def tracking_async_client(*args: object, **kwargs: object) -> httpx.AsyncClient:
+            client = real_async_client(*args, **kwargs)  # type: ignore[arg-type]
+            created.append(client)
+            return client
+
+        monkeypatch.setattr(httpx, "AsyncClient", tracking_async_client)
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        asyncio.run(client.init())
+        asyncio.run(client.init())
+
+        assert len(created) == 2
+        assert all(c.is_closed for c in created)
+        assert client._api_service._async_client is None
+
+    @respx.mock
+    def test_pool_from_another_loop_is_not_used(self) -> None:
+        """A pool opened on one loop is never used from a different loop."""
+        import asyncio
+
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+
+        async def open_pool() -> httpx.AsyncClient | None:
+            client._api_service.open_async_pool()
+            return client._api_service._async_client
+
+        foreign_pool = asyncio.run(open_pool())
+        asyncio.run(client.init())  # different loop: must use a request-scoped client instead
+        assert foreign_pool is not None and not foreign_pool.is_closed
+        assert respx.calls.call_count == 1
+
+    @respx.mock
+    def test_context_manager_closes_sync_client(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        with make_client() as client:
+            client.init_sync()
+            pooled = client._api_service._sync_client
+        assert pooled is not None and pooled.is_closed
+        assert client._api_service._sync_client is None
+
+    @respx.mock
+    async def test_async_context_manager_closes_both_clients(self) -> None:
+        respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
+        async with make_client() as client:
+            await client.init()
+            client.init_sync()
+            async_pooled = client._api_service._async_client
+            sync_pooled = client._api_service._sync_client
+        assert async_pooled is not None and async_pooled.is_closed
+        assert sync_pooled is not None and sync_pooled.is_closed
+
+
+# ---------------------------------------------------------------------------
+# Feature flag session groups
+# ---------------------------------------------------------------------------
+
+
+class TestFeatureFlagUserGroupsForSession:
+    GROUPS = {"classId": ["c1"], "schoolId": ["s1"]}
+
+    @respx.mock
+    async def test_default_body_omits_session_groups(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=[]))
+        await make_client().get_all_feature_flags()
+        body = json.loads(route.calls[0].request.content)
+        assert "groupsForSession" not in body
+        assert "includeStoredUserGroups" not in body
+
+    @respx.mock
+    async def test_constructor_kwarg_accepts_dict(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["flag"]))
+        client = make_client(
+            feature_flag_user_groups_for_session={"groupsForSession": self.GROUPS, "includeStoredUserGroups": False}
+        )
+        await client.get_all_feature_flags()
+        body = json.loads(route.calls[0].request.content)
+        assert body["context"] == CTX
+        assert body["groupsForSession"] == self.GROUPS
+        assert body["includeStoredUserGroups"] is False
+
+    @respx.mock
+    def test_setter_accepts_model_and_clears_flag_cache(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["flag"]))
+        client = make_client()
+        assert client.has_feature_flag_sync("flag") is True
+
+        client.set_feature_flag_user_groups_for_session(
+            FeatureFlagUserGroupsForSession(groupsForSession=self.GROUPS, includeStoredUserGroups=True)
+        )
+        client.has_feature_flag_sync("flag")
+
+        assert route.call_count == 2
+        body = json.loads(route.calls[1].request.content)
+        assert body["groupsForSession"] == self.GROUPS
+        assert body["includeStoredUserGroups"] is True
+
+    @respx.mock
+    async def test_setter_none_clears_session_groups(self) -> None:
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=[]))
+        client = make_client(
+            feature_flag_user_groups_for_session={"groupsForSession": self.GROUPS, "includeStoredUserGroups": True}
+        )
+        client.set_feature_flag_user_groups_for_session(None)
+        await client.get_all_feature_flags()
+        assert "groupsForSession" not in json.loads(route.calls[0].request.content)
+
+    def test_requires_both_fields(self) -> None:
+        with pytest.raises(ValidationError):
+            make_client(feature_flag_user_groups_for_session={"groupsForSession": self.GROUPS})
+        with pytest.raises(ValidationError):
+            make_client().set_feature_flag_user_groups_for_session({"includeStoredUserGroups": True})
+
+    @respx.mock
+    async def test_in_flight_response_is_not_cached_after_session_groups_change(self) -> None:
+        import asyncio
+
+        arrived = asyncio.Event()
+        release = asyncio.Event()
+        responses = iter([["old-groups-flag"], ["new-groups-flag"]])
+
+        async def held_first_response(request: httpx.Request) -> Response:
+            body = next(responses)
+            if body == ["old-groups-flag"]:
+                arrived.set()
+                await release.wait()
+            return Response(200, json=body)
+
+        route = respx.post(f"{BASE}/featureflag").mock(side_effect=held_first_response)
+        client = make_client()
+
+        in_flight = asyncio.create_task(client.has_feature_flag("old-groups-flag"))
+        await arrived.wait()
+        client.set_feature_flag_user_groups_for_session(
+            {"groupsForSession": {"classId": ["c2"]}, "includeStoredUserGroups": True}
+        )
+        release.set()
+
+        # the original caller still gets the answer for the response it asked for...
+        assert await in_flight is True
+        # ...but it isn't cached, so the next lookup refetches under the new groups
+        assert [f.key for f in await client.get_all_feature_flags()] == ["new-groups-flag"]
+        assert route.call_count == 2
+        assert json.loads(route.calls[1].request.content)["groupsForSession"] == {"classId": ["c2"]}
+
+
+# ---------------------------------------------------------------------------
+# Cache invalidation when the user's groups may have changed
+# ---------------------------------------------------------------------------
+
+
+class TestGroupChangeInvalidation:
+    @staticmethod
+    def _routes() -> tuple[respx.Route, respx.Route]:
+        assign = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        flags = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["flag"]))
+        return assign, flags
+
+    @staticmethod
+    async def _look_up_again(client: UpgradeClient, assign: respx.Route, flags: respx.Route) -> tuple[bool, bool]:
+        assign_before, flags_before = assign.call_count, flags.call_count
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+        return assign.call_count > assign_before, flags.call_count > flags_before
+
+    @pytest.mark.parametrize(
+        ("endpoint", "method", "call"),
+        [
+            ("init", "post", lambda c: c.init()),
+            ("groupmembership", "patch", lambda c: c.set_group_membership({"classId": ["c2"]})),
+            ("workinggroup", "patch", lambda c: c.set_working_group({"classId": "c2"})),
+        ],
+    )
+    @respx.mock
+    async def test_group_changes_clear_both_caches(self, endpoint: str, method: str, call: Any) -> None:
+        assign, flags = self._routes()
+        getattr(respx, method)(f"{BASE}/{endpoint}").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+
+        await call(client)
+
+        assert await self._look_up_again(client, assign, flags) == (True, True)
+
+    @respx.mock
+    def test_sync_group_change_clears_both_caches(self) -> None:
+        assign, flags = self._routes()
+        respx.patch(f"{BASE}/groupmembership").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        client.get_all_experiment_conditions_sync()
+        client.get_all_feature_flags_sync()
+
+        client.set_group_membership_sync({"classId": ["c2"]})
+        client.get_all_experiment_conditions_sync()
+        client.get_all_feature_flags_sync()
+
+        assert (assign.call_count, flags.call_count) == (2, 2)
+
+    @respx.mock
+    async def test_failed_group_change_keeps_caches(self) -> None:
+        assign, flags = self._routes()
+        respx.patch(f"{BASE}/groupmembership").mock(return_value=Response(400, json={"message": "bad"}))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+
+        with pytest.raises(UpgradeApiError):
+            await client.set_group_membership({"classId": ["c2"]})
+
+        assert await self._look_up_again(client, assign, flags) == (False, False)
+
+    @respx.mock
+    async def test_set_alt_user_ids_keeps_caches(self) -> None:
+        assign, flags = self._routes()
+        respx.patch(f"{BASE}/useraliases").mock(return_value=Response(200, json=ALIAS_PAYLOAD))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+
+        await client.set_alt_user_ids(["alias-1"])
+
+        assert await self._look_up_again(client, assign, flags) == (False, False)
+
+    @respx.mock
+    async def test_in_flight_assign_response_is_not_cached_after_group_change(self) -> None:
+        import asyncio
+
+        arrived = asyncio.Event()
+        release = asyncio.Event()
+        calls = 0
+
+        async def held_first_response(request: httpx.Request) -> Response:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                arrived.set()
+                await release.wait()
+            return Response(200, json=ASSIGNMENT_PAYLOAD)
+
+        assign = respx.post(f"{BASE}/assign").mock(side_effect=held_first_response)
+        respx.patch(f"{BASE}/groupmembership").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+
+        in_flight = asyncio.create_task(client.get_decision_point_assignment("home", "banner"))
+        await arrived.wait()
+        await client.set_group_membership({"classId": ["c2"]})
+        release.set()
+
+        # the original caller still gets the assignment it asked for...
+        assignment = await in_flight
+        assert assignment is not None and assignment.get_condition() == "control"
+        # ...but it isn't cached, so the next lookup refetches under the new groups
+        await client.get_all_experiment_conditions()
+        assert assign.call_count == 2

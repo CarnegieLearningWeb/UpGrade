@@ -1,6 +1,5 @@
 package org.upgradeplatform.client;
 
-import static org.upgradeplatform.utils.Utils.ADD_MATRIC;
 import static org.upgradeplatform.utils.Utils.FEATURE_FLAGS;
 import static org.upgradeplatform.utils.Utils.GET_ALL_EXPERIMENTS;
 import static org.upgradeplatform.utils.Utils.INITIALIZE_USER;
@@ -8,7 +7,9 @@ import static org.upgradeplatform.utils.Utils.INVALID_STUDENT_ID;
 import static org.upgradeplatform.utils.Utils.LOG_EVENT;
 import static org.upgradeplatform.utils.Utils.MARK_EXPERIMENT_POINT;
 import static org.upgradeplatform.utils.Utils.MAX_RETRIES;
+import static org.upgradeplatform.utils.Utils.NO_RETRIES;
 import static org.upgradeplatform.utils.Utils.PATCH;
+import static org.upgradeplatform.utils.Utils.REWARD;
 import static org.upgradeplatform.utils.Utils.SET_ALT_USER_IDS;
 import static org.upgradeplatform.utils.Utils.SET_GROUP_MEMBERSHIP;
 import static org.upgradeplatform.utils.Utils.SET_WORKING_GROUP;
@@ -18,8 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import jakarta.ws.rs.ProcessingException;
@@ -32,14 +33,13 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.requestbeans.ExperimentRequest;
+import org.upgradeplatform.requestbeans.FeatureFlagRequest;
 import org.upgradeplatform.requestbeans.ExperimentUser;
-import org.upgradeplatform.requestbeans.GroupMetric;
 import org.upgradeplatform.requestbeans.LogInput;
 import org.upgradeplatform.requestbeans.LogRequest;
 import org.upgradeplatform.requestbeans.MarkExperimentRequest;
 import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
-import org.upgradeplatform.requestbeans.MetricUnitBody;
-import org.upgradeplatform.requestbeans.SingleMetric;
+import org.upgradeplatform.requestbeans.RewardRequest;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
@@ -51,10 +51,11 @@ import org.upgradeplatform.requestbeans.InitializeUser;
 import org.upgradeplatform.responsebeans.InitializeUserResponse;
 import org.upgradeplatform.responsebeans.LogEventResponse;
 import org.upgradeplatform.responsebeans.MarkDecisionPoint;
-import org.upgradeplatform.responsebeans.Metric;
+import org.upgradeplatform.responsebeans.SendRewardResponse;
 import org.upgradeplatform.responsebeans.UserAliasResponse;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
+import org.upgradeplatform.utils.Utils.BinaryRewardValue;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 import org.upgradeplatform.utils.Utils.RequestType;
 
@@ -63,8 +64,21 @@ public class ExperimentClient implements AutoCloseable {
 	private final APIService apiService;
 	private final String context;
 
+	// Assignment cache. Guarded by assignmentLock: responses arrive on Jersey threads while invalidation can be
+	// triggered from any thread. assignmentGeneration is bumped on every invalidation, so a response to a request
+	// sent before it is never cached over it.
+	private final Object assignmentLock = new Object();
 	private List<ExperimentsResponse> allExperiments;
+	private long assignmentGeneration;
+	// Feature flag cache and session groups. Guarded by featureFlagLock: responses arrive on Jersey threads while
+	// the session-group setters run on the caller's thread.
+	private final Object featureFlagLock = new Object();
 	private List<String> allFeatureFlags;
+	private Map<String, List<String>> featureFlagGroupsForSession;
+	private Boolean featureFlagIncludeStoredUserGroups;
+	// Bumped whenever the session groups change, so a response to a request sent under the previous groups is
+	// never cached over the invalidation.
+	private long featureFlagGeneration;
 
 	/**
 	 * @param properties
@@ -136,6 +150,8 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									// init may have changed the user's groups, which assignments and flags depend on
+									invalidateGroupDependentCaches();
 									readResponseToCallback(response, callbacks, InitializeUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -148,7 +164,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -168,6 +185,7 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									invalidateGroupDependentCaches();
 									readResponseToCallback(response, callbacks, ExperimentUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -180,7 +198,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -198,6 +217,7 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									invalidateGroupDependentCaches();
 									readResponseToCallback(response, callbacks, ExperimentUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -210,7 +230,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -222,7 +243,14 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void getAllExperimentConditions(boolean ignoreCache,
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		if (allExperiments == null || ignoreCache) {
+		final List<ExperimentsResponse> cachedExperiments;
+		final long requestGeneration;
+		synchronized (assignmentLock) {
+			cachedExperiments = this.allExperiments;
+			requestGeneration = this.assignmentGeneration;
+		}
+
+		if (cachedExperiments == null || ignoreCache) {
 			ExperimentRequest experimentRequest = new ExperimentRequest(this.context);
 			AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 			Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
@@ -234,11 +262,18 @@ public class ExperimentClient implements AutoCloseable {
 								@Override
 								public void completed(Response response) {
 									if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-										// Cache allExperiment data for future requests
+										// Cache allExperiment data before invoking the callback, so a mark issued from
+										// inside onSuccess already sees the cached assignment, unless the user's groups
+										// changed while this request was in flight (the caller still gets the response)
 										readResponseToCallback(response, callbacks,
 												new GenericType<List<ExperimentsResponse>>() {
-												})
-												.ifPresent(ae -> allExperiments = ae);
+												}, ae -> {
+													synchronized (assignmentLock) {
+														if (requestGeneration == assignmentGeneration) {
+															allExperiments = ae;
+														}
+													}
+												});
 									} else {
 										String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 										ErrorResponse error = new ErrorResponse(response.getStatus(),
@@ -250,25 +285,26 @@ public class ExperimentClient implements AutoCloseable {
 
 								@Override
 								public void failed(Throwable throwable) {
-									callbacks.onError(new ErrorResponse(throwable.getMessage()));
+									if (callbacks != null)
+										callbacks.onError(new ErrorResponse(throwable.getMessage()));
 								}
 
 							}));
 		} else {
 			if (callbacks != null) {
-				callbacks.onSuccess(allExperiments);
+				callbacks.onSuccess(cachedExperiments);
 			}
 		}
 	}
 
-	/** @param site This is matched case-insensitively */
+	/** @param site Matched exactly (case-sensitive), as the server does */
 	public void getExperimentCondition(String site, final ResponseCallback<Assignment> callbacks) {
 		getExperimentCondition(site, null, callbacks);
 	}
 
 	/**
-	 * @param site   This is matched case-insensitively
-	 * @param target This is matched case-insensitively
+	 * @param site   Matched exactly (case-sensitive), as the server does
+	 * @param target Matched exactly (case-sensitive); null and "" are equivalent
 	 */
 	public void getExperimentCondition(String site, String target,
 			final ResponseCallback<Assignment> callbacks) {
@@ -300,15 +336,15 @@ public class ExperimentClient implements AutoCloseable {
 		});
 	}
 
-	/** @param site This is matched case-insensitively */
+	/** @param site Matched exactly (case-sensitive), as the server does */
 	public void getAllExperimentConditions(String site,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		getAllExperimentConditions(site, null, callbacks);
 	}
 
 	/**
-	 * @param site   This is matched case-insensitively
-	 * @param target This is matched case-insensitively
+	 * @param site   Matched exactly (case-sensitive), as the server does
+	 * @param target Matched exactly (case-sensitive); null and "" are equivalent
 	 */
 	public void getAllExperimentConditions(String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
@@ -335,44 +371,107 @@ public class ExperimentClient implements AutoCloseable {
 	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> t.getSite().equalsIgnoreCase(site) &&
-						(isStringNull(target) ? isStringNull(t.getTarget().toString())
-								: t.getTarget().toString().equalsIgnoreCase(target)))
+				// exact match: the server's /mark and /reward lookups are case-sensitive, so a case-insensitive
+				// match here would return a condition whose mark the server can't attribute to the experiment
+				.filter(t -> site != null && site.equals(t.getSite()) &&
+						(isStringNull(target) ? isStringNull(t.getTarget())
+								: target.equals(t.getTarget())))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
 	}
 
+	private List<ExperimentsResponse> cachedExperiments() {
+		synchronized (assignmentLock) {
+			return this.allExperiments;
+		}
+	}
+
+	/**
+	 * Invalidate everything that depends on the user's groups (assignments and feature flags), after a call that
+	 * may have changed them.
+	 */
+	private void invalidateGroupDependentCaches() {
+		synchronized (assignmentLock) {
+			this.allExperiments = null;
+			this.assignmentGeneration++;
+		}
+		invalidateFeatureFlagCache();
+	}
+
+	private void invalidateFeatureFlagCache() {
+		synchronized (featureFlagLock) {
+			this.allFeatureFlags = null;
+			this.featureFlagGeneration++;
+		}
+	}
+
 	private void rotateConditions(String experimentId) {
-		if (this.allExperiments == null || isStringNull(experimentId)) {
+		List<ExperimentsResponse> experiments = cachedExperiments();
+		if (experiments == null || isStringNull(experimentId)) {
 			return;
 		}
 
-		this.allExperiments.stream()
+		experiments.stream()
 				.filter(experiment -> experiment.getAssignedCondition() != null
 						&& experiment.getAssignedCondition().length > 0
 						&& Arrays.stream(experiment.getAssignedCondition())
 								.anyMatch(condition -> condition != null
 										&& experimentId.equals(condition.getExperimentId())))
 				.forEach(experiment -> {
-					Condition[] rotatedCondition = Arrays.copyOf(experiment.getAssignedCondition(),
-							experiment.getAssignedCondition().length);
-					List<Condition> rotatedList = Arrays.asList(rotatedCondition);
-					Collections.rotate(rotatedList, -1);
-					experiment.setAssignedCondition(rotatedCondition);
-					experiment.setAssignedFactor(experiment.getAssignedFactor());
+					experiment.setAssignedCondition(rotateLeft(experiment.getAssignedCondition()));
+					// factorial assignedFactor entries are index-aligned with assignedCondition, so rotate them together
+					if (experiment.getAssignedFactor() != null) {
+						experiment.setAssignedFactor(rotateLeft(experiment.getAssignedFactor()));
+					}
 				});
 	}
 
+	/**
+	 * Fills in the experiment id and condition id from the cached assignment for this decision point when the
+	 * caller didn't supply them, so the server marks the experiment the user was actually assigned instead of
+	 * re-selecting one. Leaves the request unchanged if assignments haven't been fetched yet.
+	 */
+	private MarkExperimentRequestData withCachedExperimentMetadata(MarkExperimentRequestData data) {
+		Condition requested = data.getAssignedCondition();
+		List<ExperimentsResponse> experiments = cachedExperiments();
+		if (experiments == null || !isStringNull(requested.getExperimentId())) {
+			return data;
+		}
+		Condition[] cachedConditions = findExperimentResponse(data.getSite(), data.getTarget(), experiments)
+				.getAssignedCondition();
+		Condition cached = cachedConditions != null && cachedConditions.length > 0 ? cachedConditions[0] : null;
+		if (cached == null || isStringNull(cached.getExperimentId())) {
+			return data;
+		}
+		Condition enriched = new Condition(cached.getId(), requested.getConditionCode(), cached.getExperimentId(), null);
+		return new MarkExperimentRequestData(data.getSite(), data.getTarget(), enriched);
+	}
+
+	private static <T> T[] rotateLeft(T[] items) {
+		T[] rotated = Arrays.copyOf(items, items.length);
+		Collections.rotate(Arrays.asList(rotated), -1);
+		return rotated;
+	}
+
 	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget().toString(),
+		Condition[] assignedCondition = experimentsResponse.getAssignedCondition();
+		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getTarget(),
 				experimentsResponse.getSite(), experimentsResponse.getExperimentType(),
-				Arrays.copyOf(experimentsResponse.getAssignedCondition(),
-						experimentsResponse.getAssignedCondition().length),
+				assignedCondition != null ? Arrays.copyOf(assignedCondition, assignedCondition.length) : null,
 				experimentsResponse.getAssignedFactor());
 		return resultCondition;
 	}
 
+	/**
+	 * Record that the user encountered a decision point. Overloads add {@code target}, then {@code clientError},
+	 * then {@code uniquifier}.
+	 * <p>
+	 * Note the argument order differs from the JS and Python libraries: here {@code clientError} comes
+	 * <em>before</em> {@code uniquifier} (JS: {@code site, target, condition, status, uniquifier, clientError};
+	 * Python: {@code condition, status, site, target, uniquifier, client_error}). Both are plain strings, so
+	 * swapping them compiles but sends each value in the other's field.
+	 */
 	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkDecisionPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "",
@@ -427,14 +526,15 @@ public class ExperimentClient implements AutoCloseable {
 	public void markDecisionPoint(MarkedDecisionPointStatus status, MarkExperimentRequestData data, String clientError,
 			String uniquifier,
 			final ResponseCallback<MarkDecisionPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(status, data, clientError, uniquifier, this.context);
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(status, withCachedExperimentMetadata(data),
+				clientError, uniquifier, this.context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
 
 		// Invoke the method
 		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+				new PublishingRetryCallback<>(invocation, requestContent, NO_RETRIES, RequestType.POST,
 						new InvocationCallback<Response>() {
 
 							@Override
@@ -457,10 +557,40 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 
+	}
+
+	/**
+	 * Use session-scoped groups when evaluating feature flags for this client. When
+	 * {@code includeStoredUserGroups} is true, {@code groupsForSession} is merged with the user's stored groups;
+	 * when false, it replaces them. Clears the cached feature flags so the next lookup uses the new groups.
+	 */
+	public void setFeatureFlagUserGroupsForSession(Map<String, List<String>> groupsForSession,
+			boolean includeStoredUserGroups) {
+		if (groupsForSession == null) {
+			throw new IllegalArgumentException(
+					"groupsForSession cannot be null; use clearFeatureFlagUserGroupsForSession() to remove session groups");
+		}
+		synchronized (featureFlagLock) {
+			this.featureFlagGroupsForSession = groupsForSession;
+			this.featureFlagIncludeStoredUserGroups = includeStoredUserGroups;
+			invalidateFeatureFlagCache();
+		}
+	}
+
+	/**
+	 * Stop sending session-scoped groups with feature flag requests, and clear the cached feature flags.
+	 */
+	public void clearFeatureFlagUserGroupsForSession() {
+		synchronized (featureFlagLock) {
+			this.featureFlagGroupsForSession = null;
+			this.featureFlagIncludeStoredUserGroups = null;
+			invalidateFeatureFlagCache();
+		}
 	}
 
 	public void getAllFeatureFlags(final ResponseCallback<List<String>> callbacks) {
@@ -468,8 +598,18 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	public void getAllFeatureFlags(boolean ignoreCache, final ResponseCallback<List<String>> callbacks) {
-		if (this.allFeatureFlags == null || ignoreCache) {
-			Entity<ExperimentRequest> requestContent = Entity.json(new ExperimentRequest(this.context));
+		final List<String> cachedFlags;
+		final FeatureFlagRequest flagRequest;
+		final long requestGeneration;
+		synchronized (featureFlagLock) {
+			cachedFlags = this.allFeatureFlags;
+			flagRequest = new FeatureFlagRequest(this.context, this.featureFlagGroupsForSession,
+					this.featureFlagIncludeStoredUserGroups);
+			requestGeneration = this.featureFlagGeneration;
+		}
+
+		if (cachedFlags == null || ignoreCache) {
+			Entity<FeatureFlagRequest> requestContent = Entity.json(flagRequest);
 
 			AsyncInvoker invocation = this.apiService.prepareRequest(FEATURE_FLAGS);
 			invocation.post(requestContent, new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,
@@ -477,10 +617,16 @@ public class ExperimentClient implements AutoCloseable {
 						@Override
 						public void completed(Response response) {
 							if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-								// Cache featureFlag data for future requests
+								// Cache featureFlag data before invoking the callback, unless the session groups changed
+								// while this request was in flight (the caller still gets the response it asked for)
 								readResponseToCallback(response, callbacks, new GenericType<List<String>>() {
-								})
-										.ifPresent(flags -> allFeatureFlags = flags);
+								}, flags -> {
+									synchronized (featureFlagLock) {
+										if (requestGeneration == featureFlagGeneration) {
+											allFeatureFlags = flags;
+										}
+									}
+								});
 							} else {
 								String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 								ErrorResponse error = new ErrorResponse(response.getStatus(),
@@ -492,13 +638,14 @@ public class ExperimentClient implements AutoCloseable {
 
 						@Override
 						public void failed(Throwable throwable) {
-							callbacks.onError(new ErrorResponse(throwable.getMessage()));
+							if (callbacks != null)
+								callbacks.onError(new ErrorResponse(throwable.getMessage()));
 						}
 					}));
 
 		} else {
 			if (callbacks != null) {
-				callbacks.onSuccess(allFeatureFlags);
+				callbacks.onSuccess(cachedFlags);
 			}
 		}
 	}
@@ -548,51 +695,8 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
-							}
-						}));
-	}
-
-	public void addGroupMetrics(final List<GroupMetric> metrics, final ResponseCallback<List<Metric>> callbacks) {
-
-		MetricUnitBody<GroupMetric> metricUnit = new MetricUnitBody<>(metrics);
-		Entity<MetricUnitBody<?>> requestContent = Entity.json(metricUnit);
-		addMetrics(requestContent, callbacks);
-	}
-
-	public void addSingleMetrics(final List<SingleMetric> metrics,
-			final ResponseCallback<List<Metric>> responseCallback) {
-
-		MetricUnitBody<SingleMetric> metricUnit = new MetricUnitBody<>(metrics);
-		Entity<MetricUnitBody<?>> requestContent = Entity.json(metricUnit);
-		addMetrics(requestContent, responseCallback);
-	}
-
-	private void addMetrics(Entity<MetricUnitBody<?>> requestContent, final ResponseCallback<List<Metric>> callbacks) {
-
-		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
-
-		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-						new InvocationCallback<Response>() {
-
-							@Override
-							public void completed(Response response) {
-								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-									readResponseToCallback(response, callbacks, new GenericType<List<Metric>>() {
-									});
-								} else {
-									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-									ErrorResponse error = new ErrorResponse(response.getStatus(),
-											response.readEntity(String.class), status);
-									if (callbacks != null)
-										callbacks.onError(error);
-								}
-							}
-
-							@Override
-							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -605,7 +709,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<LogRequest> requestContent = Entity.json(logRequest);
 
 		invocation.post(requestContent,
-				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+				new PublishingRetryCallback<>(invocation, requestContent, NO_RETRIES, RequestType.POST,
 						new InvocationCallback<Response>() {
 
 							@Override
@@ -616,7 +720,8 @@ public class ExperimentClient implements AutoCloseable {
 												new GenericType<List<LogEventResponse>>() {
 												});
 									} catch (Exception e) {
-										callbacks.onError(new ErrorResponse(e.toString()));
+										if (callbacks != null)
+											callbacks.onError(new ErrorResponse(e.toString()));
 									}
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -629,7 +734,96 @@ public class ExperimentClient implements AutoCloseable {
 
 							@Override
 							public void failed(Throwable throwable) {
-								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
+							}
+						}));
+	}
+
+	/**
+	 * Send a binary reward for an adaptive experiment, identified by experiment id. By default the server queues
+	 * the reward and responds immediately ({@code mode} "accepted"); see
+	 * {@link #sendRewardForExperiment(BinaryRewardValue, String, boolean, ResponseCallback)} to wait for it to be
+	 * recorded.
+	 */
+	public void sendRewardForExperiment(BinaryRewardValue rewardValue, String experimentId,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		sendRewardForExperiment(rewardValue, experimentId, false, callbacks);
+	}
+
+	/**
+	 * @param awaitResult when true, the server records the reward before responding ({@code mode} "processed")
+	 *                    and reports a reward it can't record as a 409 error, instead of only logging it
+	 */
+	public void sendRewardForExperiment(BinaryRewardValue rewardValue, String experimentId, boolean awaitResult,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		if (isStringNull(experimentId)) {
+			throw new IllegalArgumentException("experimentId cannot be null or empty");
+		}
+		sendReward(RewardRequest.forExperiment(requireRewardValue(rewardValue), experimentId), awaitResult, callbacks);
+	}
+
+	/**
+	 * Send a binary reward for an adaptive experiment, identified by context and decision point. By default the
+	 * server queues the reward and responds immediately ({@code mode} "accepted"); see
+	 * {@link #sendRewardForDecisionPoint(BinaryRewardValue, String, String, String, boolean, ResponseCallback)} to
+	 * wait for it to be recorded.
+	 */
+	public void sendRewardForDecisionPoint(BinaryRewardValue rewardValue, String context, String site, String target,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		sendRewardForDecisionPoint(rewardValue, context, site, target, false, callbacks);
+	}
+
+	/**
+	 * @param target      may be null or empty for a decision point without a target
+	 * @param awaitResult when true, the server records the reward before responding ({@code mode} "processed")
+	 *                    and reports a reward it can't record as a 409 error, instead of only logging it
+	 */
+	public void sendRewardForDecisionPoint(BinaryRewardValue rewardValue, String context, String site, String target,
+			boolean awaitResult, final ResponseCallback<SendRewardResponse> callbacks) {
+		if (isStringNull(context)) {
+			throw new IllegalArgumentException("context cannot be null or empty");
+		}
+		if (isStringNull(site)) {
+			throw new IllegalArgumentException("site cannot be null or empty");
+		}
+		sendReward(RewardRequest.forDecisionPoint(requireRewardValue(rewardValue), context, site,
+				target == null ? "" : target), awaitResult, callbacks);
+	}
+
+	private static BinaryRewardValue requireRewardValue(BinaryRewardValue rewardValue) {
+		if (rewardValue == null) {
+			throw new IllegalArgumentException("rewardValue cannot be null");
+		}
+		return rewardValue;
+	}
+
+	private void sendReward(RewardRequest rewardRequest, boolean awaitResult,
+			final ResponseCallback<SendRewardResponse> callbacks) {
+		AsyncInvoker invocation = awaitResult
+				? this.apiService.prepareRequest(REWARD, Map.of("awaitResult", true))
+				: this.apiService.prepareRequest(REWARD);
+		Entity<RewardRequest> requestContent = Entity.json(rewardRequest);
+		invocation.post(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, NO_RETRIES, RequestType.POST,
+						new InvocationCallback<Response>() {
+							@Override
+							public void completed(Response response) {
+								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									readResponseToCallback(response, callbacks, SendRewardResponse.class);
+								} else {
+									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+									ErrorResponse error = new ErrorResponse(response.getStatus(),
+											response.readEntity(String.class), status);
+									if (callbacks != null)
+										callbacks.onError(error);
+								}
+							}
+
+							@Override
+							public void failed(Throwable throwable) {
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
 							}
 						}));
 	}
@@ -638,17 +832,24 @@ public class ExperimentClient implements AutoCloseable {
 	 * helper method to include more useful information in the ErrorResponse for a
 	 * ProcessingException
 	 */
-	private static <T> Optional<T> readResponseToCallback(Response response, ResponseCallback<T> callback,
+	private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback,
 			GenericType<T> typeToken) {
+		readResponseToCallback(response, callback, typeToken, entity -> {
+		});
+	}
+
+	private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback,
+			GenericType<T> typeToken, Consumer<T> beforeCallback) {
 		response.bufferEntity();
 		try {
 			T entity = response.readEntity(typeToken);
-			callback.onSuccess(entity);
-			return Optional.of(entity);
+			beforeCallback.accept(entity);
+			if (callback != null)
+				callback.onSuccess(entity);
 		} catch (ProcessingException pe) {
-			callback.onError(new ErrorResponse(
-					pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
-			return Optional.empty();
+			if (callback != null)
+				callback.onError(new ErrorResponse(
+						pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
 		}
 	}
 
@@ -668,10 +869,13 @@ public class ExperimentClient implements AutoCloseable {
 			UnaryOperator<T> finisher) {
 		response.bufferEntity();
 		try {
-			callback.onSuccess(finisher.apply(response.readEntity(clazz)));
+			T entity = finisher.apply(response.readEntity(clazz));
+			if (callback != null)
+				callback.onSuccess(entity);
 		} catch (ProcessingException pe) {
-			callback.onError(new ErrorResponse(
-					pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
+			if (callback != null)
+				callback.onError(new ErrorResponse(
+						pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
 		}
 	}
 }

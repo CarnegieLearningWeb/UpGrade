@@ -1,10 +1,4 @@
-import {
-  CaliperEnvelope,
-  EXPERIMENT_TYPE,
-  ILogRequestBody,
-  MARKED_DECISION_POINT_STATUS,
-  PAYLOAD_TYPE,
-} from 'upgrade_types';
+import { EXPERIMENT_TYPE, ILogRequestBody, MARKED_DECISION_POINT_STATUS, PAYLOAD_TYPE } from 'upgrade_types';
 import ApiService from './ApiService';
 import { UpGradeClientInterfaces } from './../types/Interfaces';
 import { UpGradeClientRequests } from './../types/requests';
@@ -59,6 +53,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with just id', async () => {
@@ -126,6 +121,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and group', async () => {
@@ -156,6 +152,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and workingGroup', async () => {
@@ -185,6 +182,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and altUserIds', async () => {
@@ -212,6 +210,7 @@ describe('ApiService', () => {
         Authorization: 'Bearer testToken',
       },
       withCredentials: false,
+      retryable: true,
     };
 
     it('should call sendRequest with id and context', async () => {
@@ -312,6 +311,7 @@ describe('ApiService', () => {
         status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -333,6 +333,7 @@ describe('ApiService', () => {
         uniquifier: 'unique123',
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -355,6 +356,7 @@ describe('ApiService', () => {
         clientError: 'something went wrong',
       };
       const expectedRequestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
+        context: defaultConfig.context,
         status: params.status,
         data: {
           ...mockAssignment,
@@ -561,32 +563,58 @@ describe('ApiService', () => {
     });
   });
 
-  describe('#logCaliper', () => {
-    const expectedUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/log/caliper`;
-    const expectedOptions = {
-      headers: {
-        'Content-Type': 'application/json',
-        'Session-Id': 'testClientSessionId',
-        URL: expectedUrl,
-        'User-Id': defaultConfig.userId,
-        'Client-Context': defaultConfig.context,
-        'Client-Version': CLIENT_VERSION,
-        Authorization: 'Bearer testToken',
-      },
-      withCredentials: false,
-    };
+  describe('#getAllFeatureFlags', () => {
+    it('should post context to /featureflag and mark the request retryable', async () => {
+      await apiService.getAllFeatureFlags();
 
-    it('should call sendRequest with caliper envelope value', async () => {
-      const mockLogData: CaliperEnvelope = {
-        sensor: 'test',
-        sendTime: '12345678',
-        dataVersion: '1',
-        data: [],
-      };
+      const [url, body, options] = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1];
+      expect(url).toEqual(`${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/featureflag`);
+      expect(body).toEqual({ context: defaultConfig.context });
+      expect(options.retryable).toBe(true);
+    });
+  });
 
-      await apiService.logCaliper(mockLogData);
+  describe('#sendReward', () => {
+    const rewardUrl = `${defaultConfig.hostURL}/api/${defaultConfig.apiVersion}/reward`;
+    const lastPost = () => mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1];
 
-      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, mockLogData, expectedOptions);
+    it('should post to /reward without a query param by default', async () => {
+      await apiService.sendReward({ rewardValue: 'SUCCESS', experimentId: 'exp1' });
+
+      const [url, body, options] = lastPost();
+      expect(url).toEqual(rewardUrl);
+      expect(body).toEqual({ rewardValue: 'SUCCESS', experimentId: 'exp1' });
+      expect(options.headers.URL).toEqual(rewardUrl);
+    });
+
+    it('should append awaitResult=true and keep it out of the body when awaitResult is set', async () => {
+      await apiService.sendReward({
+        rewardValue: 'FAILURE',
+        context: 'context',
+        decisionPoint: { site: 'site', target: 'target' },
+        awaitResult: true,
+      });
+
+      const [url, body] = lastPost();
+      expect(url).toEqual(`${rewardUrl}?awaitResult=true`);
+      expect(body).toEqual({
+        rewardValue: 'FAILURE',
+        context: 'context',
+        decisionPoint: { site: 'site', target: 'target' },
+      });
+      expect(body).not.toHaveProperty('awaitResult');
+    });
+
+    it('should not mark the request retryable, since rewards are not deduplicated server-side', async () => {
+      await apiService.sendReward({ rewardValue: 'SUCCESS', experimentId: 'exp1' });
+
+      expect(lastPost()[2].retryable).toBeUndefined();
+    });
+
+    it('should not append the query param when awaitResult is false', async () => {
+      await apiService.sendReward({ rewardValue: 'SUCCESS', experimentId: 'exp1', awaitResult: false });
+
+      expect(lastPost()[0]).toEqual(rewardUrl);
     });
   });
 });

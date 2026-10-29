@@ -63,7 +63,7 @@ if assignment:
 
 ## API Reference
 
-### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None, timeout=5.0)`
+### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None, timeout=5.0, feature_flag_user_groups_for_session=None)`
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -73,6 +73,7 @@ if assignment:
 | `token` | `str` | Optional bearer token for the `Authorization` header |
 | `client_session_id` | `str \| None` | Optional session ID; auto-generated UUID when omitted |
 | `timeout` | `float \| httpx.Timeout` | HTTP request timeout in seconds, or an `httpx.Timeout` object for fine-grained control. Defaults to `5.0` seconds, which matches httpx's own default and preserves the previous implicit behavior. |
+| `feature_flag_user_groups_for_session` | `FeatureFlagUserGroupsForSession \| dict \| None` | Optional session-scoped groups for feature flag evaluation; see [Feature Flags](#feature-flags) |
 
 To set a short timeout (e.g. for user-facing synchronous routes where you want fast failure):
 
@@ -107,9 +108,9 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 
 | Method | Description |
 |---|---|
-| `init(group=None, working_group=None)` | Initialize the user and clear the local cache |
-| `set_group_membership(group)` | Update the user's group membership |
-| `set_working_group(working_group)` | Update the user's working group |
+| `init(group=None, working_group=None)` | Initialize the user, then clear cached assignments and feature flags |
+| `set_group_membership(group)` | Update the user's group membership, then clear cached assignments and feature flags |
+| `set_working_group(working_group)` | Update the user's working group, then clear cached assignments and feature flags |
 | `set_alt_user_ids(aliases)` | Register alternate identifiers for this user |
 
 ### Experiments
@@ -118,7 +119,18 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 |---|---|
 | `get_all_experiment_conditions(ignore_cache=False)` | Return all `Assignment` objects for this user/context |
 | `get_decision_point_assignment(site, target="")` | Return the `Assignment` for a specific decision point, or `None` |
-| `mark_decision_point( condition, status, site, target = "", uniquifier="", client_error="")` | Record that the user encountered a decision point |
+| `mark_decision_point(condition, status, site, target="", uniquifier="", client_error="")` | Record that the user encountered a decision point |
+
+**Argument order differs from the JS and Java libraries**, which take `site, target` first and `condition, status` after (JS: `markDecisionPoint(site, target, condition, status, uniquifier, clientError)`; Java additionally puts `clientError` before `uniquifier`). If you're porting code from another library, pass keyword arguments so the order can't matter:
+
+```python
+await client.mark_decision_point(
+    condition="control",
+    status=UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+    site="home",
+    target="banner",
+)
+```
 
 When no experiment is running at a decision point, mark it with `condition=None` and the `NO_CONDITION_ASSIGNED` status:
 
@@ -148,6 +160,25 @@ else:
 |---|---|
 | `get_all_feature_flags(ignore_cache=False)` | Return all active `FeatureFlag` objects |
 | `has_feature_flag(key)` | Return `True` if the named flag is active for this user |
+| `set_feature_flag_user_groups_for_session(options)` | Set (or, with `None`, clear) session-scoped groups for feature flag evaluation; clears the cached flags. Not async, so there's no `_sync` variant |
+
+Session-scoped groups are sent with every feature flag request. `groupsForSession` is merged with the user's stored groups when `includeStoredUserGroups` is `True`, and replaces them when `False`. Both fields are required:
+
+```python
+from upgrade_client_lib.types import FeatureFlagUserGroupsForSession
+
+client = UpgradeClient(
+    "user-1",
+    "https://upgrade.example.com",
+    "my-app",
+    feature_flag_user_groups_for_session={"groupsForSession": {"classId": ["c1"]}, "includeStoredUserGroups": True},
+)
+
+# later, e.g. when the user switches class
+client.set_feature_flag_user_groups_for_session(
+    FeatureFlagUserGroupsForSession(groupsForSession={"classId": ["c2"]}, includeStoredUserGroups=True)
+)
+```
 
 ### Metrics & Rewards
 
@@ -220,6 +251,22 @@ UpgradeClient.MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED
 UpgradeClient.BINARY_REWARD_VALUE.SUCCESS
 UpgradeClient.BINARY_REWARD_VALUE.FAILURE
 ```
+
+## Connection Reuse
+
+- **Sync methods** share one pooled `httpx.Client` per `UpgradeClient`. Release it with `client.close()` or a `with`
+  block.
+- **Async methods** share a pooled `httpx.AsyncClient` only inside `async with`, which opens and closes the pool on
+  the same event loop:
+
+  ```python
+  async with UpgradeClient("user-1", "https://upgrade.example.com", "my-app") as client:
+      await client.init()
+      flags = await client.get_all_feature_flags()
+  ```
+
+  Outside `async with`, each async request uses its own short-lived client, so it's safe to call the same
+  `UpgradeClient` from successive `asyncio.run()` loops.
 
 ## Error Handling
 

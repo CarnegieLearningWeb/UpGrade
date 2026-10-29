@@ -28,11 +28,14 @@ public class Utils
 	public static final String FEATURE_FLAGS = apiVersion + "/featureflag";
 	public static final String LOG_EVENT= apiVersion + "/log";
 	public static final String SET_ALT_USER_IDS= apiVersion + "/useraliases";
-	public static final String ADD_MATRIC= apiVersion + "/metric";
+	public static final String REWARD = apiVersion + "/reward";
 
 	public static final String PATCH = "PATCH";
 
 	public static final int MAX_RETRIES = 1;
+	// for writes the server doesn't deduplicate (/mark, /log, /reward): a timeout or 5xx doesn't mean the write
+	// wasn't applied, so resending could record it twice
+	public static final int NO_RETRIES = 0;
 
 
 	public static enum RequestType {
@@ -55,6 +58,11 @@ public class Utils
 	public static enum MetricMetaData {
 		continuous,
 		categorical
+	}
+
+	public static enum BinaryRewardValue {
+		SUCCESS,
+		FAILURE
 	}
 
 	public static enum MarkedDecisionPointStatus {

@@ -56,6 +56,6 @@ Main class exported as default. Key methods:
 - `markDecisionPoint(site, target, condition?, status, ...)` — record that a user saw a condition
 - `getAllFeatureFlags(options?)` — fetch feature flags for user (cached)
 - `hasFeatureFlag(key)` — check if a feature flag is enabled
-- `log(value)` / `logCaliper(value)` — report outcome metrics
+- `log(value)` — report outcome metrics
 - `setGroupMembership(group)` / `setWorkingGroup(workingGroup)` — update group metadata
 - `sendReward(params)` — send binary reward for adaptive experiments

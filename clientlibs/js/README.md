@@ -26,7 +26,7 @@ await client.init();
 
 // 3. Get an assignment when user hits the "homepage/feature-to-be-tested"
 const assignment = await client.getDecisionPointAssignment(decisionPoint.site, decisionPoint.target);
-const condition = assignment.getPayload().value; // e.g. 'control' or 'variant'
+const condition = assignment.getCondition(); // e.g. 'control' or 'variant'; use getPayload() for the condition's payload
 
 // 4. Use the condition at the point in user experience when needed
 if (condition === "control") // use the control flow
@@ -34,6 +34,8 @@ if (condition === "variant") // use the variant flow
 
 // 5. Mark that the user passed through the decision point to track or officially enroll the user
 await client.markDecisionPoint(decisionPoint.site, decisionPoint.target, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+
+`markDecisionPoint` also accepts an options object (`{ site, target, condition, status, uniquifier, clientError }`), which avoids relying on argument order. The Java and Python libraries order these arguments differently: Java puts `clientError` before `uniquifier`, and Python takes `condition, status` before `site, target`.
 
 ## Documentation
 

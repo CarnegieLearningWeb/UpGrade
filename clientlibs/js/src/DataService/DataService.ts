@@ -9,6 +9,9 @@ export class DataService {
   private workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = null;
   private experimentAssignmentData: IExperimentAssignment[] = null;
   private featureFlags: string[] = null;
+  // bumped on every invalidation so a response to a request sent before it isn't cached over it
+  private experimentAssignmentGeneration = 0;
+  private featureFlagGeneration = 0;
 
   getGroup(): UpGradeClientInterfaces.IExperimentUserGroup {
     return this.group;
@@ -34,6 +37,24 @@ export class DataService {
     this.experimentAssignmentData = experimentAssignmentData;
   }
 
+  clearExperimentAssignmentData() {
+    this.experimentAssignmentData = null;
+    this.experimentAssignmentGeneration++;
+  }
+
+  getExperimentAssignmentGeneration(): number {
+    return this.experimentAssignmentGeneration;
+  }
+
+  /**
+   * Invalidate everything that depends on the user's groups (assignments and feature flags), e.g. after a call
+   * that may have changed them.
+   */
+  clearGroupDependentData() {
+    this.clearExperimentAssignmentData();
+    this.clearFeatureFlags();
+  }
+
   getFeatureFlags(): string[] {
     return this.featureFlags;
   }
@@ -44,6 +65,11 @@ export class DataService {
 
   clearFeatureFlags() {
     this.featureFlags = null;
+    this.featureFlagGeneration++;
+  }
+
+  getFeatureFlagGeneration(): number {
+    return this.featureFlagGeneration;
   }
 
   public rotateAssignmentList(assignment: IExperimentAssignment) {
@@ -70,9 +96,14 @@ export class DataService {
       .forEach((assignment) => this.rotateAssignmentList(assignment));
   }
 
-  public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignment {
+  public findExperimentAssignmentBySiteAndTarget(
+    site: string,
+    target?: string,
+    assignments: IExperimentAssignment[] = this.experimentAssignmentData
+  ): IExperimentAssignment {
     const normalizedTarget = target ?? '';
-    const assignment = this.experimentAssignmentData.find(
+    // assignments are null if the preceding /assign call failed or returned a non-array
+    const assignment = assignments?.find(
       (assignment) => assignment.site === site && assignment.target === normalizedTarget
     );
 
