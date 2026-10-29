@@ -37,7 +37,8 @@
     "build:all": "yarn types build && concurrently \"yarn backend build\" \"yarn js-clientlib build\" \"yarn frontend build\"",
     "launch": "concurrently -p \"[{name}]\" -n \"types,backend,frontend\" -c \"blue,magenta,cyan\" \"yarn types build\" \"yarn backend dev\" \"yarn frontend start\"",
     "clean-launch": "yarn clean && yarn install:all && yarn build:all && yarn launch",
-    "cache-demo": "./scripts/cache-demo.sh"
+    "cache-demo": "./scripts/cache-demo.sh",
+    "quickburst:ui": "./scripts/quickburst-ui.sh"
   },
   "lint-staged": {
     "./packages/frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [

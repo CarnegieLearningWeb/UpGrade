@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickTestBurst</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --text: #1c2230;
+    --muted: #5c6578;
+    --border: #d8dce4;
+    --field: #ffffff;
+    --accent: #2b59c3;
+    --accent-text: #ffffff;
+    --ok: #1d7348;
+    --bad: #b3261e;
+    --code-bg: #eef0f4;
+    --out-bg: #12161d;
+    --out-text: #d5dae3;
+    --out-muted: #8a93a3;
+    --out-bad: #ff8a80;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1218;
+      --panel: #171b23;
+      --text: #e3e7ee;
+      --muted: #98a1b2;
+      --border: #2c3340;
+      --field: #10141b;
+      --accent: #6d97f2;
+      --accent-text: #0f1218;
+      --ok: #5fc48d;
+      --bad: #ff8a80;
+      --code-bg: #10141b;
+      --out-bg: #0a0d12;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  code, pre, .flag { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header { padding: 16px 20px 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 18px; margin: 0; }
+  header p { margin: 0; color: var(--muted); }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+    gap: 20px;
+    padding: 16px 20px 20px;
+    align-items: start;
+  }
+  fieldset {
+    margin: 0 0 12px;
+    padding: 10px 12px 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  legend { font-weight: 600; padding: 0 4px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  .wide { grid-column: 1 / -1; }
+  label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; min-width: 0; }
+  label.check { flex-direction: row; align-items: center; gap: 6px; }
+  .flag { color: var(--muted); font-size: 11px; font-weight: normal; }
+  input, select {
+    font: inherit;
+    color: var(--text);
+    background: var(--field);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 7px;
+    width: 100%;
+    min-width: 0;
+  }
+  input[type="checkbox"] { width: auto; }
+  [hidden] { display: none !important; }
+  .run { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .command {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .command code { flex: 1; font-size: 12px; overflow-wrap: anywhere; }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button {
+    font: inherit;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  button.small { padding: 2px 8px; font-size: 12px; }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-text);
+    font-weight: 600;
+  }
+  button:disabled { opacity: 0.45; cursor: default; }
+  #state { color: var(--muted); }
+  #state.running { color: var(--accent); }
+  #state.ok { color: var(--ok); }
+  #state.bad { color: var(--bad); }
+  #ran { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+  pre#output {
+    margin: 0;
+    background: var(--out-bg);
+    color: var(--out-text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.45;
+    height: calc(100vh - 200px);
+    min-height: 320px;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  pre#output .error { color: var(--out-bad); }
+  pre#output .note { color: var(--out-muted); font-style: italic; }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px 16px; }
+    header { padding: 12px 16px 0; }
+    .run { position: static; }
+    pre#output { height: 60vh; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>QuickTestBurst</h1>
+  <p>Runs QuickTestBurst with these options. One run at a time.</p>
+</header>
+<main class="layout">
+  <form id="form" autocomplete="off">
+    <fieldset>
+      <legend>Target</legend>
+      <div class="grid">
+        <label>Host <span class="flag">--env / --url</span>
+          <select name="host">
+            <option value="local">local</option>
+            <option value="qa">qa</option>
+            <option value="staging">staging</option>
+            <option value="url">URL</option>
+          </select>
+        </label>
+        <label data-show="host:local">Port <span class="flag">local:&lt;port&gt;</span>
+          <input name="port" type="number" min="1" max="65535" value="3030">
+        </label>
+        <label data-show="host:url">Base URL <span class="flag">--url</span>
+          <input name="url" type="text" placeholder="https://…">
+        </label>
+        <p id="hostNote" class="wide flag" hidden></p>
+        <label>Context <span class="flag">--context</span>
+          <input name="context" type="text" value="assign-prog">
+        </label>
+        <label>Existing user <span class="flag">--user</span>
+          <input name="user" type="text" placeholder="new user each burst">
+        </label>
+        <label>Group type <span class="flag">--group-type</span>
+          <input name="groupType" type="text" value="schoolId">
+        </label>
+        <label>Group id <span class="flag">--group-id</span>
+          <input name="groupId" type="text" value="test_class_group">
+        </label>
+        <label class="wide">Token <span class="flag">--token</span>
+          <input name="token" type="text" value="BearerToken">
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Burst sizes (alias pairs per burst)</legend>
+      <div class="grid">
+        <label class="wide">Sizes
+          <select name="sizeMode">
+            <option value="fixed">Same size every burst</option>
+            <option value="uniform">Random in a range, evenly</option>
+            <option value="exponential">Random in a range, mostly small</option>
+            <option value="tiers">Random by tier</option>
+          </select>
+        </label>
+        <label data-show="sizeMode:fixed">Pairs <span class="flag">&lt;count&gt;</span>
+          <input name="count" type="number" min="1" value="10">
+        </label>
+        <label data-show="sizeMode:uniform,exponential">Min <span class="flag">--minBurst</span>
+          <input name="minBurst" type="number" min="1" value="1">
+        </label>
+        <label data-show="sizeMode:uniform,exponential">Max <span class="flag">--maxBurst</span>
+          <input name="maxBurst" type="number" min="1" value="50">
+        </label>
+        <label data-show="sizeMode:exponential">Mean <span class="flag">--burstMean</span>
+          <input name="burstMean" type="number" min="1" step="any" value="5">
+        </label>
+        <label class="wide" data-show="sizeMode:tiers">Tiers, percent:size <span class="flag">--burstTiers</span>
+          <input name="burstTiers" type="text" value="90:1,8:2-10,1:11-30,1:31-200">
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Pacing</legend>
+      <div class="grid">
+        <label>Bursts <span class="flag">--loops</span>
+          <input name="loops" type="number" min="1" value="1">
+        </label>
+        <label>Pairs in flight per burst <span class="flag">--concurrency</span>
+          <input name="concurrency" type="number" min="1" value="50">
+        </label>
+        <label class="wide">Bursts run
+          <select name="paceMode">
+            <option value="sequential">One after another</option>
+            <option value="rate">Overlapping, at a rate</option>
+          </select>
+        </label>
+        <label data-show="paceMode:sequential">Min wait, ms <span class="flag">--minBurstWait</span>
+          <input name="minBurstWait" type="number" min="0" value="0">
+        </label>
+        <label data-show="paceMode:sequential">Max wait, ms <span class="flag">--maxBurstWait</span>
+          <input name="maxBurstWait" type="number" min="0" value="0">
+        </label>
+        <label data-show="paceMode:rate">Users per second <span class="flag">--ratePerSecond</span>
+          <input name="ratePerSecond" type="number" min="0" step="any" value="6">
+        </label>
+        <label class="check" data-show="paceMode:rate">
+          <input name="evenArrivals" type="checkbox"> Even gaps <span class="flag">--evenArrivals</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Other</legend>
+      <div class="grid">
+        <label>Seed <span class="flag">--seed</span>
+          <input name="seed" type="text" inputmode="numeric" placeholder="random">
+        </label>
+        <label>Percent enrolling <span class="flag">--percentEnroll</span>
+          <input name="percentEnroll" type="number" min="0" max="100" step="any" placeholder="off">
+        </label>
+        <label class="check wide">
+          <input name="verbose" type="checkbox"> Print every call <span class="flag">--verbose</span>
+        </label>
+      </div>
+    </fieldset>
+    <button type="button" id="reset" class="small">Reset to defaults</button>
+  </form>
+
+  <section class="run">
+    <div class="command">
+      <code id="command"></code>
+      <button type="button" id="copy" class="small">Copy</button>
+    </div>
+    <div class="actions">
+      <button type="button" id="run" class="primary">Run</button>
+      <button type="button" id="stop" disabled>Stop</button>
+      <span id="state">Connecting…</span>
+    </div>
+    <div id="ran"></div>
+    <pre id="output"></pre>
+  </section>
+</main>
+
+<script>
+  // QuickTestBurst's own defaults. A field left at its default isn't passed, to keep the command short.
+  const DEFAULTS = {
+    port: '3030',
+    context: 'assign-prog',
+    groupType: 'schoolId',
+    groupId: 'test_class_group',
+    token: 'BearerToken',
+    loops: '1',
+    concurrency: '50',
+    minBurstWait: '0',
+    maxBurstWait: '0',
+  };
+
+  /** The QuickTestBurst arguments for the form's values, given as a plain object of field name to value. */
+  function buildArgs(v) {
+    const args = [];
+    const val = (key) => String(v[key] ?? '').trim();
+    const add = (flag, key) => {
+      if (val(key) !== '') args.push(flag, val(key));
+    };
+    const addChanged = (flag, key) => {
+      if (val(key) !== '' && val(key) !== DEFAULTS[key]) args.push(flag, val(key));
+    };
+
+    if (v.sizeMode === 'fixed') {
+      if (val('count') !== '') args.push(val('count'));
+    } else if (v.sizeMode === 'tiers') {
+      add('--burstTiers', 'burstTiers');
+    } else {
+      add('--minBurst', 'minBurst');
+      add('--maxBurst', 'maxBurst');
+      if (v.sizeMode === 'exponential') add('--burstMean', 'burstMean');
+    }
+    addChanged('--loops', 'loops');
+    addChanged('--concurrency', 'concurrency');
+    if (v.paceMode === 'rate') {
+      add('--ratePerSecond', 'ratePerSecond');
+      if (v.evenArrivals) args.push('--evenArrivals');
+    } else {
+      addChanged('--minBurstWait', 'minBurstWait');
+      addChanged('--maxBurstWait', 'maxBurstWait');
+    }
+    add('--seed', 'seed');
+    add('--percentEnroll', 'percentEnroll');
+    if (v.host === 'url') {
+      add('--url', 'url');
+    } else if (v.host === 'local') {
+      if (val('port') !== '' && val('port') !== DEFAULTS.port) args.push('--env', 'local:' + val('port'));
+    } else {
+      args.push('--env', v.host);
+    }
+    addChanged('--context', 'context');
+    add('--user', 'user');
+    addChanged('--group-type', 'groupType');
+    addChanged('--group-id', 'groupId');
+    addChanged('--token', 'token');
+    if (v.verbose) args.push('--verbose');
+    return args;
+  }
+
+  /** The terminal command for these arguments, run from clientlibs/java. */
+  function commandLine(args) {
+    const joined = args.map((arg) => (/^[\w@%+=:,./-]+$/.test(arg) ? arg : `'${arg}'`)).join(' ');
+    return 'mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" -Dexec.args="'
+      + joined.replace(/(["$`\\])/g, '\\$1') + '"';
+  }
+
+  const form = document.getElementById('form');
+  const commandEl = document.getElementById('command');
+  const runButton = document.getElementById('run');
+  const stopButton = document.getElementById('stop');
+  const stateEl = document.getElementById('state');
+  const ranEl = document.getElementById('ran');
+  const output = document.getElementById('output');
+  const STORAGE_KEY = 'quicktest-burst-ui';
+
+  function formValues() {
+    return Object.fromEntries(new FormData(form));
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formValues()));
+    } catch (e) {
+      // Not remembered; the form still works.
+    }
+  }
+
+  function restore() {
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    } catch (e) {
+      return;
+    }
+    if (!saved) return;
+    for (const el of form.elements) {
+      if (!el.name) continue;
+      if (el.type === 'checkbox') el.checked = el.name in saved;
+      else if (el.name in saved) el.value = saved[el.name];
+    }
+  }
+
+  function update() {
+    const v = formValues();
+    for (const el of form.querySelectorAll('[data-show]')) {
+      const [name, values] = el.dataset.show.split(':');
+      el.hidden = !values.split(',').includes(v[name]);
+    }
+    commandEl.textContent = commandLine(buildArgs(v));
+  }
+
+  form.addEventListener('input', () => {
+    update();
+    save();
+  });
+  form.addEventListener('submit', (e) => e.preventDefault());
+
+  document.getElementById('reset').addEventListener('click', () => {
+    form.reset();
+    update();
+    save();
+  });
+
+  document.getElementById('copy').addEventListener('click', async (e) => {
+    try {
+      await navigator.clipboard.writeText(commandEl.textContent);
+      e.target.textContent = 'Copied';
+    } catch (err) {
+      e.target.textContent = 'Copy failed';
+    }
+    setTimeout(() => (e.target.textContent = 'Copy'), 1500);
+  });
+
+  // Polling: every half second while a run is going, every two seconds otherwise (to pick up a run started from
+  // another tab).
+  let runId = null;
+  let next = 0;
+  let pollTimer = null;
+  let polling = false;
+  let pollAgain = false;
+
+  function pollSoon() {
+    if (polling) {
+      pollAgain = true;
+    } else {
+      clearTimeout(pollTimer);
+      poll();
+    }
+  }
+
+  async function poll() {
+    polling = true;
+    let running = false;
+    try {
+      const res = await fetch(`status?id=${runId ?? -1}&from=${next}`, { cache: 'no-store' });
+      const s = await res.json();
+      running = s.running;
+      if (s.id !== null) showRun(s);
+      showState(s);
+    } catch (e) {
+      setState('Can’t reach the QuickTestBurstUi server. Is it still running?', 'bad');
+      runButton.disabled = true;
+      stopButton.disabled = true;
+    }
+    polling = false;
+    pollTimer = setTimeout(poll, pollAgain ? 0 : running ? 500 : 2000);
+    pollAgain = false;
+  }
+
+  function showRun(s) {
+    if (s.id !== runId) {
+      runId = s.id;
+      next = 0;
+      output.textContent = '';
+      ranEl.textContent = `Run ${s.id}: QuickTestBurst ${s.args.join(' ')}`;
+    }
+    const atBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 40;
+    const lines = document.createDocumentFragment();
+    if (s.from > next) appendLine(lines, `(${s.from - next} earlier lines dropped to save memory)`, 'note');
+    for (const line of s.lines) {
+      const cls = /^\(.*\)$/.test(line) ? 'note' : /\berror\b|^usage:/i.test(line) ? 'error' : null;
+      appendLine(lines, line, cls);
+    }
+    output.appendChild(lines);
+    next = s.next;
+    if (atBottom) output.scrollTop = output.scrollHeight;
+  }
+
+  function appendLine(parent, text, cls) {
+    if (cls) {
+      const span = document.createElement('span');
+      span.className = cls;
+      span.textContent = text + '\n';
+      parent.appendChild(span);
+    } else {
+      parent.appendChild(document.createTextNode(text + '\n'));
+    }
+  }
+
+  function showState(s) {
+    runButton.disabled = s.running;
+    stopButton.disabled = !s.running;
+    if (s.id === null) setState('Ready');
+    else if (s.running) setState('Running…', 'running');
+    else if (s.exitCode === 0) setState('Finished, exit 0', 'ok');
+    else if (s.exitCode === 1) setState('Finished with errors, exit 1', 'bad');
+    else if (s.exitCode === 2) setState('Options rejected, exit 2; see the output', 'bad');
+    else setState(`Stopped, exit ${s.exitCode}`, 'bad');
+  }
+
+  function setState(text, cls) {
+    stateEl.textContent = text;
+    stateEl.className = cls ?? '';
+  }
+
+  async function post(path, body) {
+    return fetch(path, { method: 'POST', headers: { 'X-QuickTestBurst': '1' }, body: body ?? '' });
+  }
+
+  runButton.addEventListener('click', async () => {
+    const values = formValues();
+    if (values.host === 'url' && !values.url.trim()) {
+      setState('Enter a base URL before starting a run.', 'bad');
+      return;
+    }
+    runButton.disabled = true;
+    const res = await post('run', buildArgs(values).join('\n'));
+    if (!res.ok) setState(await res.text(), 'bad');
+    pollSoon();
+  });
+
+  stopButton.addEventListener('click', async () => {
+    stopButton.disabled = true;
+    await post('stop');
+    pollSoon();
+  });
+
+  // Marks qa / staging unavailable when their URL variable isn't set where the server was started.
+  async function loadConfig() {
+    const hostNote = document.getElementById('hostNote');
+    try {
+      const config = await (await fetch('config')).json();
+      const missing = [];
+      for (const [env, variable] of [['qa', 'UPGRADE_QA_URL'], ['staging', 'UPGRADE_STAGING_URL']]) {
+        if (config[env]) continue;
+        const option = form.elements.host.querySelector(`option[value="${env}"]`);
+        option.disabled = true;
+        option.textContent = `${env} (${variable} not set)`;
+        missing.push(variable);
+      }
+      if (missing.length) {
+        const one = missing.length === 1;
+        hostNote.textContent = `${missing.join(' and ')} ${one ? 'wasn’t' : 'weren’t'} set in the shell that `
+          + `started this server. Export ${one ? 'it' : 'them'} (see QuickTestHosts) and restart the server to use `
+          + `${one ? 'that host' : 'those hosts'}.`;
+        hostNote.hidden = false;
+      }
+    } catch (e) {
+      // The run's own output will say if a host is missing.
+    }
+  }
+
+  restore();
+  update();
+  loadConfig();
+  poll();
+</script>
+</body>
+</html>

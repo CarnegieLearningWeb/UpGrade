@@ -20,12 +20,24 @@ import org.upgradeplatform.requestbeans.LogMetrics;
  *
  * <pre>
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest"
+ * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="local:3031"
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="qa"
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="staging"
+ * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest" -Dexec.args="https://some-host.example.com"
  * </pre>
  *
- * The optional argument is local (default, http://localhost:3030), qa or staging; qa and staging read
- * UPGRADE_QA_URL / UPGRADE_STAGING_URL from the environment (see QuickTestHosts).
+ * The optional argument is local (default, http://localhost:3030), local:&lt;port&gt; for localhost on another port,
+ * qa, staging, or a base URL starting with http:// or https://.
+ * <p>
+ * <b>qa and staging are not built in.</b> Their URLs come from environment variables you set on your own machine,
+ * which you need to add to your shell profile (e.g. {@code ~/.zshrc}) once:
+ *
+ * <pre>
+ * export UPGRADE_QA_URL=https://&lt;qa backend host&gt;
+ * export UPGRADE_STAGING_URL=https://&lt;staging backend host&gt;
+ * </pre>
+ *
+ * See QuickTestHosts for details. Passing a base URL directly needs no variables.
  */
 public class QuickTest {
     private static final String userId = "quicktest_user_" + System.currentTimeMillis();
@@ -56,9 +68,13 @@ public class QuickTest {
         logRequest.add(logEntry);
     }
 
-    /** Optional first argument: local (default), qa or staging; see QuickTestHosts for the env vars qa/staging need. */
+    /**
+     * Optional first argument: local (default), local:&lt;port&gt;, qa, staging, or a base URL; see QuickTestHosts for
+     * the env vars qa/staging need.
+     */
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        String hostUrl = QuickTestHosts.forEnv(args.length > 0 ? args[0] : "local");
+        String host = args.length > 0 ? args[0] : "local";
+        String hostUrl = host.startsWith("http://") || host.startsWith("https://") ? host : QuickTestHosts.forEnv(host);
         System.out.println("host: " + hostUrl);
         System.out.println("client_session_id: " + sessionId);
         ExperimentClient client = new ExperimentClient(userId, context, "BearerToken", sessionId, hostUrl,
