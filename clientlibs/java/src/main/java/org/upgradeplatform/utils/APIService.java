@@ -12,6 +12,7 @@ import java.util.Properties;
 import jakarta.ws.rs.client.AsyncInvoker;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 
@@ -51,9 +52,8 @@ public class APIService implements AutoCloseable{
         }
 		this.baseUrl=baseUrl;
 
-		if (isStringNull(authToken)) {
-		    throw new IllegalArgumentException(INVALID_AUTH_TOKEN);
-		}
+		// optional, like the JS and Python libs: only servers with client API auth enabled require a token, and they
+		// answer a request without one with a 401
 		this.authToken=authToken;
 
 		this.userId=userId;
@@ -91,9 +91,11 @@ public class APIService implements AutoCloseable{
 		for (Map.Entry<String, Object> param : queryParams.entrySet()) {
 			target = target.queryParam(param.getKey(), param.getValue());
 		}
-		return target
-				.request(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer "+this.authToken)
+		Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
+		if (!isStringNull(this.authToken)) {
+			request = request.header("Authorization", "Bearer " + this.authToken);
+		}
+		return request
 				.header("Session-Id", this.sessionId)
 				.header("User-Id", this.userId)
 				.header("Client-Context", this.context)

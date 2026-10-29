@@ -213,7 +213,10 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   `Assignment.markDecisionPoint`), the Java README (whose stale `markExperimentPoint` section was replaced with
   `markDecisionPoint`, including a cross-library signature table), the Python README (recommending keyword
   arguments), and the JS README (pointing to the options-object form).
-- Java auth token: optional, to match the others.
+- Java auth token: optional, to match the others. *Done.* The constructor no longer throws on a null or empty token,
+  and the `Authorization` header is only sent when there is one, as in JS and Python. Whether a token is required
+  is a server setting (`toCheckAuth`, enforced in `ClientLibMiddleware`), so a missing token now surfaces as a 401 on
+  the first request to a server that checks, rather than as a constructor exception.
 
 **Phase D: guardrails**
 - Add a Java unit test suite (at least request serialization for each endpoint).

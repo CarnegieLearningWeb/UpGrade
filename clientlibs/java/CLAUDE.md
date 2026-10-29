@@ -55,6 +55,8 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 
 **Timeouts:** 3-second connect/read defaults set in `APIService.createClient`. Override them by passing `ClientProperties.CONNECT_TIMEOUT` / `ClientProperties.READ_TIMEOUT` in the constructor's `properties` map (applied after the defaults). `properties` may be `null`.
 
+**Auth token:** Optional (may be `null` or empty), like the JS and Python libs. When present it's sent as `Authorization: Bearer <token>`; when absent the header is omitted. Only servers with client API auth enabled (the `toCheckAuth` setting, enforced in `ClientLibMiddleware`) require it, and they answer a request without one with a 401.
+
 **Session ID:** Auto-generated UUID per client instance if not provided. Appears in all request headers for tracing.
 
 ## Project Structure

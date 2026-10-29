@@ -69,6 +69,8 @@ public class ExperimentClientTest {
 	private final Map<String, String> responses = new ConcurrentHashMap<>();
 	private final Map<String, List<String>> requestBodies = new ConcurrentHashMap<>();
 	private final Map<String, List<String>> requestQueries = new ConcurrentHashMap<>();
+	// Authorization header per request ("" when absent)
+	private final Map<String, List<String>> requestAuthorization = new ConcurrentHashMap<>();
 	private final Map<String, Integer> statusCodes = new ConcurrentHashMap<>();
 	// when set for a path, the server signals arrival and holds its response until the release latch opens
 	private final Map<String, CountDownLatch[]> heldResponses = new ConcurrentHashMap<>();
@@ -80,12 +82,16 @@ public class ExperimentClientTest {
 		responses.clear();
 		requestBodies.clear();
 		requestQueries.clear();
+		requestAuthorization.clear();
 		statusCodes.clear();
 		heldResponses.clear();
 		server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
 		server.createContext("/", exchange -> {
 			String path = exchange.getRequestURI().getPath();
 			String query = exchange.getRequestURI().getQuery();
+			String authorization = exchange.getRequestHeaders().getFirst("Authorization");
+			requestAuthorization.computeIfAbsent(path, p -> new CopyOnWriteArrayList<>())
+					.add(authorization == null ? "" : authorization);
 			requestQueries.computeIfAbsent(path, p -> new CopyOnWriteArrayList<>()).add(query == null ? "" : query);
 			try (InputStream in = exchange.getRequestBody()) {
 				requestBodies.computeIfAbsent(path, p -> new CopyOnWriteArrayList<>())
@@ -497,6 +503,28 @@ public class ExperimentClientTest {
 		// ...but they aren't cached, since they were requested under the previous groups
 		fetchAssignments();
 		assertEquals(requestCount("/api/v6/assign"), 2);
+	}
+
+	@Test
+	public void authTokenIsSentAsBearerHeader() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		fetchAssignments();
+		assertEquals(requestAuthorization.get("/api/v6/assign").get(0), "Bearer token");
+	}
+
+	@Test
+	public void authTokenIsOptional() throws Exception {
+		String baseUrl = "http://127.0.0.1:" + server.getAddress().getPort();
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		for (String token : new String[] { null, "" }) {
+			// used to throw IllegalArgumentException; now the Authorization header is just omitted, as in JS/Python
+			try (ExperimentClient noTokenClient = new ExperimentClient("user-1", "test-app", token, baseUrl, null)) {
+				CompletableFuture<List<ExperimentsResponse>> assignments = new CompletableFuture<>();
+				noTokenClient.getAllExperimentConditions(into(assignments));
+				assignments.get(5, TimeUnit.SECONDS);
+			}
+		}
+		assertEquals(requestAuthorization.get("/api/v6/assign"), List.of("", ""));
 	}
 
 	@Test
