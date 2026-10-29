@@ -56,11 +56,15 @@ class DataService:
             return None
         return list(self._assignments.values())
 
-    def get_assignment(self, site: str, target: str) -> ExperimentAssignment | None:
-        """Return the cached assignment for ``site``/``target``, or ``None``."""
+    def get_assignment(self, site: str, target: str | None) -> ExperimentAssignment | None:
+        """Return the cached assignment for ``site``/``target``, or ``None``.
+
+        Matched exactly (case-sensitive), as the server matches decision points.  A ``None`` target is the same
+        as ``""``.
+        """
         if self._assignments is None:
             return None
-        return self._assignments.get(f"{site}|{target}")
+        return self._assignments.get(f"{site}|{target or ''}")
 
     def rotate_assignment(self, assignment: ExperimentAssignment) -> ExperimentAssignment:
         """Round-robin advance the condition (and factor) lists.

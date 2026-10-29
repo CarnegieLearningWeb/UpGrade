@@ -201,7 +201,7 @@ class UpgradeClient:
     # ------------------------------------------------------------------
 
     async def get_decision_point_assignment(
-        self, site: str, target: str = ""
+        self, site: str, target: str | None = ""
     ) -> Assignment | None:
         """Return the :class:`Assignment` for a specific decision point.
 
@@ -213,7 +213,7 @@ class UpgradeClient:
         return self._assignment_for(site, target)
 
     def get_decision_point_assignment_sync(
-        self, site: str, target: str = ""
+        self, site: str, target: str | None = ""
     ) -> Assignment | None:
         """Synchronous variant of :meth:`get_decision_point_assignment`."""
         if self._data_service.get_all_assignments() is None:
@@ -229,7 +229,7 @@ class UpgradeClient:
         condition: str | None,
         status: MarkedDecisionPointStatus,
         site: str,
-        target: str = "",
+        target: str | None = "",
         uniquifier: str = "",
         client_error: str = "",
     ) -> MarkDecisionPointResponse:
@@ -251,7 +251,7 @@ class UpgradeClient:
         condition: str | None,
         status: MarkedDecisionPointStatus,
         site: str,
-        target: str = "",
+        target: str | None = "",
         uniquifier: str = "",
         client_error: str = "",
     ) -> MarkDecisionPointResponse:
@@ -420,7 +420,7 @@ class UpgradeClient:
         self._data_service.set_feature_flags(fresh, generation)
         return fresh
 
-    def _assignment_for(self, site: str, target: str) -> Assignment | None:
+    def _assignment_for(self, site: str, target: str | None) -> Assignment | None:
         raw = self._data_service.get_assignment(site, target)
         return Assignment(raw, self._api_service) if raw is not None else None
 
@@ -429,7 +429,7 @@ class UpgradeClient:
         condition: str | None,
         status: MarkedDecisionPointStatus,
         site: str,
-        target: str,
+        target: str | None,
         uniquifier: str,
         client_error: str,
     ) -> dict[str, Any]:
@@ -451,7 +451,7 @@ class UpgradeClient:
 
         return {
             "site": site,
-            "target": target,
+            "target": target or "",
             "condition_code": condition,
             "status": status,
             "experiment_type": experiment_type,

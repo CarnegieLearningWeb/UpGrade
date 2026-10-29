@@ -2,6 +2,7 @@ package org.upgradeplatform.client;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertThrows;
 import static org.testng.Assert.expectThrows;
 import static org.testng.Assert.assertTrue;
@@ -381,6 +382,20 @@ public class ExperimentClientTest {
 		expectThrows(ExecutionException.class, () -> assignments.get(5, TimeUnit.SECONDS));
 
 		assertEquals(requestBodies.get("/api/v6/assign").size(), 2);
+	}
+
+	@Test
+	public void decisionPointLookupIsCaseSensitiveLikeTheServer() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+
+		CompletableFuture<Assignment> exact = new CompletableFuture<>();
+		client.getExperimentCondition("home", "banner", into(exact));
+		assertEquals(exact.get(5, TimeUnit.SECONDS).getAssignedCondition().getConditionCode(), "control");
+
+		// a different casing would get a condition the server can't attribute on /mark, so it must not match
+		CompletableFuture<Assignment> otherCase = new CompletableFuture<>();
+		client.getExperimentCondition("Home", "Banner", into(otherCase));
+		assertNull(otherCase.get(5, TimeUnit.SECONDS).getAssignedCondition());
 	}
 
 	@Test

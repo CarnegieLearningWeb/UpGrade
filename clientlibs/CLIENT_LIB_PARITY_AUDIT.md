@@ -178,8 +178,24 @@ safely would need server-side idempotency (e.g. a client-generated request id).
    `LogEventResponse` (the `/log` response) uses them.
 
 **Phase C: harmonize semantics (behavior changes, needs a decision on each)**
-- Site/target matching: exact everywhere, or case-insensitive everywhere.
-- "No experiment at decision point": return an empty `Assignment` or null, consistently.
+- Site/target matching: exact everywhere, or case-insensitive everywhere. *Decided: exact everywhere.* The server's
+  client-path lookups are case-sensitive (`/mark` matches `partitions.site = :site AND partitions.target = :target`,
+  then re-checks with `===`). Java's case-insensitive lookup therefore returned conditions whose marks the server
+  couldn't attribute to the experiment. Java now matches exactly, and Python treats an explicit `None` target as `""`
+  like JS and Java do.
+- "No experiment at decision point": return an empty `Assignment` or null, consistently. *Deferred.* Current
+  behavior:
+  - **JS** returns a placeholder `Assignment` whose getters are all safe (`getCondition()` → `null`, type `SIMPLE`).
+  - **Java** returns an `Assignment` whose `getAssignedCondition()` is `null` and whose type is `null`. The library
+    itself never throws, but callers that chain `getAssignedCondition().getConditionCode()` get an NPE (same for
+    `getAllExperimentConditions(site, target)`, which returns a blank `ExperimentsResponse`). This happens whenever
+    nothing matches, including when `/assign` returns `[]`.
+  - **Python** returns `None`.
+
+  Unifying either way breaks callers. Moving Python to a placeholder fails silently: `if assignment is None` stops
+  firing. Moving JS and Java to null fails loudly. The option discussed was to keep placeholder-vs-`None` and make
+  Java's placeholder match JS's: an empty `Condition` instead of `null`, type `Simple`, and add `getCondition()` /
+  `getPayload()` shortcuts.
 - Whether `init()` clears the cache in every lib, or in none.
 - Retry policy and default timeout, with one documented value across all three.
 - Java `markDecisionPoint` `clientError`/`uniquifier` order, and Python's `condition`-first order. Fixing either

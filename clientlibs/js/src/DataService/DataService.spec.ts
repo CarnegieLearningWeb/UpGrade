@@ -391,6 +391,36 @@ describe('DataService', () => {
       expect(dataService.findExperimentAssignmentBySiteAndTarget('site', undefined)).toEqual(emptyAssignment);
     });
 
+    it('should match site and target case-sensitively, like the server', () => {
+      const assignment: IExperimentAssignment = {
+        site: 'Home',
+        target: 'Banner',
+        assignedCondition: [{ conditionCode: 'control', payload: null, experimentId: 'exp1', id: 'c1' }],
+        experimentType: EXPERIMENT_TYPE.SIMPLE,
+      };
+      dataService.setExperimentAssignmentData([assignment]);
+
+      expect(dataService.findExperimentAssignmentBySiteAndTarget('Home', 'Banner')).toEqual(assignment);
+      expect(
+        dataService.findExperimentAssignmentBySiteAndTarget('home', 'Banner').assignedCondition[0].conditionCode
+      ).toBeNull();
+      expect(
+        dataService.findExperimentAssignmentBySiteAndTarget('Home', 'banner').assignedCondition[0].conditionCode
+      ).toBeNull();
+    });
+
+    it('should treat a null target the same as an empty target', () => {
+      const assignment: IExperimentAssignment = {
+        site: 'site',
+        target: '',
+        assignedCondition: [{ conditionCode: 'control', payload: null, experimentId: 'exp1', id: 'c1' }],
+        experimentType: EXPERIMENT_TYPE.SIMPLE,
+      };
+      dataService.setExperimentAssignmentData([assignment]);
+
+      expect(dataService.findExperimentAssignmentBySiteAndTarget('site', null)).toEqual(assignment);
+    });
+
     it('should return an empty assignment instead of throwing when assignment data was never loaded', () => {
       dataService.setExperimentAssignmentData(null);
       expect(dataService.findExperimentAssignmentBySiteAndTarget('site', 'target')).toEqual({

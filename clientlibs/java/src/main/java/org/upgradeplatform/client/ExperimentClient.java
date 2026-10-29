@@ -274,14 +274,14 @@ public class ExperimentClient implements AutoCloseable {
 		}
 	}
 
-	/** @param site This is matched case-insensitively */
+	/** @param site Matched exactly (case-sensitive), as the server does */
 	public void getExperimentCondition(String site, final ResponseCallback<Assignment> callbacks) {
 		getExperimentCondition(site, null, callbacks);
 	}
 
 	/**
-	 * @param site   This is matched case-insensitively
-	 * @param target This is matched case-insensitively
+	 * @param site   Matched exactly (case-sensitive), as the server does
+	 * @param target Matched exactly (case-sensitive); null and "" are equivalent
 	 */
 	public void getExperimentCondition(String site, String target,
 			final ResponseCallback<Assignment> callbacks) {
@@ -313,15 +313,15 @@ public class ExperimentClient implements AutoCloseable {
 		});
 	}
 
-	/** @param site This is matched case-insensitively */
+	/** @param site Matched exactly (case-sensitive), as the server does */
 	public void getAllExperimentConditions(String site,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		getAllExperimentConditions(site, null, callbacks);
 	}
 
 	/**
-	 * @param site   This is matched case-insensitively
-	 * @param target This is matched case-insensitively
+	 * @param site   Matched exactly (case-sensitive), as the server does
+	 * @param target Matched exactly (case-sensitive); null and "" are equivalent
 	 */
 	public void getAllExperimentConditions(String site, String target,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
@@ -348,9 +348,11 @@ public class ExperimentClient implements AutoCloseable {
 	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> site != null && site.equalsIgnoreCase(t.getSite()) &&
+				// exact match: the server's /mark and /reward lookups are case-sensitive, so a case-insensitive
+				// match here would return a condition whose mark the server can't attribute to the experiment
+				.filter(t -> site != null && site.equals(t.getSite()) &&
 						(isStringNull(target) ? isStringNull(t.getTarget())
-								: target.equalsIgnoreCase(t.getTarget())))
+								: target.equals(t.getTarget())))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());

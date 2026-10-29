@@ -290,6 +290,31 @@ class TestGetDecisionPointAssignment:
 # ---------------------------------------------------------------------------
 
 
+class TestDecisionPointMatching:
+    """Site/target are matched exactly, like the server's /mark and /reward lookups."""
+
+    @respx.mock
+    async def test_site_and_target_match_case_sensitively(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        client = make_client()
+        assert await client.get_decision_point_assignment("home", "banner") is not None
+        assert await client.get_decision_point_assignment("Home", "banner") is None
+        assert await client.get_decision_point_assignment("home", "Banner") is None
+
+    @respx.mock
+    async def test_none_target_matches_empty_target(self) -> None:
+        payload = [{**ASSIGNMENT_PAYLOAD[0], "target": ""}]
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=payload))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+
+        assert await client.get_decision_point_assignment("home", None) is not None
+        await client.mark_decision_point("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", None)
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["target"] == ""
+        assert body["data"]["assignedCondition"]["experimentId"] == "exp-1"
+
+
 class TestMarkDecisionPoint:
     @respx.mock
     async def test_marks_with_warm_cache(self) -> None:
