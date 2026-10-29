@@ -20,6 +20,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -63,6 +65,7 @@ public class ExperimentClientTest {
 	}
 
 	private HttpServer server;
+	private ExecutorService serverExecutor;
 	private final Map<String, String> responses = new ConcurrentHashMap<>();
 	private final Map<String, List<String>> requestBodies = new ConcurrentHashMap<>();
 	private final Map<String, List<String>> requestQueries = new ConcurrentHashMap<>();
@@ -104,6 +107,9 @@ public class ExperimentClientTest {
 				out.write(body);
 			}
 		});
+		// handle requests concurrently, so a held response doesn't block other requests
+		serverExecutor = Executors.newCachedThreadPool();
+		server.setExecutor(serverExecutor);
 		server.start();
 		client = new ExperimentClient("user-1", "test-app", "token",
 				"http://127.0.0.1:" + server.getAddress().getPort(), Collections.emptyMap());
@@ -113,6 +119,7 @@ public class ExperimentClientTest {
 	public void stopServer() {
 		client.close();
 		server.stop(0);
+		serverExecutor.shutdownNow();
 	}
 
 	private JsonNode lastBody(String path) throws IOException {
@@ -396,6 +403,100 @@ public class ExperimentClientTest {
 		CompletableFuture<Assignment> otherCase = new CompletableFuture<>();
 		client.getExperimentCondition("Home", "Banner", into(otherCase));
 		assertNull(otherCase.get(5, TimeUnit.SECONDS).getAssignedCondition());
+	}
+
+	private static final String USER = "{\"id\":\"user-1\",\"group\":{\"classId\":[\"c2\"]},\"workingGroup\":{\"classId\":\"c2\"}}";
+
+	private void primeCaches() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		responses.put("/api/v6/featureflag", "[\"flag\"]");
+		fetchAssignments();
+		fetchFlags();
+	}
+
+	private int requestCount(String path) {
+		return requestBodies.getOrDefault(path, List.of()).size();
+	}
+
+	private void assertCachesCleared(boolean expectCleared) throws Exception {
+		int assignBefore = requestCount("/api/v6/assign");
+		int flagsBefore = requestCount("/api/v6/featureflag");
+		fetchAssignments();
+		fetchFlags();
+		assertEquals(requestCount("/api/v6/assign") > assignBefore, expectCleared, "assignments refetched");
+		assertEquals(requestCount("/api/v6/featureflag") > flagsBefore, expectCleared, "feature flags refetched");
+	}
+
+	@Test
+	public void initClearsAssignmentAndFlagCaches() throws Exception {
+		primeCaches();
+		responses.put("/api/v6/init", USER);
+		CompletableFuture<org.upgradeplatform.responsebeans.InitializeUserResponse> done = new CompletableFuture<>();
+		client.init(into(done));
+		done.get(5, TimeUnit.SECONDS);
+		assertCachesCleared(true);
+	}
+
+	@Test
+	public void groupChangesClearAssignmentAndFlagCaches() throws Exception {
+		responses.put("/api/v6/groupmembership", USER);
+		responses.put("/api/v6/workinggroup", USER);
+
+		primeCaches();
+		CompletableFuture<org.upgradeplatform.responsebeans.ExperimentUserResponse> group = new CompletableFuture<>();
+		client.setGroupMembership(Map.of("classId", List.of("c2")), into(group));
+		group.get(5, TimeUnit.SECONDS);
+		assertCachesCleared(true);
+
+		CompletableFuture<org.upgradeplatform.responsebeans.ExperimentUserResponse> working = new CompletableFuture<>();
+		client.setWorkingGroup(Map.of("classId", "c2"), into(working));
+		working.get(5, TimeUnit.SECONDS);
+		assertCachesCleared(true);
+	}
+
+	@Test
+	public void failedGroupChangeKeepsCaches() throws Exception {
+		primeCaches();
+		statusCodes.put("/api/v6/groupmembership", 400);
+		CompletableFuture<org.upgradeplatform.responsebeans.ExperimentUserResponse> group = new CompletableFuture<>();
+		client.setGroupMembership(Map.of("classId", List.of("c2")), into(group));
+		expectThrows(ExecutionException.class, () -> group.get(5, TimeUnit.SECONDS));
+		assertCachesCleared(false);
+	}
+
+	@Test
+	public void setAltUserIdsKeepsCaches() throws Exception {
+		primeCaches();
+		responses.put("/api/v6/useraliases", "{\"userId\":\"user-1\",\"aliases\":[\"alias-1\"]}");
+		CompletableFuture<org.upgradeplatform.responsebeans.UserAliasResponse> aliases = new CompletableFuture<>();
+		client.setAltUserIds(List.of("alias-1"), into(aliases));
+		aliases.get(5, TimeUnit.SECONDS);
+		assertCachesCleared(false);
+	}
+
+	@Test
+	public void inFlightAssignResponseDoesNotOverwriteGroupChange() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		responses.put("/api/v6/groupmembership", USER);
+		CountDownLatch arrived = new CountDownLatch(1);
+		CountDownLatch release = new CountDownLatch(1);
+		heldResponses.put("/api/v6/assign", new CountDownLatch[] { arrived, release });
+
+		CompletableFuture<List<ExperimentsResponse>> inFlight = new CompletableFuture<>();
+		client.getAllExperimentConditions(into(inFlight));
+		assertTrue(arrived.await(5, TimeUnit.SECONDS));
+
+		// the group change completes while the /assign response is still held on the server
+		CompletableFuture<org.upgradeplatform.responsebeans.ExperimentUserResponse> group = new CompletableFuture<>();
+		client.setGroupMembership(Map.of("classId", List.of("c2")), into(group));
+		group.get(5, TimeUnit.SECONDS);
+		release.countDown();
+
+		// the original caller still gets the assignments it asked for...
+		assertEquals(inFlight.get(5, TimeUnit.SECONDS).size(), 1);
+		// ...but they aren't cached, since they were requested under the previous groups
+		fetchAssignments();
+		assertEquals(requestCount("/api/v6/assign"), 2);
 	}
 
 	@Test

@@ -47,7 +47,7 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 
 ## Key Gotchas
 
-**Caching:** `allExperiments` and `allFeatureFlags` are cached in-memory for the client's lifetime. No expiry. Use the `ignoreCache` overloads when fresh data is needed.
+**Caching:** `allExperiments` and `allFeatureFlags` are cached in memory with no expiry. Both are cleared once the server confirms `init`, `setGroupMembership` or `setWorkingGroup`, since assignments and flags depend on the user's groups. The flag cache is also cleared by the session-group setters. Each cache has a generation counter, so a response requested before a clear is never cached over it (the caller still receives it). Use the `ignoreCache` overloads when fresh data is needed for any other reason, e.g. an experiment started on the server.
 
 **Retry logic:** `PublishingRetryCallback` retries once (`MAX_RETRIES`) on network failures and 5xx errors, for reads and idempotent upserts only (init, group/working group, aliases, assign, feature flags). `/mark`, `/log` and `/reward` use `NO_RETRIES`: the server doesn't deduplicate them, so resending after a lost response could record a write twice (and a duplicated reward biases adaptive assignment). 4xx errors never retry.
 

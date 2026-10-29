@@ -5,6 +5,7 @@ exercises the full UpgradeClient → ApiService → httpx stack.
 """
 
 import json
+from typing import Any
 
 import httpx
 import pytest
@@ -975,3 +976,114 @@ class TestFeatureFlagUserGroupsForSession:
         assert [f.key for f in await client.get_all_feature_flags()] == ["new-groups-flag"]
         assert route.call_count == 2
         assert json.loads(route.calls[1].request.content)["groupsForSession"] == {"classId": ["c2"]}
+
+
+# ---------------------------------------------------------------------------
+# Cache invalidation when the user's groups may have changed
+# ---------------------------------------------------------------------------
+
+
+class TestGroupChangeInvalidation:
+    @staticmethod
+    def _routes() -> tuple[respx.Route, respx.Route]:
+        assign = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        flags = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["flag"]))
+        return assign, flags
+
+    @staticmethod
+    async def _look_up_again(client: UpgradeClient, assign: respx.Route, flags: respx.Route) -> tuple[bool, bool]:
+        assign_before, flags_before = assign.call_count, flags.call_count
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+        return assign.call_count > assign_before, flags.call_count > flags_before
+
+    @pytest.mark.parametrize(
+        ("endpoint", "method", "call"),
+        [
+            ("init", "post", lambda c: c.init()),
+            ("groupmembership", "patch", lambda c: c.set_group_membership({"classId": ["c2"]})),
+            ("workinggroup", "patch", lambda c: c.set_working_group({"classId": "c2"})),
+        ],
+    )
+    @respx.mock
+    async def test_group_changes_clear_both_caches(self, endpoint: str, method: str, call: Any) -> None:
+        assign, flags = self._routes()
+        getattr(respx, method)(f"{BASE}/{endpoint}").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+
+        await call(client)
+
+        assert await self._look_up_again(client, assign, flags) == (True, True)
+
+    @respx.mock
+    def test_sync_group_change_clears_both_caches(self) -> None:
+        assign, flags = self._routes()
+        respx.patch(f"{BASE}/groupmembership").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+        client.get_all_experiment_conditions_sync()
+        client.get_all_feature_flags_sync()
+
+        client.set_group_membership_sync({"classId": ["c2"]})
+        client.get_all_experiment_conditions_sync()
+        client.get_all_feature_flags_sync()
+
+        assert (assign.call_count, flags.call_count) == (2, 2)
+
+    @respx.mock
+    async def test_failed_group_change_keeps_caches(self) -> None:
+        assign, flags = self._routes()
+        respx.patch(f"{BASE}/groupmembership").mock(return_value=Response(400, json={"message": "bad"}))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+
+        with pytest.raises(UpgradeApiError):
+            await client.set_group_membership({"classId": ["c2"]})
+
+        assert await self._look_up_again(client, assign, flags) == (False, False)
+
+    @respx.mock
+    async def test_set_alt_user_ids_keeps_caches(self) -> None:
+        assign, flags = self._routes()
+        respx.patch(f"{BASE}/useraliases").mock(return_value=Response(200, json=ALIAS_PAYLOAD))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        await client.get_all_feature_flags()
+
+        await client.set_alt_user_ids(["alias-1"])
+
+        assert await self._look_up_again(client, assign, flags) == (False, False)
+
+    @respx.mock
+    async def test_in_flight_assign_response_is_not_cached_after_group_change(self) -> None:
+        import asyncio
+
+        arrived = asyncio.Event()
+        release = asyncio.Event()
+        calls = 0
+
+        async def held_first_response(request: httpx.Request) -> Response:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                arrived.set()
+                await release.wait()
+            return Response(200, json=ASSIGNMENT_PAYLOAD)
+
+        assign = respx.post(f"{BASE}/assign").mock(side_effect=held_first_response)
+        respx.patch(f"{BASE}/groupmembership").mock(return_value=Response(200, json=USER_PAYLOAD))
+        client = make_client()
+
+        in_flight = asyncio.create_task(client.get_decision_point_assignment("home", "banner"))
+        await arrived.wait()
+        await client.set_group_membership({"classId": ["c2"]})
+        release.set()
+
+        # the original caller still gets the assignment it asked for...
+        assignment = await in_flight
+        assert assignment is not None and assignment.get_condition() == "control"
+        # ...but it isn't cached, so the next lookup refetches under the new groups
+        await client.get_all_experiment_conditions()
+        assert assign.call_count == 2

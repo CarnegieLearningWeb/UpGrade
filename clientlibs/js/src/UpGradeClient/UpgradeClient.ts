@@ -246,7 +246,10 @@ export default class UpgradeClient {
     group?: Record<string, Array<string>>,
     workingGroup?: Record<string, string>
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
-    return await this.apiService.init(group, workingGroup);
+    const response = await this.apiService.init(group, workingGroup);
+    // init may have changed the user's groups, which assignments and feature flags depend on
+    this.dataService.clearGroupDependentData();
+    return response;
   }
 
   /**
@@ -266,6 +269,7 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setGroupMembership(group);
     // If it does not throw error from setGroupMembership
     this.dataService.setGroup(group);
+    this.dataService.clearGroupDependentData();
     response = {
       ...response,
       workingGroup: this.dataService.getWorkingGroup(),
@@ -290,6 +294,7 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setWorkingGroup(workingGroup);
     // If it does not throw error from setWorkingGroup
     this.dataService.setWorkingGroup(workingGroup);
+    this.dataService.clearGroupDependentData();
     response = {
       ...response,
       group: this.dataService.getGroup(),
@@ -320,8 +325,10 @@ export default class UpgradeClient {
       ? null
       : await this.dataService.getExperimentAssignmentData();
     if (response == null) {
+      const generation = this.dataService.getExperimentAssignmentGeneration();
       response = await this.apiService.getAllExperimentConditions();
-      if (Array.isArray(response)) {
+      // don't cache a response for groups that were changed while the request was in flight
+      if (Array.isArray(response) && generation === this.dataService.getExperimentAssignmentGeneration()) {
         this.dataService.setExperimentAssignmentData(response);
       }
     }
@@ -341,10 +348,11 @@ export default class UpgradeClient {
    */
 
   async getDecisionPointAssignment(site: string, target = ''): Promise<Assignment | null> {
-    await this.getAllExperimentConditions();
+    // look up in the list this call fetched rather than the cache, which may have been invalidated meanwhile
+    const assignments = await this.getAllExperimentConditions();
 
-    if (this.dataService.getExperimentAssignmentData()) {
-      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
+    if (Array.isArray(assignments)) {
+      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target, assignments);
 
       const assignment = new Assignment(experimentAssignment, this.apiService);
 

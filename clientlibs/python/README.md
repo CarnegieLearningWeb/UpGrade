@@ -108,9 +108,9 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 
 | Method | Description |
 |---|---|
-| `init(group=None, working_group=None)` | Initialize the user and clear the local cache |
-| `set_group_membership(group)` | Update the user's group membership |
-| `set_working_group(working_group)` | Update the user's working group |
+| `init(group=None, working_group=None)` | Initialize the user, then clear cached assignments and feature flags |
+| `set_group_membership(group)` | Update the user's group membership, then clear cached assignments and feature flags |
+| `set_working_group(working_group)` | Update the user's working group, then clear cached assignments and feature flags |
 | `set_alt_user_ids(aliases)` | Register alternate identifiers for this user |
 
 ### Experiments

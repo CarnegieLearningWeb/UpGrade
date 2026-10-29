@@ -196,7 +196,15 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   firing. Moving JS and Java to null fails loudly. The option discussed was to keep placeholder-vs-`None` and make
   Java's placeholder match JS's: an empty `Condition` instead of `null`, type `Simple`, and add `getCondition()` /
   `getPayload()` shortcuts.
-- Whether `init()` clears the cache in every lib, or in none.
+- Whether `init()` clears the cache in every lib, or in none. *Decided and widened:* in all three libs, `init()`
+  (always), `setGroupMembership` and `setWorkingGroup` clear both the assignment and feature-flag caches once the
+  server confirms the call; a failed call leaves them alone. `setAltUserIds` doesn't clear them, since aliases don't
+  change the user's groups. Previously only Python's `init()` cleared anything, and it did so before the request.
+  - The assignment cache got the same generation guard as feature flags, so an in-flight `/assign` can't refill a
+    cleared cache. Java guards it with a lock, and Python makes the check and write atomic under a lock.
+  - `getDecisionPointAssignment` (JS/Python) looks up in the list it just fetched, not the cache.
+  - Side effect: within-subjects condition rotation restarts after a group change, since the refetched list comes
+    back in the server's order.
 - Retry policy and default timeout, with one documented value across all three.
 - Java `markDecisionPoint` `clientError`/`uniquifier` order, and Python's `condition`-first order. Fixing either
   breaks existing callers, so it may be better to document than change.

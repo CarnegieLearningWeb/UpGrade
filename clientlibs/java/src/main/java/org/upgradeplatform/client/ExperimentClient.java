@@ -64,7 +64,12 @@ public class ExperimentClient implements AutoCloseable {
 	private final APIService apiService;
 	private final String context;
 
+	// Assignment cache. Guarded by assignmentLock: responses arrive on Jersey threads while invalidation can be
+	// triggered from any thread. assignmentGeneration is bumped on every invalidation, so a response to a request
+	// sent before it is never cached over it.
+	private final Object assignmentLock = new Object();
 	private List<ExperimentsResponse> allExperiments;
+	private long assignmentGeneration;
 	// Feature flag cache and session groups. Guarded by featureFlagLock: responses arrive on Jersey threads while
 	// the session-group setters run on the caller's thread.
 	private final Object featureFlagLock = new Object();
@@ -145,6 +150,8 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									// init may have changed the user's groups, which assignments and flags depend on
+									invalidateGroupDependentCaches();
 									readResponseToCallback(response, callbacks, InitializeUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -178,6 +185,7 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									invalidateGroupDependentCaches();
 									readResponseToCallback(response, callbacks, ExperimentUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -209,6 +217,7 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									invalidateGroupDependentCaches();
 									readResponseToCallback(response, callbacks, ExperimentUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -234,7 +243,14 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void getAllExperimentConditions(boolean ignoreCache,
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		if (allExperiments == null || ignoreCache) {
+		final List<ExperimentsResponse> cachedExperiments;
+		final long requestGeneration;
+		synchronized (assignmentLock) {
+			cachedExperiments = this.allExperiments;
+			requestGeneration = this.assignmentGeneration;
+		}
+
+		if (cachedExperiments == null || ignoreCache) {
 			ExperimentRequest experimentRequest = new ExperimentRequest(this.context);
 			AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 			Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
@@ -247,10 +263,17 @@ public class ExperimentClient implements AutoCloseable {
 								public void completed(Response response) {
 									if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 										// Cache allExperiment data before invoking the callback, so a mark issued from
-										// inside onSuccess already sees the cached assignment
+										// inside onSuccess already sees the cached assignment, unless the user's groups
+										// changed while this request was in flight (the caller still gets the response)
 										readResponseToCallback(response, callbacks,
 												new GenericType<List<ExperimentsResponse>>() {
-												}, ae -> allExperiments = ae);
+												}, ae -> {
+													synchronized (assignmentLock) {
+														if (requestGeneration == assignmentGeneration) {
+															allExperiments = ae;
+														}
+													}
+												});
 									} else {
 										String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 										ErrorResponse error = new ErrorResponse(response.getStatus(),
@@ -269,7 +292,7 @@ public class ExperimentClient implements AutoCloseable {
 							}));
 		} else {
 			if (callbacks != null) {
-				callbacks.onSuccess(allExperiments);
+				callbacks.onSuccess(cachedExperiments);
 			}
 		}
 	}
@@ -358,12 +381,38 @@ public class ExperimentClient implements AutoCloseable {
 				.orElse(new ExperimentsResponse());
 	}
 
+	private List<ExperimentsResponse> cachedExperiments() {
+		synchronized (assignmentLock) {
+			return this.allExperiments;
+		}
+	}
+
+	/**
+	 * Invalidate everything that depends on the user's groups (assignments and feature flags), after a call that
+	 * may have changed them.
+	 */
+	private void invalidateGroupDependentCaches() {
+		synchronized (assignmentLock) {
+			this.allExperiments = null;
+			this.assignmentGeneration++;
+		}
+		invalidateFeatureFlagCache();
+	}
+
+	private void invalidateFeatureFlagCache() {
+		synchronized (featureFlagLock) {
+			this.allFeatureFlags = null;
+			this.featureFlagGeneration++;
+		}
+	}
+
 	private void rotateConditions(String experimentId) {
-		if (this.allExperiments == null || isStringNull(experimentId)) {
+		List<ExperimentsResponse> experiments = cachedExperiments();
+		if (experiments == null || isStringNull(experimentId)) {
 			return;
 		}
 
-		this.allExperiments.stream()
+		experiments.stream()
 				.filter(experiment -> experiment.getAssignedCondition() != null
 						&& experiment.getAssignedCondition().length > 0
 						&& Arrays.stream(experiment.getAssignedCondition())
@@ -385,10 +434,11 @@ public class ExperimentClient implements AutoCloseable {
 	 */
 	private MarkExperimentRequestData withCachedExperimentMetadata(MarkExperimentRequestData data) {
 		Condition requested = data.getAssignedCondition();
-		if (this.allExperiments == null || !isStringNull(requested.getExperimentId())) {
+		List<ExperimentsResponse> experiments = cachedExperiments();
+		if (experiments == null || !isStringNull(requested.getExperimentId())) {
 			return data;
 		}
-		Condition[] cachedConditions = findExperimentResponse(data.getSite(), data.getTarget(), this.allExperiments)
+		Condition[] cachedConditions = findExperimentResponse(data.getSite(), data.getTarget(), experiments)
 				.getAssignedCondition();
 		Condition cached = cachedConditions != null && cachedConditions.length > 0 ? cachedConditions[0] : null;
 		if (cached == null || isStringNull(cached.getExperimentId())) {
@@ -519,8 +569,7 @@ public class ExperimentClient implements AutoCloseable {
 		synchronized (featureFlagLock) {
 			this.featureFlagGroupsForSession = groupsForSession;
 			this.featureFlagIncludeStoredUserGroups = includeStoredUserGroups;
-			this.featureFlagGeneration++;
-			this.allFeatureFlags = null;
+			invalidateFeatureFlagCache();
 		}
 	}
 
@@ -531,8 +580,7 @@ public class ExperimentClient implements AutoCloseable {
 		synchronized (featureFlagLock) {
 			this.featureFlagGroupsForSession = null;
 			this.featureFlagIncludeStoredUserGroups = null;
-			this.featureFlagGeneration++;
-			this.allFeatureFlags = null;
+			invalidateFeatureFlagCache();
 		}
 	}
 

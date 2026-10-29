@@ -13,6 +13,7 @@ from upgrade_client_lib.data_service import DataService
 from upgrade_client_lib.types.enums import BinaryRewardValue, MarkedDecisionPointStatus
 from upgrade_client_lib.types.requests import FeatureFlagUserGroupsForSession, LogInput
 from upgrade_client_lib.types.responses import (
+    ExperimentAssignment,
     FeatureFlag,
     InitializeUserResponse,
     LogEventResponse,
@@ -123,9 +124,13 @@ class UpgradeClient:
         group: dict[str, list[str]] | None = None,
         working_group: dict[str, str] | None = None,
     ) -> InitializeUserResponse:
-        """Initialize (or re-initialize) the user and clear the local cache."""
+        """Initialize (or re-initialize) the user, then clear the local cache.
+
+        The cache is cleared once the server confirms, since ``init`` may have changed the user's groups.
+        """
+        response = await self._api_service.init_user(group=group, working_group=working_group)
         self._data_service.clear()
-        return await self._api_service.init_user(group=group, working_group=working_group)
+        return response
 
     def init_sync(
         self,
@@ -133,8 +138,9 @@ class UpgradeClient:
         working_group: dict[str, str] | None = None,
     ) -> InitializeUserResponse:
         """Synchronous variant of :meth:`init`."""
+        response = self._api_service.init_user_sync(group=group, working_group=working_group)
         self._data_service.clear()
-        return self._api_service.init_user_sync(group=group, working_group=working_group)
+        return response
 
     # ------------------------------------------------------------------
     # set_group_membership
@@ -143,14 +149,18 @@ class UpgradeClient:
     async def set_group_membership(
         self, group: dict[str, list[str]]
     ) -> InitializeUserResponse:
-        """Update the user's group membership."""
-        return await self._api_service.set_group_membership(group)
+        """Update the user's group membership, then clear cached assignments and feature flags."""
+        response = await self._api_service.set_group_membership(group)
+        self._data_service.clear()
+        return response
 
     def set_group_membership_sync(
         self, group: dict[str, list[str]]
     ) -> InitializeUserResponse:
         """Synchronous variant of :meth:`set_group_membership`."""
-        return self._api_service.set_group_membership_sync(group)
+        response = self._api_service.set_group_membership_sync(group)
+        self._data_service.clear()
+        return response
 
     # ------------------------------------------------------------------
     # set_working_group
@@ -159,14 +169,18 @@ class UpgradeClient:
     async def set_working_group(
         self, working_group: dict[str, str]
     ) -> InitializeUserResponse:
-        """Update the user's working group."""
-        return await self._api_service.set_working_group(working_group)
+        """Update the user's working group, then clear cached assignments and feature flags."""
+        response = await self._api_service.set_working_group(working_group)
+        self._data_service.clear()
+        return response
 
     def set_working_group_sync(
         self, working_group: dict[str, str]
     ) -> InitializeUserResponse:
         """Synchronous variant of :meth:`set_working_group`."""
-        return self._api_service.set_working_group_sync(working_group)
+        response = self._api_service.set_working_group_sync(working_group)
+        self._data_service.clear()
+        return response
 
     # ------------------------------------------------------------------
     # get_all_experiment_conditions
@@ -180,21 +194,13 @@ class UpgradeClient:
         Results are cached after the first fetch.  Pass ``ignore_cache=True``
         to force a fresh fetch and update the cache.
         """
-        cached = None if ignore_cache else self._data_service.get_all_assignments()
-        if cached is None:
-            cached = await self._api_service.get_all_experiment_conditions()
-            self._data_service.set_assignments(cached)
-        return [Assignment(a, self._api_service) for a in cached]
+        return [Assignment(a, self._api_service) for a in await self._raw_assignments(ignore_cache)]
 
     def get_all_experiment_conditions_sync(
         self, ignore_cache: bool = False
     ) -> list[Assignment]:
         """Synchronous variant of :meth:`get_all_experiment_conditions`."""
-        cached = None if ignore_cache else self._data_service.get_all_assignments()
-        if cached is None:
-            cached = self._api_service.get_all_experiment_conditions_sync()
-            self._data_service.set_assignments(cached)
-        return [Assignment(a, self._api_service) for a in cached]
+        return [Assignment(a, self._api_service) for a in self._raw_assignments_sync(ignore_cache)]
 
     # ------------------------------------------------------------------
     # get_decision_point_assignment
@@ -208,17 +214,14 @@ class UpgradeClient:
         Fetches all experiment conditions first if the cache is cold.
         Returns ``None`` when no experiment is running at this decision point.
         """
-        if self._data_service.get_all_assignments() is None:
-            await self.get_all_experiment_conditions()
-        return self._assignment_for(site, target)
+        # look up in the list this call fetched rather than the cache, which may have been invalidated meanwhile
+        return self._assignment_in(await self._raw_assignments(ignore_cache=False), site, target)
 
     def get_decision_point_assignment_sync(
         self, site: str, target: str | None = ""
     ) -> Assignment | None:
         """Synchronous variant of :meth:`get_decision_point_assignment`."""
-        if self._data_service.get_all_assignments() is None:
-            self.get_all_experiment_conditions_sync()
-        return self._assignment_for(site, target)
+        return self._assignment_in(self._raw_assignments_sync(ignore_cache=False), site, target)
 
     # ------------------------------------------------------------------
     # mark_decision_point
@@ -420,8 +423,29 @@ class UpgradeClient:
         self._data_service.set_feature_flags(fresh, generation)
         return fresh
 
-    def _assignment_for(self, site: str, target: str | None) -> Assignment | None:
-        raw = self._data_service.get_assignment(site, target)
+    async def _raw_assignments(self, ignore_cache: bool) -> list[ExperimentAssignment]:
+        cached = None if ignore_cache else self._data_service.get_all_assignments()
+        if cached is not None:
+            return cached
+        generation = self._data_service.get_assignment_generation()
+        fresh = await self._api_service.get_all_experiment_conditions()
+        # not cached if the user's groups changed while the request was in flight
+        self._data_service.set_assignments(fresh, generation)
+        return fresh
+
+    def _raw_assignments_sync(self, ignore_cache: bool) -> list[ExperimentAssignment]:
+        cached = None if ignore_cache else self._data_service.get_all_assignments()
+        if cached is not None:
+            return cached
+        generation = self._data_service.get_assignment_generation()
+        fresh = self._api_service.get_all_experiment_conditions_sync()
+        self._data_service.set_assignments(fresh, generation)
+        return fresh
+
+    def _assignment_in(
+        self, assignments: list[ExperimentAssignment], site: str, target: str | None
+    ) -> Assignment | None:
+        raw = DataService.find_assignment(assignments, site, target)
         return Assignment(raw, self._api_service) if raw is not None else None
 
     def _mark_request(
