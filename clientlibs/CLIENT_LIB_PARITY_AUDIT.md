@@ -208,6 +208,11 @@ safely would need server-side idempotency (e.g. a client-generated request id).
 - Retry policy and default timeout, with one documented value across all three.
 - Java `markDecisionPoint` `clientError`/`uniquifier` order, and Python's `condition`-first order. Fixing either
   breaks existing callers, so it may be better to document than change.
+  *Decided: document rather than change.* Changing either would silently swap values for existing callers, since
+  the swapped arguments are all strings. Documented in the Java Javadoc (`ExperimentClient.markDecisionPoint`,
+  `Assignment.markDecisionPoint`), the Java README (whose stale `markExperimentPoint` section was replaced with
+  `markDecisionPoint`, including a cross-library signature table), the Python README (recommending keyword
+  arguments), and the JS README (pointing to the options-object form).
 - Java auth token: optional, to match the others.
 
 **Phase D: guardrails**

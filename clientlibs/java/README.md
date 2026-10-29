@@ -45,12 +45,24 @@ Returns the Experiment Condition for the partition and point received from the g
 
 > getExperimentCondition(String experimentPoint,  String experimentId, callback)
 
-## markExperimentPoint
-Calls markExperimentPoint for experiment point and partitionId. It will use the user definition from initialized user
+## markDecisionPoint
+Use this function to record that the user encountered a decision point. Pass `null` as the condition (with `MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED`) when no experiment is running there.
 
-> markExperimentPoint(String experimentPoint, callback)
+> markDecisionPoint(String site, String condition, MarkedDecisionPointStatus status, callback)
 
-> markExperimentPoint(String experimentPoint, String experimentId, callback)
+> markDecisionPoint(String site, String target, String condition, MarkedDecisionPointStatus status, callback)
+
+> markDecisionPoint(String site, String target, String condition, MarkedDecisionPointStatus status, String clientError, String uniquifier, callback)
+
+There are also overloads without `target`, with only `clientError`, and taking a `MarkExperimentRequestData`. An `Assignment` from `getExperimentCondition` can mark itself with `assignment.markDecisionPoint(status, [clientError,] [uniquifier,] callback)`; with a single string argument it's the uniquifier.
+
+**Argument order differs from the JS and Python libraries.** In Java, `clientError` comes *before* `uniquifier`; JS and Python take `uniquifier` first, and Python also takes `condition, status` before `site`. Both are plain strings, so swapping them compiles but sends each value in the other's field.
+
+| Library | Client-level mark | Assignment mark |
+|---|---|---|
+| Java | `(site, [target,] condition, status, [clientError, [uniquifier,]] cb)` | `(status, [clientError,] [uniquifier,] cb)` |
+| JS | `(site, target, condition, status, uniquifier?, clientError?)`, or an options object | `(status, uniquifier?, clientError?)` |
+| Python | `(condition, status, site, target="", uniquifier="", client_error="")` | `(status, uniquifier="", client_error="")` |
 
 ## failedExperimentPoint
 

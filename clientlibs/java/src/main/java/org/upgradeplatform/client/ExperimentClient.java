@@ -463,6 +463,15 @@ public class ExperimentClient implements AutoCloseable {
 		return resultCondition;
 	}
 
+	/**
+	 * Record that the user encountered a decision point. Overloads add {@code target}, then {@code clientError},
+	 * then {@code uniquifier}.
+	 * <p>
+	 * Note the argument order differs from the JS and Python libraries: here {@code clientError} comes
+	 * <em>before</em> {@code uniquifier} (JS: {@code site, target, condition, status, uniquifier, clientError};
+	 * Python: {@code condition, status, site, target, uniquifier, client_error}). Both are plain strings, so
+	 * swapping them compiles but sends each value in the other's field.
+	 */
 	public void markDecisionPoint(final String site, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkDecisionPoint> callbacks) {
 		MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, "",

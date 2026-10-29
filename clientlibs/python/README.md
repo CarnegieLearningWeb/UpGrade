@@ -119,7 +119,18 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 |---|---|
 | `get_all_experiment_conditions(ignore_cache=False)` | Return all `Assignment` objects for this user/context |
 | `get_decision_point_assignment(site, target="")` | Return the `Assignment` for a specific decision point, or `None` |
-| `mark_decision_point( condition, status, site, target = "", uniquifier="", client_error="")` | Record that the user encountered a decision point |
+| `mark_decision_point(condition, status, site, target="", uniquifier="", client_error="")` | Record that the user encountered a decision point |
+
+**Argument order differs from the JS and Java libraries**, which take `site, target` first and `condition, status` after (JS: `markDecisionPoint(site, target, condition, status, uniquifier, clientError)`; Java additionally puts `clientError` before `uniquifier`). If you're porting code from another library, pass keyword arguments so the order can't matter:
+
+```python
+await client.mark_decision_point(
+    condition="control",
+    status=UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+    site="home",
+    target="banner",
+)
+```
 
 When no experiment is running at a decision point, mark it with `condition=None` and the `NO_CONDITION_ASSIGNED` status:
 

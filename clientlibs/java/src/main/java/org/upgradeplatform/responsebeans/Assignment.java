@@ -101,6 +101,11 @@ public class Assignment {
         this.markDecisionPoint(status, "", uniquifier, callbacks);
     }
 
+    /**
+     * Note the argument order differs from the JS and Python libraries, which take {@code uniquifier} before
+     * {@code clientError}. With a single string argument ({@code markDecisionPoint(status, uniquifier, cb)}),
+     * the string is the uniquifier.
+     */
     public void markDecisionPoint(MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkDecisionPoint> callbacks){
         Condition condition = assignedCondition == null ? new Condition()
                 : new Condition(assignedCondition.getId(), assignedCondition.getConditionCode(),
