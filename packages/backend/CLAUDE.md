@@ -75,6 +75,10 @@ Available at `/swagger` when `SWAGGER_ENABLED=true`. Auto-generated from JSDoc `
 
 ~49% current, 80% goal. Tests live in `test/` (not alongside source files).
 
+## Preview Users
+
+Preview users (`PreviewUserService`, `previewUser` branches in `ExperimentAssignmentService`, `getValidExperimentsWithPreview`) are a feature that is unused but not removed, with no plans to revive it in current state, but also no plans to get rid of it. Ignore them when reasoning about or testing assignment behavior: don't design around them, don't count preview-only divergences (e.g. `/assign` reading `getValidExperimentsWithPreview` while `/mark` reads `getCachedValidExperiments`) as bugs, and don't add preview-user test coverage. The exception would be if it's clear that this dormant code would get in the way and potentially cause bugs, then bring it up.
+
 ## Precomputed Segment Lists (Feature Flags)
 
 Segment inclusion/exclusion for **feature flags** is precomputed and stored flat in the `feature_flag_precomputed_segment` table rather than resolved on-the-fly at assignment time.

@@ -12,6 +12,7 @@ import { ConditionPosteriorState } from '../models/ConditionPosteriorState';
 import { ThompsonSamplingReward } from '../models/ThompsonSamplingReward';
 import { CacheService } from './CacheService';
 import { RewardValidator } from '../controllers/validators/RewardValidator';
+import { DecisionPointRef } from '../controllers/validators/DecisionPointValidator';
 import { RequestedExperimentUser } from '../controllers/validators/ExperimentUserValidator';
 
 export interface RewardAcceptedResponse {
@@ -270,7 +271,7 @@ export class ThompsonSamplingRewardService {
 
   private async findConfigByDecisionPoint(
     context: string,
-    decisionPoint: { site: string; target: string },
+    decisionPoint: DecisionPointRef,
     request: RewardValidator,
     logger: UpgradeLogger
   ): Promise<ThompsonSamplingExperimentConfig> {

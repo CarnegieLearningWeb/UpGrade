@@ -589,6 +589,206 @@ describe('Experiment Assignment Service Test', () => {
     });
   });
 
+  describe('assign scoped to one decision point', () => {
+    const context = 'context';
+
+    // Builds an ENROLLING individual experiment at the given [site, target] decision points, with condition ids
+    // unique to the experiment so an assignment identifies which experiment produced it.
+    const makeExperiment = (id: string, decisionPoints: [string, string][]) => {
+      const exp = structuredClone(simpleIndividualAssignmentExperiment);
+      exp.id = id;
+      exp.conditions = exp.conditions.map((condition, index) => ({ ...condition, id: `${id}-condition-${index}` }));
+      exp.partitions = decisionPoints.map(([site, target], index) => ({
+        ...exp.partitions[0],
+        id: `${id}-dp-${index}`,
+        site,
+        target,
+      }));
+      return exp;
+    };
+
+    // A-B-C chain through shared decision points (B is the only link between A and C), E shares DP1 with A,
+    // D stands alone, and F/G share a site but F has no target.
+    const expA = makeExperiment('exp-A', [
+      ['DP1', 'T'],
+      ['DP2', 'T'],
+    ]);
+    const expB = makeExperiment('exp-B', [
+      ['DP2', 'T'],
+      ['DP3', 'T'],
+    ]);
+    const expC = makeExperiment('exp-C', [['DP3', 'T']]);
+    const expD = makeExperiment('exp-D', [['DP4', 'T']]);
+    const expE = makeExperiment('exp-E', [['DP1', 'T']]);
+    const expF = makeExperiment('exp-F', [['Shared', '']]);
+    const expG = makeExperiment('exp-G', [['Shared', 'T']]);
+    const contextExperiments = [expA, expB, expC, expD, expE, expF, expG];
+    const contextDecisionPoints = contextExperiments.flatMap((exp) =>
+      exp.partitions.map(({ site, target }) => ({ site, target }))
+    );
+
+    beforeEach(() => {
+      testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves(contextExperiments);
+    });
+
+    const users = Array.from({ length: 150 }, (_, index) => ({
+      id: `user-${index}`,
+      requestedUserId: `user-${index}`,
+      group: {},
+      workingGroup: {},
+    }));
+    const excludedFromB = new Set(users.filter((_, index) => index % 3 === 0).map((user) => user.id));
+
+    // Varies per-user state that changes pool selection: some users are already enrolled in C, so selection must
+    // stick to it, and some are excluded from B (the only link between A and C), which splits that pool first.
+    const stubUserStateThatChangesSelection = () => {
+      const enrolledInC = new Set(users.filter((_, index) => index % 7 === 0).map((user) => user.id));
+      testedModule.individualEnrollmentRepository.findEnrollments = sandbox
+        .stub()
+        .callsFake(async (userId: string, experimentIds: string[]) =>
+          enrolledInC.has(userId) && experimentIds.includes(expC.id)
+            ? [{ experimentId: expC.id, conditionId: expC.conditions[0].id }]
+            : []
+        );
+      sandbox
+        .stub(testedModule, 'experimentLevelExclusionInclusion')
+        .callsFake(async (experiments: any[], user: any) => {
+          const excluded = experiments.filter((exp) => exp.id === expB.id && excludedFromB.has(user.id));
+          return [
+            experiments.filter((exp) => !excluded.includes(exp)),
+            excluded.map((experiment) => ({ experiment, reason: 'user', matchedGroup: false })),
+          ];
+        });
+    };
+
+    it('returns the same assignment at each decision point as the full-context assign', async () => {
+      stubUserStateThatChangesSelection();
+
+      for (const user of users) {
+        const full = await testedModule.getAllExperimentConditions(user, context, loggerMock);
+        for (const decisionPoint of contextDecisionPoints) {
+          const focused = await testedModule.getAllExperimentConditions(user, context, loggerMock, decisionPoint);
+          const fullAtDecisionPoint = full.filter(
+            (assignment) => assignment.site === decisionPoint.site && assignment.target === decisionPoint.target
+          );
+          expect(focused).toEqual(fullAtDecisionPoint);
+          expect(focused.length).toBeLessThanOrEqual(1);
+        }
+      }
+    });
+
+    it('marks the experiment the focused assign returned, at every decision point', async () => {
+      stubUserStateThatChangesSelection();
+      testedModule.monitoredDecisionPointRepository = {
+        findOne: sandbox.stub().resolves(undefined),
+        saveRawJson: sandbox.stub().callsFake(async (doc: any) => doc),
+      };
+      const enrollmentUpdate = sandbox
+        .stub(testedModule, 'updateEnrollmentExclusionDocumentsAndCheckEndingCriteria')
+        .resolves();
+      const mark = (user: any, decisionPoint: any, condition: string | null, experimentId?: string) =>
+        testedModule.markExperimentPoint(
+          user,
+          decisionPoint.site,
+          MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+          condition,
+          loggerMock,
+          context,
+          experimentId,
+          decisionPoint.target
+        );
+
+      for (const user of users) {
+        for (const decisionPoint of contextDecisionPoints) {
+          const [assignment] = await testedModule.getAllExperimentConditions(user, context, loggerMock, decisionPoint);
+          const assigned = assignment?.assignedCondition[0];
+
+          // Without an experimentId (as Assignment.markDecisionPoint sends it), mark runs its own pool selection over
+          // the whole context.
+          enrollmentUpdate.resetHistory();
+          const marked = await mark(user, decisionPoint, assigned?.conditionCode ?? null);
+          if (assigned) {
+            expect(marked.experimentId).toEqual(assigned.experimentId);
+            expect(enrollmentUpdate.firstCall.args[2].id).toEqual(assigned.experimentId);
+          } else {
+            // Nothing assigned here: mark may only record an exclusion from an experiment the user is excluded from,
+            // never enroll them in one assign didn't give them.
+            expect([null, ...(excludedFromB.has(user.id) ? [expB.id] : [])]).toContain(marked.experimentId);
+          }
+
+          // With the experimentId assign returned (as ctp sends it), mark must accept it at this decision point.
+          if (assigned) {
+            const markedWithId = await mark(user, decisionPoint, assigned.conditionCode, assigned.experimentId);
+            expect(markedWithId.experimentId).toEqual(assigned.experimentId);
+          }
+        }
+      }
+    });
+
+    it('only queries enrollments and exclusions for experiments in the decision point pool', async () => {
+      const userDoc = { id: 'user123', requestedUserId: 'user123', group: {}, workingGroup: {} };
+
+      await testedModule.getAllExperimentConditions(userDoc, context, loggerMock, { site: 'DP1', target: 'T' });
+
+      const queriedExperimentIds = testedModule.individualEnrollmentRepository.findEnrollments.firstCall.args[1];
+      expect([...queriedExperimentIds].sort()).toEqual([expA.id, expB.id, expC.id, expE.id].sort());
+    });
+
+    it('only queries enrollments and exclusions for experiments in the marked decision point pool', async () => {
+      const userDoc = { id: 'user123', requestedUserId: 'user123', group: {}, workingGroup: {} };
+      testedModule.monitoredDecisionPointRepository = {
+        findOne: sandbox.stub().resolves(undefined),
+        saveRawJson: sandbox.stub().callsFake(async (doc: any) => doc),
+      };
+      sandbox.stub(testedModule, 'updateEnrollmentExclusionDocumentsAndCheckEndingCriteria').resolves();
+
+      await testedModule.markExperimentPoint(
+        userDoc,
+        'DP1',
+        MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        null,
+        loggerMock,
+        context,
+        undefined,
+        'T'
+      );
+
+      const queriedExperimentIds = testedModule.individualEnrollmentRepository.findEnrollments.firstCall.args[1];
+      expect([...queriedExperimentIds].sort()).toEqual([expA.id, expB.id, expC.id, expE.id].sort());
+    });
+
+    // DecisionPointValidator turns an omitted target into '' (see ExperimentAssignmentValidator.test.ts).
+    it('treats the targetless decision point as its own, not every target at the site', async () => {
+      const userDoc = { id: 'user123', requestedUserId: 'user123', group: {}, workingGroup: {} };
+
+      const targetless = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock, {
+        site: 'Shared',
+        target: '',
+      });
+      const targeted = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock, {
+        site: 'Shared',
+        target: 'T',
+      });
+
+      expect(targetless.map((assignment) => [assignment.site, assignment.target])).toEqual([['Shared', '']]);
+      expect(targetless[0].assignedCondition[0].experimentId).toEqual(expF.id);
+      expect(targeted.map((assignment) => [assignment.site, assignment.target])).toEqual([['Shared', 'T']]);
+      expect(targeted[0].assignedCondition[0].experimentId).toEqual(expG.id);
+    });
+
+    it('returns no assignments and runs no enrollment queries for a decision point not in the context', async () => {
+      const userDoc = { id: 'user123', requestedUserId: 'user123', group: {}, workingGroup: {} };
+
+      const result = await testedModule.getAllExperimentConditions(userDoc, context, loggerMock, {
+        site: 'Unknown',
+        target: 'T',
+      });
+
+      expect(result).toEqual([]);
+      expect(testedModule.individualEnrollmentRepository.findEnrollments.called).toBe(false);
+    });
+  });
+
   it('should not pool experiments together due to a shared pending decision point site/target', async () => {
     const context = 'context';
     const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: {} };
