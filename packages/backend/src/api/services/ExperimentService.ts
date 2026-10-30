@@ -106,6 +106,7 @@ import { MetricService } from './MetricService';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { DeletionTransaction } from '../../types/DeletionTransaction';
 
 const errorRemovePart = 'An instance of ExperimentDTO has failed the validation:\n - ';
 const stratificationErrorMessage =
@@ -425,15 +426,20 @@ export class ExperimentService {
   public async delete(
     experimentId: string,
     currentUser: UserDTO,
-    options?: { logger?: UpgradeLogger; existingEntityManager?: EntityManager }
+    options?: {
+      logger?: UpgradeLogger;
+      existingEntityManager?: EntityManager;
+      executeTransaction?: DeletionTransaction;
+    }
   ): Promise<Experiment | undefined> {
-    const { logger, existingEntityManager } = options;
+    const { logger, existingEntityManager, executeTransaction } = options;
     if (logger) {
       logger.info({ message: `Delete experiment =>  ${experimentId}` });
     }
     const entityManager = existingEntityManager || this.dataSource.manager;
-    return await entityManager.transaction(async (transactionalEntityManager) => {
-      const experiment = await this.experimentRepository.findOneExperiment(experimentId);
+    const transaction: DeletionTransaction = executeTransaction || ((work) => entityManager.transaction(work));
+    return await transaction(async (transactionalEntityManager) => {
+      const experiment = await this.experimentRepository.findOneExperiment(experimentId, transactionalEntityManager);
 
       if (experiment) {
         await this.clearExperimentCacheDetail(experiment.context[0]);
@@ -447,7 +453,12 @@ export class ExperimentService {
         };
 
         // Add log for experiment deleted
-        this.experimentAuditLogRepository.saveRawJson(LOG_TYPE.EXPERIMENT_DELETED, deleteAuditLogData, currentUser);
+        await this.experimentAuditLogRepository.saveRawJson(
+          LOG_TYPE.EXPERIMENT_DELETED,
+          deleteAuditLogData,
+          currentUser,
+          transactionalEntityManager
+        );
 
         await Promise.all(
           experiment.experimentSegmentInclusion.map(async (segmentInclusion) => {

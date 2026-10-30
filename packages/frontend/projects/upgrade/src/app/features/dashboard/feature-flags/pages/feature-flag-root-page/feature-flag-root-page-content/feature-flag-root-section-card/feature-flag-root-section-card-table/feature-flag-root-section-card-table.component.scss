@@ -63,6 +63,12 @@
       }
     }
 
+    &.has-batch-controls .name-column {
+      width: calc(22% - 56px);
+      padding-left: 0;
+      padding-right: 16px;
+    }
+
     .name-column {
       width: 22%;
       padding-left: 32px;

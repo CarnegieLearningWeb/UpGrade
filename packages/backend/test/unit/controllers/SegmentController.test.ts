@@ -1,3 +1,4 @@
+import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import app from '../../utils/expressApp';
 import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
@@ -14,6 +15,7 @@ describe('Segment Controller Testing', () => {
     configureLogger();
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
+    Container.set(BatchDeleteService, {} as BatchDeleteService);
 
     // set mock container
     Container.set(SegmentService, new SegmentServiceMock());
