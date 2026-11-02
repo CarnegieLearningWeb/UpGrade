@@ -2,7 +2,12 @@
   <!-- top part of the dialog -->
   <header class="header-container dense-2">
     <h4 class="ft-22-700 header-title">{{ title | translate }}</h4>
-    <button mat-icon-button mat-dialog-close class="close-btn">
+    <button
+      mat-icon-button
+      mat-dialog-close
+      class="close-btn"
+      [attr.aria-label]="'global.close-dialog.text' | translate"
+    >
       <mat-icon>close</mat-icon>
     </button>
   </header>

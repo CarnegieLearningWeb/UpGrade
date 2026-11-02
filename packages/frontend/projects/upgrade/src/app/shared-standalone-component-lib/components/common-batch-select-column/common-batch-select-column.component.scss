@@ -1,0 +1,36 @@
+@use '@angular/material' as mat;
+
+// The cells render inside the host table rather than this component's host element, so scope by the
+// cell class instead of :host. This also matches the theme's checkbox specificity.
+.batch-select-column {
+  // Host tables style every cell through ::ng-deep with selectors this component's scoped styles can't
+  // outrank (e.g. root tables' min-width: 96px and padding-left: 0), so the column's size has to win here.
+  width: 56px !important;
+  min-width: 56px !important;
+  padding: 0 8px !important;
+}
+
+.batch-select-column .mat-mdc-checkbox {
+  width: 40px;
+
+  @include mat.checkbox-overrides(
+    (
+      unselected-icon-color: var(--grey-7),
+      unselected-hover-icon-color: var(--grey-7),
+      unselected-focus-icon-color: var(--grey-7),
+      selected-hover-state-layer-opacity: 0,
+      unselected-hover-state-layer-opacity: 0,
+      selected-focus-state-layer-opacity: 0,
+      unselected-focus-state-layer-opacity: 0,
+      selected-pressed-state-layer-opacity: 0,
+      unselected-pressed-state-layer-opacity: 0,
+    )
+  );
+
+  // Keep keyboard focus visible without leaving a circle after a pointer click.
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--blue);
+    outline-offset: -4px;
+    border-radius: 4px;
+  }
+}

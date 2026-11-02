@@ -1,3 +1,5 @@
+import { BatchDeleteResult } from 'upgrade_types';
+import { batchHttpContext } from '../batch-actions/batch-actions.http';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-tokens';
@@ -25,12 +27,21 @@ import { IImportFile, LIST_FILTER_MODE } from 'upgrade_types';
 
 @Injectable()
 export class FeatureFlagsDataService {
+  batchDelete(ids: string[]): Observable<BatchDeleteResult> {
+    return this.http.post<BatchDeleteResult>(API_ENDPOINTS.flagsBatchDelete, { ids }, { context: batchHttpContext() });
+  }
+
   mockFeatureFlags: FeatureFlag[] = [];
   constructor(private http: HttpClient) {}
 
-  fetchFeatureFlagsPaginated(params: FeatureFlagsPaginationParams): Observable<FeatureFlagsPaginationInfo> {
+  fetchFeatureFlagsPaginated(
+    params: FeatureFlagsPaginationParams,
+    batchRefresh = false
+  ): Observable<FeatureFlagsPaginationInfo> {
     const url = API_ENDPOINTS.getPaginatedFlags;
-    return this.http.post<FeatureFlagsPaginationInfo>(url, params);
+    return batchRefresh
+      ? this.http.post<FeatureFlagsPaginationInfo>(url, params, { context: batchHttpContext() })
+      : this.http.post<FeatureFlagsPaginationInfo>(url, params);
   }
 
   fetchFeatureFlagById(id: string) {

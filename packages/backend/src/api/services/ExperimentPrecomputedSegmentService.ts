@@ -6,6 +6,8 @@ import { ExperimentSegmentExclusionRepository } from '../repositories/Experiment
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentPrecomputedSegment } from '../models/ExperimentPrecomputedSegment';
+import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
+import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { CacheService } from './CacheService';
 import { CACHE_PREFIX } from 'upgrade_types';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -53,13 +55,19 @@ export class ExperimentPrecomputedSegmentService extends PrecomputedSegmentServi
     };
   }
 
-  protected async findOwnerIdsBySegmentId(segmentId: string): Promise<string[]> {
+  protected async findOwnerIdsBySegmentId(segmentId: string, entityManager?: EntityManager): Promise<string[]> {
+    const inclusionRepository = entityManager
+      ? entityManager.getRepository(ExperimentSegmentInclusion)
+      : this.experimentSegmentInclusionRepository;
+    const exclusionRepository = entityManager
+      ? entityManager.getRepository(ExperimentSegmentExclusion)
+      : this.experimentSegmentExclusionRepository;
     const [inclusionRecords, exclusionRecords] = await Promise.all([
-      this.experimentSegmentInclusionRepository.find({
+      inclusionRepository.find({
         where: { segment: { id: segmentId } },
         relations: { experiment: true },
       }),
-      this.experimentSegmentExclusionRepository.find({
+      exclusionRepository.find({
         where: { segment: { id: segmentId } },
         relations: { experiment: true },
       }),
@@ -98,8 +106,8 @@ export class ExperimentPrecomputedSegmentService extends PrecomputedSegmentServi
     this.scheduleRecomputeForOwners(experimentIds, logger);
   }
 
-  public getAffectedExperimentIds(segmentId: string): Promise<string[]> {
-    return this.getAffectedOwnerIds(segmentId);
+  public getAffectedExperimentIds(segmentId: string, entityManager?: EntityManager): Promise<string[]> {
+    return this.getAffectedOwnerIds(segmentId, entityManager);
   }
 
   public recomputeAllExperiments(logger: UpgradeLogger): Promise<void> {

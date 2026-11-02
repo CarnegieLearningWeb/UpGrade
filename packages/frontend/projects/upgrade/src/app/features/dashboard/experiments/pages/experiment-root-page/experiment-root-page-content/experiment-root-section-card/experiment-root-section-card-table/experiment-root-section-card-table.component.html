@@ -1,5 +1,6 @@
+@let selection = (batch.selection$ | async);
 <div class="experiment-list-table-container" #tableContainer>
-  @if (isLoading$ | async) {
+  @if ((isLoading$ | async) || selection?.busy) {
   <mat-progress-bar class="spinner" mode="indeterminate"></mat-progress-bar>
   }
   <table
@@ -7,20 +8,36 @@
     mat-table
     [dataSource]="experiments || []"
     [trackBy]="trackByExperimentId"
+    [class.has-batch-selection]="selection?.selectedCount"
+    [class.has-batch-controls]="canSelect"
     [ngClass]="{ 'no-data': !experiments?.length }"
     matSort
     (matSortChange)="changeSorting($event)"
     [matSortActive]="experimentSortKey$ | async"
     [matSortDirection]="experimentSortAs$ | async | lowercase"
   >
+    <!-- Selection Column -->
+    <app-common-batch-select-column [batch]="batch" rowLabelKey="batch.selection.experiments.row" />
+
     <!-- Name Column -->
     <ng-container [matColumnDef]="EXPERIMENT_ROOT_COLUMN_NAMES.NAME">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="name-column ft-14-600">
-        {{ EXPERIMENT_TRANSLATION_KEYS.NAME | translate }}
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        mat-sort-header
+        class="name-column ft-14-600"
+        [sortActionDescription]="'batch.selection.sort-name' | translate"
+      >
+        {{
+          selection?.selectedCount
+            ? ('batch.selection.count' | translate : { count: selection.selectedCount })
+            : (EXPERIMENT_TRANSLATION_KEYS.NAME | translate)
+        }}
       </th>
       <td mat-cell *matCellDef="let experiment" class="name-column ft-14-400">
         <a
-          [routerLink]="['/home', 'detail', experiment.id]"
+          [routerLink]="selection?.busy ? null : ['/home', 'detail', experiment.id]"
+          [attr.aria-disabled]="selection?.busy || null"
           [appTextOverflowTooltip]="experiment.name"
           matTooltipPosition="right"
           class="experiment-name line-clamp-1"

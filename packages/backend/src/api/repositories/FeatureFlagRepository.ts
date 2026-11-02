@@ -4,9 +4,69 @@ import { FeatureFlag } from '../models/FeatureFlag';
 import repositoryError from './utils/repositoryError';
 import { FEATURE_FLAG_STATUS, FILTER_MODE } from 'upgrade_types';
 import { FeatureFlagValidation } from '../controllers/validators/FeatureFlagValidator';
+import { IndividualForSegment } from '../models/IndividualForSegment';
+import { GroupForSegment } from '../models/GroupForSegment';
 
 @EntityRepository(FeatureFlag)
 export class FeatureFlagRepository extends Repository<FeatureFlag> {
+  public async findOneForDetails(id: string, entityManager?: EntityManager): Promise<FeatureFlag | undefined> {
+    const repository = entityManager ? entityManager.getRepository(FeatureFlag) : this;
+    const manager = entityManager || this.manager;
+    const featureFlag = await repository
+      .createQueryBuilder('feature_flag')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
+      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
+      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
+      .where({ id })
+      .getOne();
+
+    if (!featureFlag) {
+      return undefined;
+    }
+
+    // loadRelationCountAndMap was removed in TypeORM 1.0; fetch member counts with two batch queries.
+    const segments = [
+      ...(featureFlag.featureFlagSegmentInclusion ?? []).map((r) => r.segment),
+      ...(featureFlag.featureFlagSegmentExclusion ?? []).map((r) => r.segment),
+    ].filter(Boolean);
+
+    if (segments.length > 0) {
+      const segmentIds = segments.map((s) => s.id);
+
+      const [individualCounts, groupCounts] = await Promise.all([
+        manager
+          .createQueryBuilder()
+          .select('ifs.segmentId', 'segmentId')
+          .addSelect('COUNT(*)', 'count')
+          .from(IndividualForSegment, 'ifs')
+          .where('ifs.segmentId IN (:...segmentIds)', { segmentIds })
+          .groupBy('ifs.segmentId')
+          .getRawMany<{ segmentId: string; count: string }>(),
+        manager
+          .createQueryBuilder()
+          .select('gfs.segmentId', 'segmentId')
+          .addSelect('COUNT(*)', 'count')
+          .from(GroupForSegment, 'gfs')
+          .where('gfs.segmentId IN (:...segmentIds)', { segmentIds })
+          .groupBy('gfs.segmentId')
+          .getRawMany<{ segmentId: string; count: string }>(),
+      ]);
+
+      const individualCountMap = new Map(individualCounts.map((r) => [r.segmentId, Number.parseInt(r.count, 10)]));
+      const groupCountMap = new Map(groupCounts.map((r) => [r.segmentId, Number.parseInt(r.count, 10)]));
+
+      segments.forEach((segment) => {
+        segment.individualForSegmentCount = individualCountMap.get(segment.id) ?? 0;
+        segment.groupForSegmentCount = groupCountMap.get(segment.id) ?? 0;
+      });
+    }
+
+    return featureFlag;
+  }
+
   public async insertFeatureFlag(flagDoc: FeatureFlag, entityManager: EntityManager): Promise<FeatureFlag> {
     const result = await entityManager
       .createQueryBuilder()

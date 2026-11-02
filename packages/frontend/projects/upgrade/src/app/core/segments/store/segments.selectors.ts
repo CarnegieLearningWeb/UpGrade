@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { DetailsPageError } from '@shared-component-lib/common-page-error/common-page-error.model';
+import { DetailsPageError, PAGE_ERROR_TYPE } from '@shared-component-lib/common-page-error/common-page-error.model';
 import {
   SegmentState,
   ParticipantListTableRow,
@@ -108,6 +108,9 @@ export const selectSegmentDetailsPageError = createSelector(
     const segmentId = routerState?.state?.params?.segmentId;
     const detailsPageError = segmentState?.detailsPageError;
 
+    if (segmentState?.rootBatch?.removedIds.includes(segmentId))
+      return { entityId: segmentId, errorType: PAGE_ERROR_TYPE.NOT_FOUND };
+
     // Only surface the error if it belongs to the segment currently in the route
     return detailsPageError && detailsPageError.entityId === segmentId ? detailsPageError : null;
   }
@@ -118,16 +121,6 @@ export const selectSegmentOverviewDetails = createSelector(selectSelectedSegment
   ['App Context']: segment?.context,
   ['Tags']: segment?.tags,
 }));
-
-export const selectSkipSegments = createSelector(selectSegmentsState, (state) => state.skipSegments);
-
-export const selectTotalSegments = createSelector(selectSegmentsState, (state) => state.totalSegments);
-
-export const selectAreAllSegmentsFetched = createSelector(
-  selectSkipSegments,
-  selectTotalSegments,
-  (skipSegments, totalSegments) => skipSegments === totalSegments
-);
 
 export const selectSearchKey = createSelector(selectSegmentsState, (state) => state.searchKey);
 
@@ -217,25 +210,6 @@ export const selectSegmentUsageData = createSelector(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
   }
-);
-
-export const selectSegmentPaginationParams = createSelector(
-  selectSkipSegments,
-  selectTotalSegments,
-  selectSearchKey,
-  selectSortKey,
-  selectSortAs,
-  selectAreAllSegmentsFetched,
-  selectSearchString,
-  (skip, total, searchKey, sortKey, sortAs, areAllFetched, searchString) => ({
-    skip,
-    total,
-    searchKey,
-    sortKey,
-    sortAs,
-    areAllFetched,
-    searchString,
-  })
 );
 
 export const selectListSegmentOptionsByContext = (context: string) => {
@@ -328,3 +302,5 @@ function processParentSegments(segmentData: Segment[], segmentId: string, result
     }
   });
 }
+
+export const selectRootBatch = createSelector(selectSegmentsState, (state) => state.rootBatch);

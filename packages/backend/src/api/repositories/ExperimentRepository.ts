@@ -460,16 +460,18 @@ export class ExperimentRepository extends Repository<Experiment> {
     }
   }
 
-  private buildConditionLevelPayloadQuery() {
-    return this.createQueryBuilder('experiment')
+  private buildConditionLevelPayloadQuery(repository: Repository<Experiment> = this) {
+    return repository
+      .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('conditions.levelCombinationElements', 'levelCombinationElements')
       .leftJoinAndSelect('levelCombinationElements.level', 'level')
       .leftJoinAndSelect('conditions.conditionPayloads', 'conditionPayload');
   }
 
-  private buildFactorDecisionPointPayloadQuery() {
-    return this.createQueryBuilder('experiment')
+  private buildFactorDecisionPointPayloadQuery(repository: Repository<Experiment> = this) {
+    return repository
+      .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.stratificationFactor', 'stratificationFactor')
       .leftJoinAndSelect('partitions.conditionPayloads', 'conditionPayloads')
@@ -478,8 +480,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('factors.levels', 'levels');
   }
 
-  private buildInclusionSegmentQuery() {
-    return this.createQueryBuilder('experiment')
+  private buildInclusionSegmentQuery(repository: Repository<Experiment> = this) {
+    return repository
+      .createQueryBuilder('experiment')
       .select('experiment.id')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
@@ -488,8 +491,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment');
   }
 
-  private buildExclusionSegmentQuery() {
-    return this.createQueryBuilder('experiment')
+  private buildExclusionSegmentQuery(repository: Repository<Experiment> = this) {
+    return repository
+      .createQueryBuilder('experiment')
       .select('experiment.id')
       .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
       .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
@@ -589,18 +593,20 @@ export class ExperimentRepository extends Repository<Experiment> {
     }));
   }
 
-  public async findOneExperiment(id: string): Promise<Experiment | undefined> {
-    const conditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery()
+  public async findOneExperiment(id: string, entityManager?: EntityManager): Promise<Experiment | undefined> {
+    const repository = entityManager ? entityManager.getRepository(Experiment) : this;
+    const conditionLevelPayloadQuery = this.buildConditionLevelPayloadQuery(repository)
       .addOrderBy('conditions.order', 'ASC')
       .where({ id });
 
-    const factorDecisionPointPayloadQuery = this.buildFactorDecisionPointPayloadQuery()
+    const factorDecisionPointPayloadQuery = this.buildFactorDecisionPointPayloadQuery(repository)
       .addOrderBy('partitions.order', 'ASC')
       .addOrderBy('factors.order', 'ASC')
       .addOrderBy('levels.order', 'ASC')
       .where({ id });
 
-    const metricQuery = this.createQueryBuilder('experiment')
+    const metricQuery = repository
+      .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
@@ -608,8 +614,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .addOrderBy('queries.createdAt', 'ASC')
       .where({ id });
 
-    const inclusionSegmentQuery = this.buildInclusionSegmentQuery().where({ id });
-    const exclusionSegmentQuery = this.buildExclusionSegmentQuery().where({ id });
+    const inclusionSegmentQuery = this.buildInclusionSegmentQuery(repository).where({ id });
+    const exclusionSegmentQuery = this.buildExclusionSegmentQuery(repository).where({ id });
 
     const [conditionLevelPayloadData, factorDecisionPointPayloadData, metricData, inclusionData, exclusionData] =
       await Promise.all([

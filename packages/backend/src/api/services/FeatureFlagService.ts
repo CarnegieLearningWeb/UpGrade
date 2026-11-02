@@ -1,8 +1,6 @@
 import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { Segment } from '../models/Segment';
-import { IndividualForSegment } from '../models/IndividualForSegment';
-import { GroupForSegment } from '../models/GroupForSegment';
 import { FeatureFlagSegmentInclusion } from '../models/FeatureFlagSegmentInclusion';
 import { FeatureFlagSegmentExclusion } from '../models/FeatureFlagSegmentExclusion';
 import { FeatureFlagPrecomputedSegment } from '../models/FeatureFlagPrecomputedSegment';
@@ -60,6 +58,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { CacheService } from './CacheService';
 import { FeatureFlagPrecomputedSegmentService, precomputedGroupKey } from './FeatureFlagPrecomputedSegmentService';
 import { EntitySegmentResolutionInput } from '../../types';
+import { DeletionTransaction } from '../../types/DeletionTransaction';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
@@ -184,63 +183,15 @@ export class FeatureFlagService {
 
   // Counts-only variant of findOne for the details page: maps member counts instead of loading
   // the member lists. Callers that need the actual members (e.g. exports) must use findOne.
-  public async findOneForDetails(id: string, logger?: UpgradeLogger): Promise<FeatureFlag | undefined> {
+  public async findOneForDetails(
+    id: string,
+    logger?: UpgradeLogger,
+    entityManager?: EntityManager
+  ): Promise<FeatureFlag | undefined> {
     if (logger) {
       logger.info({ message: `Find feature flag (details view) by id => ${id}` });
     }
-    const featureFlag = await this.featureFlagRepository
-      .createQueryBuilder('feature_flag')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentInclusion', 'featureFlagSegmentInclusion')
-      .leftJoinAndSelect('featureFlagSegmentInclusion.segment', 'segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
-      .leftJoinAndSelect('feature_flag.featureFlagSegmentExclusion', 'featureFlagSegmentExclusion')
-      .leftJoinAndSelect('featureFlagSegmentExclusion.segment', 'segmentExclusion')
-      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .where({ id })
-      .getOne();
-
-    if (!featureFlag) {
-      return undefined;
-    }
-
-    // loadRelationCountAndMap was removed in TypeORM 1.0; fetch member counts with two batch queries.
-    const segments = [
-      ...(featureFlag.featureFlagSegmentInclusion ?? []).map((r) => r.segment),
-      ...(featureFlag.featureFlagSegmentExclusion ?? []).map((r) => r.segment),
-    ].filter(Boolean);
-
-    if (segments.length > 0) {
-      const segmentIds = segments.map((s) => s.id);
-
-      const [individualCounts, groupCounts] = await Promise.all([
-        this.dataSource
-          .createQueryBuilder()
-          .select('ifs.segmentId', 'segmentId')
-          .addSelect('COUNT(*)', 'count')
-          .from(IndividualForSegment, 'ifs')
-          .where('ifs.segmentId IN (:...segmentIds)', { segmentIds })
-          .groupBy('ifs.segmentId')
-          .getRawMany<{ segmentId: string; count: string }>(),
-        this.dataSource
-          .createQueryBuilder()
-          .select('gfs.segmentId', 'segmentId')
-          .addSelect('COUNT(*)', 'count')
-          .from(GroupForSegment, 'gfs')
-          .where('gfs.segmentId IN (:...segmentIds)', { segmentIds })
-          .groupBy('gfs.segmentId')
-          .getRawMany<{ segmentId: string; count: string }>(),
-      ]);
-
-      const individualCountMap = new Map(individualCounts.map((r) => [r.segmentId, Number.parseInt(r.count, 10)]));
-      const groupCountMap = new Map(groupCounts.map((r) => [r.segmentId, Number.parseInt(r.count, 10)]));
-
-      segments.forEach((segment) => {
-        segment.individualForSegmentCount = individualCountMap.get(segment.id) ?? 0;
-        segment.groupForSegmentCount = groupCountMap.get(segment.id) ?? 0;
-      });
-    }
-
-    return featureFlag;
+    return this.featureFlagRepository.findOneForDetails(id, entityManager);
   }
 
   public async create(
@@ -342,11 +293,13 @@ export class FeatureFlagService {
   public async delete(
     featureFlagId: string,
     currentUser: UserDTO,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    executeTransaction?: DeletionTransaction
   ): Promise<FeatureFlag | undefined> {
     logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      const featureFlag = await this.findOneForDetails(featureFlagId, logger);
+    const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
+    return await transaction(async (transactionalEntityManager) => {
+      const featureFlag = await this.findOneForDetails(featureFlagId, logger, transactionalEntityManager);
 
       if (featureFlag) {
         await this.clearCachedFlagsForContext(featureFlag.context[0]);
@@ -381,7 +334,8 @@ export class FeatureFlagService {
         await this.experimentAuditLogRepository.saveRawJson(
           LOG_TYPE.FEATURE_FLAG_DELETED,
           createAuditLogData,
-          currentUser
+          currentUser,
+          transactionalEntityManager
         );
         return deletedFlag;
       }

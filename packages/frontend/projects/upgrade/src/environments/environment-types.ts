@@ -3,6 +3,9 @@ import { InjectionToken } from '@angular/core';
 export const ENV = new InjectionToken<Environment>('env.token');
 
 export interface APIEndpoints {
+  experimentsBatchDelete: string;
+  flagsBatchDelete: string;
+  segmentsBatchDelete: string;
   getAllExperiments: string;
   createNewExperiments: string;
   validateExperiment: string;
