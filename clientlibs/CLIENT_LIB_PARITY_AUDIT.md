@@ -132,6 +132,8 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   cold cache. *(Fixed in Phase A.)*
 - **Python `Assignment.mark_decision_point()` doesn't rotate the within-subjects cache.** Rotation lives only in
   `UpgradeClient.mark_decision_point()`. JS rotates for both paths because rotation lives in `ApiService`.
+  *(Fixed in Phase C: `Assignment` now takes an `on_marked` callback, which `UpgradeClient` wires to the same
+  rotation its own mark uses, for both the async and sync variants.)*
 - **Python `__version__`** in `upgrade_client_lib/__init__.py` is `"6.5.0"`; `pyproject.toml` is `6.8.0`.
 - **Java site/target `markDecisionPoint` with a cold cache** sends no `experimentId`. JS and Python fetch
   assignments first. Phase A kept Java's behavior unchanged here rather than adding a fetch, which could fail.
@@ -183,7 +185,12 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   then re-checks with `===`). Java's case-insensitive lookup therefore returned conditions whose marks the server
   couldn't attribute to the experiment. Java now matches exactly, and Python treats an explicit `None` target as `""`
   like JS and Java do.
-- "No experiment at decision point": return an empty `Assignment` or null, consistently. *Deferred.* Current
+- "No experiment at decision point": return an empty `Assignment` or null, consistently. *Decided: Java's
+  placeholder now matches JS's, except its experiment type stays `null`, and Python keeps returning `None`.* Java's
+  `getAssignedCondition()` is an empty `Condition` instead of `null` (also in `getAllExperimentConditions(site,
+  target)`), and `Assignment` gains `getCondition()` / `getPayload()`. A `null` type is Java's explicit "no
+  experiment" signal; the Javadoc warns that `switch`ing on it throws. JS keeps reporting `SIMPLE`, to avoid
+  changing behavior for JS callers. Notes from when this was deferred, describing the behavior before the change:
   behavior:
   - **JS** returns a placeholder `Assignment` whose getters are all safe (`getCondition()` → `null`, type `SIMPLE`).
   - **Java** returns an `Assignment` whose `getAssignedCondition()` is `null` and whose type is `null`. The library
@@ -197,15 +204,17 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   Java's placeholder match JS's: an empty `Condition` instead of `null`, type `Simple`, and add `getCondition()` /
   `getPayload()` shortcuts.
 - Whether `init()` clears the cache in every lib, or in none. *Decided and widened:* in all three libs, `init()`
-  (always), `setGroupMembership` and `setWorkingGroup` clear both the assignment and feature-flag caches once the
-  server confirms the call; a failed call leaves them alone. `setAltUserIds` doesn't clear them, since aliases don't
-  change the user's groups. Previously only Python's `init()` cleared anything, and it did so before the request.
+  (always), `setGroupMembership`, `setWorkingGroup` and `setAltUserIds` clear both the assignment and feature-flag
+  caches once the server confirms the call; a failed call leaves them alone. Previously only Python's `init()`
+  cleared anything, and it did so before the request.
   - The assignment cache got the same generation guard as feature flags, so an in-flight `/assign` can't refill a
     cleared cache. Java guards it with a lock, and Python makes the check and write atomic under a lock.
   - `getDecisionPointAssignment` (JS/Python) looks up in the list it just fetched, not the cache.
   - Side effect: within-subjects condition rotation restarts after a group change, since the refetched list comes
     back in the server's order.
-- Retry policy and default timeout, with one documented value across all three.
+- Retry policy and default timeout, with one documented value across all three. *Decided: leave the differences as
+  they are, and document each library's behavior.* Documented in the JS, Java and Python READMEs and in
+  `js/CLAUDE.md` / `java/CLAUDE.md`; the comparison and options considered are in `TIMEOUT_RETRY_POLICY.md`.
 - Java `markDecisionPoint` `clientError`/`uniquifier` order, and Python's `condition`-first order. Fixing either
   breaks existing callers, so it may be better to document than change.
   *Decided: document rather than change.* Changing either would silently swap values for existing callers, since

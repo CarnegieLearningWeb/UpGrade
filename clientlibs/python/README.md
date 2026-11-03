@@ -102,6 +102,12 @@ client = UpgradeClient(
 
 The configured timeout applies to both the async (`httpx.AsyncClient`) and sync (`httpx.Client`) HTTP clients. Timeout errors raise `httpx.TimeoutException` and are not caught by the library.
 
+`httpx` applies the timeout separately to connecting, each read, each write and waiting for a pooled connection, so it's an idle limit rather than a limit on the whole request.
+
+**The library never retries.** A network failure, timeout or error response is raised on the first attempt, so retry in your own code if you need to. Only retry calls that are safe to repeat (`init`, group and working group updates, aliases, assignments, feature flags): the server doesn't deduplicate `mark_decision_point`, `log` or `send_reward`, so resending one after a lost response can record it twice.
+
+The JS and Java libraries do retry safe requests (JS up to 3 times with backoff, Java once), and Java's default timeout is 3 seconds. See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
+
 Every method has an async variant (no suffix) and a synchronous variant (`_sync` suffix).
 
 ### Initialization
@@ -111,7 +117,7 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 | `init(group=None, working_group=None)` | Initialize the user, then clear cached assignments and feature flags |
 | `set_group_membership(group)` | Update the user's group membership, then clear cached assignments and feature flags |
 | `set_working_group(working_group)` | Update the user's working group, then clear cached assignments and feature flags |
-| `set_alt_user_ids(aliases)` | Register alternate identifiers for this user |
+| `set_alt_user_ids(aliases)` | Register alternate identifiers for this user, then clear cached assignments and feature flags |
 
 ### Experiments
 
@@ -237,7 +243,7 @@ Returned by `get_all_experiment_conditions` and `get_decision_point_assignment`.
 | `factors` | List of factor names (factorial experiments only) |
 | `get_factor_level(factor)` | Assigned level for a factor (`str \| None`) |
 | `get_factor_payload(factor)` | Payload for a factor (`Payload \| None`) |
-| `mark_decision_point(status, uniquifier="", client_error="")` | Mark this decision point |
+| `mark_decision_point(status, uniquifier="", client_error="")` | Mark this decision point. Like `client.mark_decision_point`, a successful mark advances the client's cached within-subjects assignments |
 
 ### Enums
 

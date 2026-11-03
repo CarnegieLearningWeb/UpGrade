@@ -164,9 +164,9 @@ class DataService:
     def clear(self) -> None:
         """Invalidate all cached data.
 
-        Called after any call that may have changed the user's groups (``init``,
-        ``set_group_membership``, ``set_working_group``), since assignments and
-        feature flags both depend on them.
+        Called after any call that may have changed the user's identity or
+        groups (``init``, ``set_group_membership``, ``set_working_group``,
+        ``set_alt_user_ids``), since assignments and feature flags depend on them.
         """
         self.clear_assignments()
         self.clear_feature_flags()

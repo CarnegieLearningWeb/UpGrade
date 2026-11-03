@@ -71,11 +71,12 @@ describe('UpgradeClient caches', () => {
     client = new UpgradeClient('user1', 'test.com', 'context', { httpClient: mockHttpClient });
   });
 
-  describe('invalidation when the user groups may have changed', () => {
+  describe('invalidation when the user or their groups may have changed', () => {
     it.each([
       ['init', 'init', (c: UpgradeClient) => c.init()],
       ['setGroupMembership', 'groupmembership', (c: UpgradeClient) => c.setGroupMembership({ classId: ['c2'] })],
       ['setWorkingGroup', 'workinggroup', (c: UpgradeClient) => c.setWorkingGroup({ classId: 'c2' })],
+      ['setAltUserIds', 'useraliases', (c: UpgradeClient) => c.setAltUserIds(['alias1'])],
     ])('%s clears assignments and feature flags once the server confirms it', async (_name, endpoint, call) => {
       await primeCaches(client);
 
@@ -92,16 +93,6 @@ describe('UpgradeClient caches', () => {
       const rejected = expect(client.setGroupMembership({ classId: ['c2'] })).rejects.toThrow();
       await respond('groupmembership', null, true);
       await rejected;
-
-      expect(await lookUpAgain(client)).toEqual({ assignRefetched: false, flagsRefetched: false });
-    });
-
-    it('setAltUserIds does not clear the caches', async () => {
-      await primeCaches(client);
-
-      const result = client.setAltUserIds(['alias1']);
-      await respond('useraliases', { userId: 'user1', aliases: ['alias1'] });
-      await result;
 
       expect(await lookUpAgain(client)).toEqual({ assignRefetched: false, flagsRefetched: false });
     });

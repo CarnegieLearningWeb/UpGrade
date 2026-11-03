@@ -194,13 +194,13 @@ class UpgradeClient:
         Results are cached after the first fetch.  Pass ``ignore_cache=True``
         to force a fresh fetch and update the cache.
         """
-        return [Assignment(a, self._api_service) for a in await self._raw_assignments(ignore_cache)]
+        return [self._wrap(a) for a in await self._raw_assignments(ignore_cache)]
 
     def get_all_experiment_conditions_sync(
         self, ignore_cache: bool = False
     ) -> list[Assignment]:
         """Synchronous variant of :meth:`get_all_experiment_conditions`."""
-        return [Assignment(a, self._api_service) for a in self._raw_assignments_sync(ignore_cache)]
+        return [self._wrap(a) for a in self._raw_assignments_sync(ignore_cache)]
 
     # ------------------------------------------------------------------
     # get_decision_point_assignment
@@ -320,12 +320,16 @@ class UpgradeClient:
     # ------------------------------------------------------------------
 
     async def set_alt_user_ids(self, aliases: list[str]) -> UserAliasResponse:
-        """Register alternate identifiers for this user."""
-        return await self._api_service.set_alt_user_ids(aliases)
+        """Register alternate identifiers for this user, then clear cached assignments and feature flags."""
+        response = await self._api_service.set_alt_user_ids(aliases)
+        self._data_service.clear()
+        return response
 
     def set_alt_user_ids_sync(self, aliases: list[str]) -> UserAliasResponse:
         """Synchronous variant of :meth:`set_alt_user_ids`."""
-        return self._api_service.set_alt_user_ids_sync(aliases)
+        response = self._api_service.set_alt_user_ids_sync(aliases)
+        self._data_service.clear()
+        return response
 
     # ------------------------------------------------------------------
     # send_reward
@@ -442,11 +446,15 @@ class UpgradeClient:
         self._data_service.set_assignments(fresh, generation)
         return fresh
 
+    def _wrap(self, raw: ExperimentAssignment) -> Assignment:
+        # marks made through the Assignment rotate the cache the same way client.mark_decision_point does
+        return Assignment(raw, self._api_service, on_marked=self._rotate_after_mark)
+
     def _assignment_in(
         self, assignments: list[ExperimentAssignment], site: str, target: str | None
     ) -> Assignment | None:
         raw = DataService.find_assignment(assignments, site, target)
-        return Assignment(raw, self._api_service) if raw is not None else None
+        return self._wrap(raw) if raw is not None else None
 
     def _mark_request(
         self,

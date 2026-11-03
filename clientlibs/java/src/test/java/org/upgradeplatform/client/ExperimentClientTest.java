@@ -408,7 +408,7 @@ public class ExperimentClientTest {
 		// a different casing would get a condition the server can't attribute on /mark, so it must not match
 		CompletableFuture<Assignment> otherCase = new CompletableFuture<>();
 		client.getExperimentCondition("Home", "Banner", into(otherCase));
-		assertNull(otherCase.get(5, TimeUnit.SECONDS).getAssignedCondition());
+		assertNull(otherCase.get(5, TimeUnit.SECONDS).getCondition());
 	}
 
 	private static final String USER = "{\"id\":\"user-1\",\"group\":{\"classId\":[\"c2\"]},\"workingGroup\":{\"classId\":\"c2\"}}";
@@ -471,13 +471,13 @@ public class ExperimentClientTest {
 	}
 
 	@Test
-	public void setAltUserIdsKeepsCaches() throws Exception {
+	public void setAltUserIdsClearsAssignmentAndFlagCaches() throws Exception {
 		primeCaches();
 		responses.put("/api/v6/useraliases", "{\"userId\":\"user-1\",\"aliases\":[\"alias-1\"]}");
 		CompletableFuture<org.upgradeplatform.responsebeans.UserAliasResponse> aliases = new CompletableFuture<>();
 		client.setAltUserIds(List.of("alias-1"), into(aliases));
 		aliases.get(5, TimeUnit.SECONDS);
-		assertCachesCleared(false);
+		assertCachesCleared(true);
 	}
 
 	@Test
@@ -525,6 +525,52 @@ public class ExperimentClientTest {
 			}
 		}
 		assertEquals(requestAuthorization.get("/api/v6/assign"), List.of("", ""));
+	}
+
+	@Test
+	public void noExperimentPlaceholderIsSafeToReadAndMark() throws Exception {
+		responses.put("/api/v6/assign", "[]");
+		responses.put("/api/v6/mark", markResponse(null));
+
+		CompletableFuture<Assignment> lookup = new CompletableFuture<>();
+		client.getExperimentCondition("home", "banner", into(lookup));
+		Assignment assignment = lookup.get(5, TimeUnit.SECONDS);
+
+		// these used to throw a NullPointerException for callers that didn't null-check the condition
+		assertNull(assignment.getAssignedCondition().getConditionCode());
+		assertNull(assignment.getAssignedCondition().getPayload());
+		assertNull(assignment.getCondition());
+		assertNull(assignment.getPayload());
+		// a null type is the "no experiment here" signal (JS reports SIMPLE instead)
+		assertNull(assignment.getExperimentType());
+		assertNull(assignment.getFactorLevel("color"));
+
+		CompletableFuture<ExperimentsResponse> raw = new CompletableFuture<>();
+		client.getAllExperimentConditions("home", "banner", into(raw));
+		ExperimentsResponse response = raw.get(5, TimeUnit.SECONDS);
+		assertNull(response.getAssignedCondition()[0].getConditionCode());
+		assertNull(response.getExperimentType());
+		assertEquals(response.getSite(), "home");
+		assertEquals(response.getTarget(), "banner");
+
+		CompletableFuture<MarkDecisionPoint> marked = new CompletableFuture<>();
+		assignment.markDecisionPoint(MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED, into(marked));
+		marked.get(5, TimeUnit.SECONDS);
+		JsonNode body = lastBody("/api/v6/mark");
+		assertEquals(body.path("status").asText(), MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED.toString());
+		assertTrue(body.path("data").path("assignedCondition").path("conditionCode").isNull());
+	}
+
+	@Test
+	public void assignmentShortcutsReadTheAssignedCondition() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		CompletableFuture<Assignment> lookup = new CompletableFuture<>();
+		client.getExperimentCondition("home", "banner", into(lookup));
+		Assignment assignment = lookup.get(5, TimeUnit.SECONDS);
+
+		assertEquals(assignment.getCondition(), "control");
+		assertNull(assignment.getPayload());
+		assertEquals(assignment.getExperimentType(), org.upgradeplatform.utils.Utils.ExperimentType.Simple);
 	}
 
 	@Test

@@ -151,7 +151,7 @@ public class ExperimentClient implements AutoCloseable {
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 									// init may have changed the user's groups, which assignments and flags depend on
-									invalidateGroupDependentCaches();
+									invalidateUserDependentCaches();
 									readResponseToCallback(response, callbacks, InitializeUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -185,7 +185,7 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-									invalidateGroupDependentCaches();
+									invalidateUserDependentCaches();
 									readResponseToCallback(response, callbacks, ExperimentUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -217,7 +217,7 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-									invalidateGroupDependentCaches();
+									invalidateUserDependentCaches();
 									readResponseToCallback(response, callbacks, ExperimentUserResponse.class);
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -303,6 +303,11 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	/**
+	 * Passes the {@link Assignment} for this decision point to {@code onSuccess}. When no experiment is assigned
+	 * there, it's a placeholder: {@code getCondition()} and {@code getPayload()} return null, as does
+	 * {@code getExperimentType()} (only the placeholder has a null type). It can still be marked, e.g. with
+	 * {@code MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED}.
+	 *
 	 * @param site   Matched exactly (case-sensitive), as the server does
 	 * @param target Matched exactly (case-sensitive); null and "" are equivalent
 	 */
@@ -313,12 +318,11 @@ public class ExperimentClient implements AutoCloseable {
 			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
 				ExperimentsResponse resultExperimentsResponse = findExperimentResponse(site, target, experiments);
-				Map<String, Factor> assignedFactor = resultExperimentsResponse.getAssignedFactor() != null
-						? resultExperimentsResponse.getAssignedFactor()[0]
-						: null;
-				Condition assignedCondition = resultExperimentsResponse.getAssignedCondition() != null
-						? resultExperimentsResponse.getAssignedCondition()[0]
-						: null;
+				Map<String, Factor>[] factors = resultExperimentsResponse.getAssignedFactor();
+				Map<String, Factor> assignedFactor = factors != null && factors.length > 0 ? factors[0] : null;
+				Condition[] conditions = resultExperimentsResponse.getAssignedCondition();
+				Condition assignedCondition = conditions != null && conditions.length > 0 ? conditions[0]
+						: new Condition();
 				Assignment resultAssignment = new Assignment(ExperimentClient.this, target, site,
 						resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
 
@@ -378,7 +382,18 @@ public class ExperimentClient implements AutoCloseable {
 								: target.equals(t.getTarget())))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
-				.orElse(new ExperimentsResponse());
+				.orElseGet(() -> noExperimentPlaceholder(site, target));
+	}
+
+	/**
+	 * What lookups return when nothing in the /assign response matches this decision point: a single empty
+	 * condition, so {@code getAssignedCondition()[0].getConditionCode()} returns null rather than throwing, and a
+	 * null experiment type, which only this placeholder has. Mirrors the JS client's placeholder, except that JS
+	 * reports SIMPLE as the type.
+	 */
+	private static ExperimentsResponse noExperimentPlaceholder(String site, String target) {
+		return new ExperimentsResponse(isStringNull(target) ? "" : target, site, null,
+				new Condition[] { new Condition() }, null);
 	}
 
 	private List<ExperimentsResponse> cachedExperiments() {
@@ -388,10 +403,10 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	/**
-	 * Invalidate everything that depends on the user's groups (assignments and feature flags), after a call that
-	 * may have changed them.
+	 * Invalidate everything that depends on the user's identity or groups (assignments and feature flags), after
+	 * a call that may have changed them: init, group membership, working group, or aliases.
 	 */
-	private void invalidateGroupDependentCaches() {
+	private void invalidateUserDependentCaches() {
 		synchronized (assignmentLock) {
 			this.allExperiments = null;
 			this.assignmentGeneration++;
@@ -682,6 +697,7 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									invalidateUserDependentCaches();
 									readResponseToCallback(response, callbacks, new GenericType<UserAliasResponse>() {
 									});
 								} else {

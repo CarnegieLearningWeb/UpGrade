@@ -37,6 +37,15 @@ await client.markDecisionPoint(decisionPoint.site, decisionPoint.target, conditi
 
 `markDecisionPoint` also accepts an options object (`{ site, target, condition, status, uniquifier, clientError }`), which avoids relying on argument order. The Java and Python libraries order these arguments differently: Java puts `clientError` before `uniquifier`, and Python takes `condition, status` before `site, target`.
 
+## Timeouts and retries
+The default HTTP client (the browser and node builds):
+- **Timeout:** 5 seconds per attempt. In browsers this limits the whole request; in Node it limits connecting and then the gaps between data. It isn't configurable.
+- **Retries:** requests that are safe to repeat (`init`, group and working group, aliases, assignments, feature flags) are retried up to **3** times after a network failure, timeout or 5xx response, waiting 300 ms, 600 ms and then 1200 ms. A failing safe request can therefore take about 22 seconds to report. `markDecisionPoint`, `log` and `sendReward` are never retried, because the server doesn't deduplicate them. 4xx responses are never retried.
+
+With the **lite** build, timeouts and retries are up to the HTTP client you provide. Each request's config has `retryable: true` when it's safe to resend.
+
+The Java and Python libraries use different defaults (Java: 3-second timeouts and 1 retry; Python: 5 seconds and no retries). See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
+
 ## Documentation
 
 For full API reference, feature flags, logging metrics, and advanced configuration, see the [UpGrade TypeScript/JS client library docs](https://upgrade-platform.gitbook.io/upgrade-documentation/6.4/developer-guide/reference/client-libraries/typescript-js).

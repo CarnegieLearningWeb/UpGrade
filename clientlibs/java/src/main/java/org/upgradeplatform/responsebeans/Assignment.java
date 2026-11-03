@@ -51,6 +51,10 @@ public class Assignment {
         this.site = site;
     }
 
+    /**
+     * The experiment type, or null when no experiment is assigned at this decision point. Check for null before
+     * {@code switch}ing on it: switching on a null enum throws a NullPointerException.
+     */
     public ExperimentType getExperimentType() {
         return experimentType;
     }
@@ -59,8 +63,22 @@ public class Assignment {
         this.experimentType = experimentType;
     }
 
+    /**
+     * Not null for assignments from {@code ExperimentClient.getExperimentCondition}: when no experiment is
+     * assigned there, it's an empty condition whose code, payload and id are all null.
+     */
     public Condition getAssignedCondition() {
         return assignedCondition;
+    }
+
+    /** The assigned condition code, or null when no experiment is assigned at this decision point. */
+    public String getCondition() {
+        return assignedCondition == null ? null : assignedCondition.getConditionCode();
+    }
+
+    /** The assigned condition's payload, or null. */
+    public Payload getPayload() {
+        return assignedCondition == null ? null : assignedCondition.getPayload();
     }
 
     public void setAssignedCondition(Condition assignedCondition) {

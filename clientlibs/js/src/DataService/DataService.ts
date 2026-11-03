@@ -47,10 +47,10 @@ export class DataService {
   }
 
   /**
-   * Invalidate everything that depends on the user's groups (assignments and feature flags), e.g. after a call
-   * that may have changed them.
+   * Invalidate everything that depends on the user's identity or groups (assignments and feature flags), after a
+   * call that may have changed them: init, group membership, working group, or aliases.
    */
-  clearGroupDependentData() {
+  clearUserDependentData() {
     this.clearExperimentAssignmentData();
     this.clearFeatureFlags();
   }

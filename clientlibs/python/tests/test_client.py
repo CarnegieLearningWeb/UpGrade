@@ -1045,7 +1045,7 @@ class TestGroupChangeInvalidation:
         assert await self._look_up_again(client, assign, flags) == (False, False)
 
     @respx.mock
-    async def test_set_alt_user_ids_keeps_caches(self) -> None:
+    async def test_set_alt_user_ids_clears_both_caches(self) -> None:
         assign, flags = self._routes()
         respx.patch(f"{BASE}/useraliases").mock(return_value=Response(200, json=ALIAS_PAYLOAD))
         client = make_client()
@@ -1054,7 +1054,7 @@ class TestGroupChangeInvalidation:
 
         await client.set_alt_user_ids(["alias-1"])
 
-        assert await self._look_up_again(client, assign, flags) == (False, False)
+        assert await self._look_up_again(client, assign, flags) == (True, True)
 
     @respx.mock
     async def test_in_flight_assign_response_is_not_cached_after_group_change(self) -> None:
@@ -1087,3 +1087,59 @@ class TestGroupChangeInvalidation:
         # ...but it isn't cached, so the next lookup refetches under the new groups
         await client.get_all_experiment_conditions()
         assert assign.call_count == 2
+
+
+# ---------------------------------------------------------------------------
+# Assignment.mark_decision_point rotates within-subjects assignments, like the client-level mark
+# ---------------------------------------------------------------------------
+
+FACTORIAL_MARK_PAYLOAD = {
+    "id": "mark-factorial",
+    "userId": USER,
+    "site": "quiz",
+    "target": "hint",
+    "experimentId": "exp-2",
+    "condition": "combo-A",
+}
+
+
+class TestAssignmentMarkRotation:
+    @respx.mock
+    async def test_assignment_mark_rotates_cached_assignments(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=FACTORIAL_PAYLOAD))
+        respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=FACTORIAL_MARK_PAYLOAD))
+        client = make_client()
+
+        first = await client.get_decision_point_assignment("quiz", "hint")
+        assert first is not None and first.get_condition() == "combo-A"
+        await first.mark_decision_point(MarkedDecisionPointStatus.CONDITION_APPLIED)
+
+        # the next lookup sees the rotated assignment (condition and factor advance together)
+        second = await client.get_decision_point_assignment("quiz", "hint")
+        assert second is not None and second.get_condition() == "combo-B"
+        assert second.get_factor_level("color") == "blue"
+
+    @respx.mock
+    def test_assignment_mark_sync_rotates_cached_assignments(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=FACTORIAL_PAYLOAD))
+        respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=FACTORIAL_MARK_PAYLOAD))
+        client = make_client()
+
+        first = client.get_decision_point_assignment_sync("quiz", "hint")
+        assert first is not None
+        first.mark_decision_point_sync(MarkedDecisionPointStatus.CONDITION_APPLIED)
+
+        second = client.get_decision_point_assignment_sync("quiz", "hint")
+        assert second is not None and second.get_condition() == "combo-B"
+
+    @respx.mock
+    async def test_assignments_from_get_all_also_rotate_on_mark(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=FACTORIAL_PAYLOAD))
+        respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=FACTORIAL_MARK_PAYLOAD))
+        client = make_client()
+
+        [assignment] = await client.get_all_experiment_conditions()
+        await assignment.mark_decision_point(MarkedDecisionPointStatus.CONDITION_APPLIED)
+
+        [rotated] = await client.get_all_experiment_conditions()
+        assert rotated.get_condition() == "combo-B"

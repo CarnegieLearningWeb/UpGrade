@@ -248,7 +248,7 @@ export default class UpgradeClient {
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
     const response = await this.apiService.init(group, workingGroup);
     // init may have changed the user's groups, which assignments and feature flags depend on
-    this.dataService.clearGroupDependentData();
+    this.dataService.clearUserDependentData();
     return response;
   }
 
@@ -269,7 +269,7 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setGroupMembership(group);
     // If it does not throw error from setGroupMembership
     this.dataService.setGroup(group);
-    this.dataService.clearGroupDependentData();
+    this.dataService.clearUserDependentData();
     response = {
       ...response,
       workingGroup: this.dataService.getWorkingGroup(),
@@ -294,7 +294,7 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setWorkingGroup(workingGroup);
     // If it does not throw error from setWorkingGroup
     this.dataService.setWorkingGroup(workingGroup);
-    this.dataService.clearGroupDependentData();
+    this.dataService.clearUserDependentData();
     response = {
       ...response,
       group: this.dataService.getGroup(),
@@ -605,7 +605,8 @@ export default class UpgradeClient {
   }
 
   /**
-   * Will set an array of alternate user ids for the user.
+   * Will set an array of alternate user ids for the user. Once the server confirms, cached assignments and feature
+   * flags are cleared, so the next lookup refetches them.
    *
    * @example
    * ```ts
@@ -615,7 +616,9 @@ export default class UpgradeClient {
    * ```
    */
   async setAltUserIds(altUserIds: string[]): Promise<IUserAliases> {
-    return await this.apiService.setAltUserIds(altUserIds);
+    const response = await this.apiService.setAltUserIds(altUserIds);
+    this.dataService.clearUserDependentData();
+    return response;
   }
 
   /**

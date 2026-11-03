@@ -215,7 +215,7 @@ public class QuickTest {
                 Condition condition = response.getAssignedCondition();
                 ExperimentType experimentType = response.getExperimentType();
 
-                if (condition == null) {
+                if (response.getCondition() == null) {
                     System.out.println("\n[Decision Point Assignment response] condition: null");
                     future.complete(null);
                     return;

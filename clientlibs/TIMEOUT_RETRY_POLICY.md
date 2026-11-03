@@ -1,5 +1,9 @@
 # Client Library Timeout and Retry Policy
 
+> **Decision:** leave the timeout and retry differences as they are, and document each library's behavior. They're
+> now described in the JS, Java and Python READMEs (and `js/CLAUDE.md` / `java/CLAUDE.md`). The comparison and the
+> options considered are kept below for reference.
+
 Here's how the three libraries' timeouts and retry counts differ. Retries are part of the same item, because together they set how long a failing call can take.
 
 ## Timeouts
