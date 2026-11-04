@@ -37,7 +37,7 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 - `getAllExperimentConditions(cb)` — fetch all assignments (cached)
 - `getAllExperimentConditions(ignoreCache, cb)` — bypass cache
 - `getAllExperimentConditions(site, cb)` / `getAllExperimentConditions(site, target, cb)`
-- `getExperimentCondition(site, cb)` / `getExperimentCondition(site, target, cb)` — site/target matched exactly (case-sensitive, like the server); a null target equals "". With no experiment assigned there, `onSuccess` gets a placeholder `Assignment` whose `getCondition()`, `getPayload()` and `getExperimentType()` are `null` (a null type only occurs for the placeholder), and whose `getAssignedCondition()` is an empty `Condition`, not `null`
+- `getExperimentCondition(site, cb)` / `getExperimentCondition(site, target, cb)` — site/target matched exactly (case-sensitive, like the server); a null target equals "". With no experiment assigned there, `onSuccess` gets a placeholder `Assignment` (never `null`) whose `getAssignedCondition()`, `getCondition()`, `getPayload()` and `getExperimentType()` are all `null` (a null type only occurs for the placeholder). `getCondition()`/`getPayload()` are null-safe; chaining `getAssignedCondition().getConditionCode()` throws an NPE for the placeholder
 - `markDecisionPoint(site, condition, status, cb)` — many overloads adding target, clientError, uniquifier
 - `getAllFeatureFlags(cb)` / `getAllFeatureFlags(ignoreCache, cb)` / `hasFeatureFlag(key, cb)`
 - `setFeatureFlagUserGroupsForSession(groupsForSession, includeStoredUserGroups)` / `clearFeatureFlagUserGroupsForSession()` — session-scoped groups for feature flag evaluation; both clear the flag cache

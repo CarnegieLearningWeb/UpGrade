@@ -528,7 +528,7 @@ public class ExperimentClientTest {
 	}
 
 	@Test
-	public void noExperimentPlaceholderIsSafeToReadAndMark() throws Exception {
+	public void noExperimentPlaceholderHasNullConditionAndNullSafeShortcuts() throws Exception {
 		responses.put("/api/v6/assign", "[]");
 		responses.put("/api/v6/mark", markResponse(null));
 
@@ -536,9 +536,9 @@ public class ExperimentClientTest {
 		client.getExperimentCondition("home", "banner", into(lookup));
 		Assignment assignment = lookup.get(5, TimeUnit.SECONDS);
 
-		// these used to throw a NullPointerException for callers that didn't null-check the condition
-		assertNull(assignment.getAssignedCondition().getConditionCode());
-		assertNull(assignment.getAssignedCondition().getPayload());
+		// unchanged from before: callers that detect "no experiment" by a null condition keep working
+		assertNull(assignment.getAssignedCondition());
+		// the shortcuts handle that case instead of throwing
 		assertNull(assignment.getCondition());
 		assertNull(assignment.getPayload());
 		// a null type is the "no experiment here" signal (JS reports SIMPLE instead)
@@ -547,11 +547,7 @@ public class ExperimentClientTest {
 
 		CompletableFuture<ExperimentsResponse> raw = new CompletableFuture<>();
 		client.getAllExperimentConditions("home", "banner", into(raw));
-		ExperimentsResponse response = raw.get(5, TimeUnit.SECONDS);
-		assertNull(response.getAssignedCondition()[0].getConditionCode());
-		assertNull(response.getExperimentType());
-		assertEquals(response.getSite(), "home");
-		assertEquals(response.getTarget(), "banner");
+		assertNull(raw.get(5, TimeUnit.SECONDS).getAssignedCondition());
 
 		CompletableFuture<MarkDecisionPoint> marked = new CompletableFuture<>();
 		assignment.markDecisionPoint(MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED, into(marked));
@@ -559,6 +555,15 @@ public class ExperimentClientTest {
 		JsonNode body = lastBody("/api/v6/mark");
 		assertEquals(body.path("status").asText(), MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED.toString());
 		assertTrue(body.path("data").path("assignedCondition").path("conditionCode").isNull());
+	}
+
+	@Test
+	public void assignmentWithEmptyConditionListDoesNotThrow() throws Exception {
+		responses.put("/api/v6/assign", "[{\"site\":\"home\",\"target\":\"banner\",\"experimentType\":\"Simple\","
+				+ "\"assignedCondition\":[],\"assignedFactor\":[]}]");
+		CompletableFuture<Assignment> lookup = new CompletableFuture<>();
+		client.getExperimentCondition("home", "banner", into(lookup));
+		assertNull(lookup.get(5, TimeUnit.SECONDS).getCondition());
 	}
 
 	@Test

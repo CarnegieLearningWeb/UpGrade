@@ -64,8 +64,8 @@ public class Assignment {
     }
 
     /**
-     * Not null for assignments from {@code ExperimentClient.getExperimentCondition}: when no experiment is
-     * assigned there, it's an empty condition whose code, payload and id are all null.
+     * Null when no experiment is assigned at this decision point, so check it before chaining, or use
+     * {@link #getPayload()} / {@link #getCondition()}, which handle that case.
      */
     public Condition getAssignedCondition() {
         return assignedCondition;

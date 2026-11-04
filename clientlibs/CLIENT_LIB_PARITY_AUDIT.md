@@ -185,13 +185,16 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   then re-checks with `===`). Java's case-insensitive lookup therefore returned conditions whose marks the server
   couldn't attribute to the experiment. Java now matches exactly, and Python treats an explicit `None` target as `""`
   like JS and Java do.
-- "No experiment at decision point": return an empty `Assignment` or null, consistently. *Decided: Java's
-  placeholder now matches JS's, except its experiment type stays `null`, and Python keeps returning `None`.* Java's
-  `getAssignedCondition()` is an empty `Condition` instead of `null` (also in `getAllExperimentConditions(site,
-  target)`), and `Assignment` gains `getCondition()` / `getPayload()`. A `null` type is Java's explicit "no
-  experiment" signal; the Javadoc warns that `switch`ing on it throws. JS keeps reporting `SIMPLE`, to avoid
-  changing behavior for JS callers. Notes from when this was deferred, describing the behavior before the change:
-  behavior:
+- "No experiment at decision point": return an empty `Assignment` or null, consistently. *Decided: no breaking
+  change; keep the existing behavior, add null-safe accessors, and document it.* Java's placeholder still has a `null`
+  `getAssignedCondition()` (and `getAllExperimentConditions(site, target)` still returns a `null` condition array),
+  so callers that detect "no experiment" with a null check keep working. Making it an empty `Condition` to match JS
+  was implemented and then reverted for that reason. What changed: `Assignment` gains null-safe `getCondition()` /
+  `getPayload()`; an assignment with an empty condition list no longer throws an index error; and the Javadoc and
+  README say the condition is `null` for the placeholder (and that checking the `Assignment` itself for null doesn't
+  help, since it's never null). The experiment type stays `null`, Java's explicit "no experiment" signal (the Javadoc
+  warns that `switch`ing on it throws). JS keeps its placeholder (type `SIMPLE`), and Python keeps returning `None`.
+  Notes from when this was deferred, describing the behavior then:
   - **JS** returns a placeholder `Assignment` whose getters are all safe (`getCondition()` → `null`, type `SIMPLE`).
   - **Java** returns an `Assignment` whose `getAssignedCondition()` is `null` and whose type is `null`. The library
     itself never throws, but callers that chain `getAssignedCondition().getConditionCode()` get an NPE (same for

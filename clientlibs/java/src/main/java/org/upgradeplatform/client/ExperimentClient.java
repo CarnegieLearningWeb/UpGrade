@@ -303,9 +303,11 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	/**
-	 * Passes the {@link Assignment} for this decision point to {@code onSuccess}. When no experiment is assigned
-	 * there, it's a placeholder: {@code getCondition()} and {@code getPayload()} return null, as does
-	 * {@code getExperimentType()} (only the placeholder has a null type). It can still be marked, e.g. with
+	 * Passes the {@link Assignment} for this decision point to {@code onSuccess}; it's never null. When no
+	 * experiment is assigned there, it's a placeholder whose {@code getAssignedCondition()} and
+	 * {@code getExperimentType()} are null (only the placeholder has a null type). Read it with
+	 * {@code getPayload()} / {@code getCondition()}, which return null rather than throwing; chaining through
+	 * {@code getAssignedCondition()} needs a null check. It can still be marked, e.g. with
 	 * {@code MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED}.
 	 *
 	 * @param site   Matched exactly (case-sensitive), as the server does
@@ -321,8 +323,7 @@ public class ExperimentClient implements AutoCloseable {
 				Map<String, Factor>[] factors = resultExperimentsResponse.getAssignedFactor();
 				Map<String, Factor> assignedFactor = factors != null && factors.length > 0 ? factors[0] : null;
 				Condition[] conditions = resultExperimentsResponse.getAssignedCondition();
-				Condition assignedCondition = conditions != null && conditions.length > 0 ? conditions[0]
-						: new Condition();
+				Condition assignedCondition = conditions != null && conditions.length > 0 ? conditions[0] : null;
 				Assignment resultAssignment = new Assignment(ExperimentClient.this, target, site,
 						resultExperimentsResponse.getExperimentType(), assignedCondition, assignedFactor);
 
@@ -382,18 +383,7 @@ public class ExperimentClient implements AutoCloseable {
 								: target.equals(t.getTarget())))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
-				.orElseGet(() -> noExperimentPlaceholder(site, target));
-	}
-
-	/**
-	 * What lookups return when nothing in the /assign response matches this decision point: a single empty
-	 * condition, so {@code getAssignedCondition()[0].getConditionCode()} returns null rather than throwing, and a
-	 * null experiment type, which only this placeholder has. Mirrors the JS client's placeholder, except that JS
-	 * reports SIMPLE as the type.
-	 */
-	private static ExperimentsResponse noExperimentPlaceholder(String site, String target) {
-		return new ExperimentsResponse(isStringNull(target) ? "" : target, site, null,
-				new Condition[] { new Condition() }, null);
+				.orElse(new ExperimentsResponse());
 	}
 
 	private List<ExperimentsResponse> cachedExperiments() {
