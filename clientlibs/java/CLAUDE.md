@@ -72,7 +72,7 @@ src/main/java/org/upgradeplatform/
 
 ## Tests
 
-TestNG unit tests live in `src/test/java` (`ExperimentClientTest` runs `ExperimentClient` against an in-process JDK `HttpServer` with canned `/v6` responses and asserts on the request bodies). `mvn test` runs them.
+TestNG unit tests live in `src/test/java`. `ExperimentClientTest` runs `ExperimentClient` against an in-process JDK `HttpServer` with canned `/v6` responses, and asserts on what each request sends. It covers the method and body of every endpoint (checked against the backend validators' expectations; `/init` for its exact field set, since the server rejects unknown fields there), the standard headers, and the client's caching, retry and lookup behavior. `mvn test` runs them.
 
 `QuickTest.java` (main source tree) is a separate manual integration scratchpad. It chains calls with `CompletableFuture` to test the full flow against a running server.
 

@@ -70,6 +70,9 @@ public class ExperimentClientTest {
 	private final Map<String, List<String>> requestQueries = new ConcurrentHashMap<>();
 	// Authorization header per request ("" when absent)
 	private final Map<String, List<String>> requestAuthorization = new ConcurrentHashMap<>();
+	// HTTP method and headers of the most recent request per path
+	private final Map<String, String> lastMethod = new ConcurrentHashMap<>();
+	private final Map<String, com.sun.net.httpserver.Headers> lastHeaders = new ConcurrentHashMap<>();
 	private final Map<String, Integer> statusCodes = new ConcurrentHashMap<>();
 	private ExperimentClient client;
 
@@ -80,11 +83,15 @@ public class ExperimentClientTest {
 		requestBodies.clear();
 		requestQueries.clear();
 		requestAuthorization.clear();
+		lastMethod.clear();
+		lastHeaders.clear();
 		statusCodes.clear();
 		server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
 		server.createContext("/", exchange -> {
 			String path = exchange.getRequestURI().getPath();
 			String query = exchange.getRequestURI().getQuery();
+			lastMethod.put(path, exchange.getRequestMethod());
+			lastHeaders.put(path, exchange.getRequestHeaders());
 			String authorization = exchange.getRequestHeaders().getFirst("Authorization");
 			requestAuthorization.computeIfAbsent(path, p -> new CopyOnWriteArrayList<>())
 					.add(authorization == null ? "" : authorization);
@@ -514,6 +521,140 @@ public class ExperimentClientTest {
 		assertEquals(assignment.getCondition(), "control");
 		assertNull(assignment.getPayload());
 		assertEquals(assignment.getExperimentType(), org.upgradeplatform.utils.Utils.ExperimentType.Simple);
+	}
+
+	// ---- Request serialization: each endpoint's method and body match what the backend's validator expects ----
+
+	private static <T> T call(Class<T> responseType, java.util.function.Consumer<ResponseCallback<T>> request)
+			throws Exception {
+		CompletableFuture<T> future = new CompletableFuture<>();
+		request.accept(into(future));
+		return responseType.cast(future.get(5, TimeUnit.SECONDS));
+	}
+
+	private static java.util.Set<String> fieldNames(JsonNode node) {
+		java.util.Set<String> names = new java.util.TreeSet<>();
+		node.fieldNames().forEachRemaining(names::add);
+		return names;
+	}
+
+	@Test
+	public void initSendsOnlyGroupAndWorkingGroup() throws Exception {
+		responses.put("/api/v6/init", USER);
+
+		call(org.upgradeplatform.responsebeans.InitializeUserResponse.class, cb -> client.init(cb));
+		JsonNode empty = lastBody("/api/v6/init");
+		assertEquals(lastMethod.get("/api/v6/init"), "POST");
+		// /init rejects any other field (forbidNonWhitelisted), so the field set must stay exactly this
+		assertEquals(fieldNames(empty), java.util.Set.of("group", "workingGroup"));
+		assertTrue(empty.path("group").isNull());
+		assertTrue(empty.path("workingGroup").isNull());
+
+		call(org.upgradeplatform.responsebeans.InitializeUserResponse.class, cb -> client.init(Map.of("classId", List.of("c1")), cb));
+		JsonNode withGroup = lastBody("/api/v6/init");
+		assertEquals(withGroup.path("group").path("classId").get(0).asText(), "c1");
+		assertTrue(withGroup.path("workingGroup").isNull());
+
+		call(org.upgradeplatform.responsebeans.InitializeUserResponse.class, cb -> client.init(Map.of("classId", List.of("c1")), Map.of("classId", "c1"), cb));
+		JsonNode both = lastBody("/api/v6/init");
+		assertEquals(fieldNames(both), java.util.Set.of("group", "workingGroup"));
+		assertEquals(both.path("workingGroup").path("classId").asText(), "c1");
+	}
+
+	@Test
+	public void setGroupMembershipPatchesGroup() throws Exception {
+		responses.put("/api/v6/groupmembership", USER);
+		call(org.upgradeplatform.responsebeans.ExperimentUserResponse.class, cb -> client.setGroupMembership(Map.of("classId", List.of("c1", "c2")), cb));
+
+		assertEquals(lastMethod.get("/api/v6/groupmembership"), "PATCH");
+		JsonNode body = lastBody("/api/v6/groupmembership");
+		assertEquals(body.path("group").path("classId").get(1).asText(), "c2");
+		// the bean also sends null workingGroup/createdAt/etc.; the server strips unknown fields and treats a null
+		// workingGroup as absent, so only check that no other field carries a value
+		fieldNames(body).stream().filter(name -> !name.equals("group"))
+				.forEach(name -> assertTrue(body.path(name).isNull(), name + " should be null"));
+	}
+
+	@Test
+	public void setWorkingGroupPatchesWorkingGroup() throws Exception {
+		responses.put("/api/v6/workinggroup", USER);
+		call(org.upgradeplatform.responsebeans.ExperimentUserResponse.class, cb -> client.setWorkingGroup(Map.of("classId", "c1"), cb));
+
+		assertEquals(lastMethod.get("/api/v6/workinggroup"), "PATCH");
+		JsonNode body = lastBody("/api/v6/workinggroup");
+		assertEquals(body.path("workingGroup").path("classId").asText(), "c1");
+		fieldNames(body).stream().filter(name -> !name.equals("workingGroup"))
+				.forEach(name -> assertTrue(body.path(name).isNull(), name + " should be null"));
+	}
+
+	@Test
+	public void setAltUserIdsPatchesAliases() throws Exception {
+		responses.put("/api/v6/useraliases", "{\"userId\":\"user-1\",\"aliases\":[\"alias-1\",\"alias-2\"]}");
+		call(org.upgradeplatform.responsebeans.UserAliasResponse.class, cb -> client.setAltUserIds(List.of("alias-1", "alias-2"), cb));
+
+		assertEquals(lastMethod.get("/api/v6/useraliases"), "PATCH");
+		JsonNode body = lastBody("/api/v6/useraliases");
+		assertEquals(fieldNames(body), java.util.Set.of("aliases"));
+		assertEquals(body.path("aliases").get(0).asText(), "alias-1");
+		assertEquals(body.path("aliases").get(1).asText(), "alias-2");
+	}
+
+	@Test
+	public void getAllExperimentConditionsPostsContext() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		fetchAssignments();
+
+		assertEquals(lastMethod.get("/api/v6/assign"), "POST");
+		JsonNode body = lastBody("/api/v6/assign");
+		assertEquals(fieldNames(body), java.util.Set.of("context"));
+		assertEquals(body.path("context").asText(), "test-app");
+	}
+
+	@Test
+	public void logPostsValueWithMetricsAndGroupedMetrics() throws Exception {
+		responses.put("/api/v6/log", "[{\"id\":\"log-1\",\"uniquifier\":null}]");
+		java.util.HashMap<String, Object> attributes = new java.util.HashMap<>(Map.of("score", 5, "level", "easy"));
+		java.util.HashMap<String, Object> groupAttributes = new java.util.HashMap<>(Map.of("timeSeconds", 30));
+		org.upgradeplatform.requestbeans.LogInput input = new org.upgradeplatform.requestbeans.LogInput(
+				"2026-11-04T12:00:00Z",
+				new org.upgradeplatform.requestbeans.LogMetrics(attributes, List.of(
+						new org.upgradeplatform.requestbeans.LogGroupMetrics("workspace", "ws-1", "u-1", groupAttributes))));
+
+		CompletableFuture<List<org.upgradeplatform.responsebeans.LogEventResponse>> logged = new CompletableFuture<>();
+		client.log(List.of(input), into(logged));
+		logged.get(5, TimeUnit.SECONDS);
+
+		assertEquals(lastMethod.get("/api/v6/log"), "POST");
+		JsonNode body = lastBody("/api/v6/log");
+		assertEquals(fieldNames(body), java.util.Set.of("value"));
+		JsonNode entry = body.path("value").get(0);
+		assertEquals(entry.path("timestamp").asText(), "2026-11-04T12:00:00Z");
+		assertEquals(entry.path("metrics").path("attributes").path("score").asInt(), 5);
+		assertEquals(entry.path("metrics").path("attributes").path("level").asText(), "easy");
+		JsonNode grouped = entry.path("metrics").path("groupedMetrics").get(0);
+		assertEquals(grouped.path("groupClass").asText(), "workspace");
+		assertEquals(grouped.path("groupKey").asText(), "ws-1");
+		assertEquals(grouped.path("groupUniquifier").asText(), "u-1");
+		assertEquals(grouped.path("attributes").path("timeSeconds").asInt(), 30);
+	}
+
+	@Test
+	public void requestsCarryStandardClientHeaders() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		fetchAssignments();
+
+		com.sun.net.httpserver.Headers headers = lastHeaders.get("/api/v6/assign");
+		assertEquals(headers.getFirst("User-Id"), "user-1");
+		assertEquals(headers.getFirst("Client-Context"), "test-app");
+		assertTrue(headers.getFirst("Content-Type").startsWith("application/json"), headers.getFirst("Content-Type"));
+		assertFalse(isNullOrEmpty(headers.getFirst("Session-Id")), "Session-Id");
+		// filled in from pom.xml at build time; an unfiltered placeholder means resource filtering broke
+		String version = headers.getFirst("Client-Version");
+		assertFalse(isNullOrEmpty(version) || version.contains("${"), "Client-Version: " + version);
+	}
+
+	private static boolean isNullOrEmpty(String value) {
+		return value == null || value.isEmpty();
 	}
 
 	@Test

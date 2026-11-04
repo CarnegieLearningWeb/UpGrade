@@ -236,6 +236,12 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   the first request to a server that checks, rather than as a constructor exception.
 
 **Phase D: guardrails**
-- Add a Java unit test suite (at least request serialization for each endpoint).
+- Add a Java unit test suite (at least request serialization for each endpoint). *Done.* `ExperimentClientTest`
+  checks the HTTP method and request body of every endpoint the Java client calls (`/init`, `/groupmembership`,
+  `/workinggroup`, `/useraliases`, `/assign`, `/mark`, `/log`, `/featureflag`, `/reward`) against what the backend's
+  validators expect, plus the standard client headers. `/init` is checked for its exact field set, because the
+  backend rejects any field it doesn't know (`forbidNonWhitelisted`). The `/groupmembership` and `/workinggroup`
+  beans also send `null` `createdAt`/`updatedAt`/`versionNumber`/`requestedUserId` fields; the server strips them, so
+  the tests only check that those carry no values.
 - Add a shared, language-neutral endpoint contract checklist (or contract tests against the backend's swagger) so
   future backend changes show up as drift.
