@@ -26,16 +26,21 @@ await client.init();
 
 // 3. Get an assignment when user hits the "homepage/feature-to-be-tested"
 const assignment = await client.getDecisionPointAssignment(decisionPoint.site, decisionPoint.target);
-const condition = assignment.getCondition(); // e.g. 'control' or 'variant'; use getPayload() for the condition's payload
 
-// 4. Use the condition at the point in user experience when needed
-if (condition === "control") // use the control flow
-if (condition === "variant") // use the variant flow
+// 4. Apply the condition's payload. It defaults to the condition code, so code written this way keeps working
+//    when someone later gives the experiment custom payloads. It's null when no experiment is assigned here.
+const condition = assignment.getPayload()?.value; // e.g. 'control' or 'variant'
+if (condition === 'control') { /* use the control flow */ }
+if (condition === 'variant') { /* use the variant flow */ }
 
-// 5. Mark that the user passed through the decision point to track or officially enroll the user
-await client.markDecisionPoint(decisionPoint.site, decisionPoint.target, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+// 5. Mark that the user passed through the decision point to track or officially enroll the user.
+//    Marking through the assignment always sends its condition code, whatever its payload is.
+await assignment.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+```
 
-`markDecisionPoint` also accepts an options object (`{ site, target, condition, status, uniquifier, clientError }`), which avoids relying on argument order. The Java and Python libraries order these arguments differently: Java puts `clientError` before `uniquifier`, and Python takes `condition, status` before `site, target`.
+If you mark with `client.markDecisionPoint(site, target, condition, status)` instead, pass the condition **code** (`assignment.getCondition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
+
+`client.markDecisionPoint` also accepts an options object (`{ site, target, condition, status, uniquifier, clientError }`), which avoids relying on argument order. The Java and Python libraries order these arguments differently: Java puts `clientError` before `uniquifier`, and Python takes `condition, status` before `site, target`.
 
 ## Timeouts and retries
 The default HTTP client (the browser and node builds):

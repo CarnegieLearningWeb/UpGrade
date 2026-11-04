@@ -45,7 +45,18 @@ Returns the `Assignment` for a decision point, from the assignments fetched by `
 
 > getExperimentCondition(String site, String target, callback)
 
-Read it with `assignment.getCondition()` and `assignment.getPayload()`. When no experiment is assigned at the decision point, `onSuccess` still receives an `Assignment`: a placeholder whose `getCondition()`, `getPayload()` and `getExperimentType()` are all `null`, and whose `getAssignedCondition()` is an empty condition rather than `null`. A `null` experiment type means no experiment is assigned, since a real assignment always has one. Check it before using it in a `switch`, which throws a `NullPointerException` on `null`. The placeholder can still be marked, e.g. with `MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED`.
+Apply the condition's **payload**, not its code: the payload defaults to the condition code, so code written this way keeps working when someone later gives the experiment custom payloads. Then mark through the assignment, which always sends the condition code, whatever its payload is:
+
+```java
+Payload payload = assignment.getPayload();
+String condition = payload == null ? null : payload.getValue();   // null when no experiment is assigned here
+if ("control".equals(condition)) { /* use the control flow */ }
+assignment.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, callback);
+```
+
+If you mark with `client.markDecisionPoint(site, target, condition, status, callback)` instead, pass the condition **code** (`assignment.getCondition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
+
+When no experiment is assigned at the decision point, `onSuccess` still receives an `Assignment`: a placeholder whose `getCondition()`, `getPayload()` and `getExperimentType()` are all `null`, and whose `getAssignedCondition()` is an empty condition rather than `null`. A `null` experiment type means no experiment is assigned, since a real assignment always has one. Check it before using it in a `switch`, which throws a `NullPointerException` on `null`. The placeholder can still be marked, e.g. with `MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED`.
 
 The JS library's placeholder is the same except that it reports `SIMPLE` as the type, and the Python library returns `None` instead of a placeholder.
 
