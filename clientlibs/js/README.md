@@ -42,6 +42,11 @@ If you mark with `client.markDecisionPoint(site, target, condition, status)` ins
 
 `client.markDecisionPoint` also accepts an options object (`{ site, target, condition, status, uniquifier, clientError }`), which avoids relying on argument order. The Java and Python libraries order these arguments differently: Java puts `clientError` before `uniquifier`, and Python takes `condition, status` before `site, target`.
 
+## Caching
+Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since what a user is assigned can depend on their identity and groups. `setFeatureFlagUserGroupsForSession` also clears the flag cache.
+
+This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Await these calls before reading assignments or flags, or pass `{ ignoreCache: true }` to `getAllExperimentConditions` / `getAllFeatureFlags` when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
+
 ## Timeouts and retries
 The default HTTP client (the browser and node builds):
 - **Timeout:** 5 seconds per attempt. In browsers this limits the whole request; in Node it limits connecting and then the gaps between data. It isn't configurable.

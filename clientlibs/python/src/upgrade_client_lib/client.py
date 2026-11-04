@@ -412,38 +412,32 @@ class UpgradeClient:
         cached = None if ignore_cache else self._data_service.get_feature_flags()
         if cached is not None:
             return cached
-        generation = self._data_service.get_feature_flag_generation()
         fresh = await self._api_service.get_all_feature_flags()
-        # not cached if the session groups changed (or init() ran) while the request was in flight
-        self._data_service.set_feature_flags(fresh, generation)
+        self._data_service.set_feature_flags(fresh)
         return fresh
 
     def _feature_flag_keys_sync(self, ignore_cache: bool) -> list[str]:
         cached = None if ignore_cache else self._data_service.get_feature_flags()
         if cached is not None:
             return cached
-        generation = self._data_service.get_feature_flag_generation()
         fresh = self._api_service.get_all_feature_flags_sync()
-        self._data_service.set_feature_flags(fresh, generation)
+        self._data_service.set_feature_flags(fresh)
         return fresh
 
     async def _raw_assignments(self, ignore_cache: bool) -> list[ExperimentAssignment]:
         cached = None if ignore_cache else self._data_service.get_all_assignments()
         if cached is not None:
             return cached
-        generation = self._data_service.get_assignment_generation()
         fresh = await self._api_service.get_all_experiment_conditions()
-        # not cached if the user's groups changed while the request was in flight
-        self._data_service.set_assignments(fresh, generation)
+        self._data_service.set_assignments(fresh)
         return fresh
 
     def _raw_assignments_sync(self, ignore_cache: bool) -> list[ExperimentAssignment]:
         cached = None if ignore_cache else self._data_service.get_all_assignments()
         if cached is not None:
             return cached
-        generation = self._data_service.get_assignment_generation()
         fresh = self._api_service.get_all_experiment_conditions_sync()
-        self._data_service.set_assignments(fresh, generation)
+        self._data_service.set_assignments(fresh)
         return fresh
 
     def _wrap(self, raw: ExperimentAssignment) -> Assignment:

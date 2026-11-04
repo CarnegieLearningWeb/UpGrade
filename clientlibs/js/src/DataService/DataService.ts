@@ -9,9 +9,6 @@ export class DataService {
   private workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = null;
   private experimentAssignmentData: IExperimentAssignment[] = null;
   private featureFlags: string[] = null;
-  // bumped on every invalidation so a response to a request sent before it isn't cached over it
-  private experimentAssignmentGeneration = 0;
-  private featureFlagGeneration = 0;
 
   getGroup(): UpGradeClientInterfaces.IExperimentUserGroup {
     return this.group;
@@ -39,11 +36,6 @@ export class DataService {
 
   clearExperimentAssignmentData() {
     this.experimentAssignmentData = null;
-    this.experimentAssignmentGeneration++;
-  }
-
-  getExperimentAssignmentGeneration(): number {
-    return this.experimentAssignmentGeneration;
   }
 
   /**
@@ -65,11 +57,6 @@ export class DataService {
 
   clearFeatureFlags() {
     this.featureFlags = null;
-    this.featureFlagGeneration++;
-  }
-
-  getFeatureFlagGeneration(): number {
-    return this.featureFlagGeneration;
   }
 
   public rotateAssignmentList(assignment: IExperimentAssignment) {

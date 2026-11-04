@@ -110,6 +110,11 @@ Use these functions to evaluate feature flags against session-scoped groups. Whe
 
 > clearFeatureFlagUserGroupsForSession()
 
+## Caching
+Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since what a user is assigned can depend on their identity and groups. The session-group setters also clear the flag cache.
+
+This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Wait for these calls' callbacks before reading assignments or flags, or pass `ignoreCache = true` to the `getAllExperimentConditions(boolean, callback)` / `getAllFeatureFlags(boolean, callback)` overloads when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
+
 ## Timeouts and retries
 - **Timeout:** 3 seconds to connect and 3 seconds between reads (an idle timeout, not a limit on the whole request). Override with `ClientProperties.CONNECT_TIMEOUT` / `ClientProperties.READ_TIMEOUT` in the constructor's `properties` map.
 - **Retries:** requests that are safe to repeat (`init`, group and working group, aliases, assignments, feature flags) are retried **once**, immediately, after a network failure or a 5xx response. `markDecisionPoint`, `log` and the reward calls are never retried, because the server doesn't deduplicate them. 4xx responses are never retried.

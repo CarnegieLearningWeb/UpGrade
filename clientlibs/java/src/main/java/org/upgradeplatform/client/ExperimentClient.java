@@ -64,21 +64,15 @@ public class ExperimentClient implements AutoCloseable {
 	private final APIService apiService;
 	private final String context;
 
-	// Assignment cache. Guarded by assignmentLock: responses arrive on Jersey threads while invalidation can be
-	// triggered from any thread. assignmentGeneration is bumped on every invalidation, so a response to a request
-	// sent before it is never cached over it.
+	// Assignment cache. Guarded by assignmentLock: it's written on Jersey threads (when a response arrives) and
+	// read or cleared on the caller's thread, so unsynchronized access isn't guaranteed to see the latest value.
 	private final Object assignmentLock = new Object();
 	private List<ExperimentsResponse> allExperiments;
-	private long assignmentGeneration;
-	// Feature flag cache and session groups. Guarded by featureFlagLock: responses arrive on Jersey threads while
-	// the session-group setters run on the caller's thread.
+	// Feature flag cache and session groups. Guarded by featureFlagLock, for the same reason.
 	private final Object featureFlagLock = new Object();
 	private List<String> allFeatureFlags;
 	private Map<String, List<String>> featureFlagGroupsForSession;
 	private Boolean featureFlagIncludeStoredUserGroups;
-	// Bumped whenever the session groups change, so a response to a request sent under the previous groups is
-	// never cached over the invalidation.
-	private long featureFlagGeneration;
 
 	/**
 	 * @param properties
@@ -243,12 +237,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void getAllExperimentConditions(boolean ignoreCache,
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		final List<ExperimentsResponse> cachedExperiments;
-		final long requestGeneration;
-		synchronized (assignmentLock) {
-			cachedExperiments = this.allExperiments;
-			requestGeneration = this.assignmentGeneration;
-		}
+		final List<ExperimentsResponse> cachedExperiments = cachedExperiments();
 
 		if (cachedExperiments == null || ignoreCache) {
 			ExperimentRequest experimentRequest = new ExperimentRequest(this.context);
@@ -263,15 +252,12 @@ public class ExperimentClient implements AutoCloseable {
 								public void completed(Response response) {
 									if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 										// Cache allExperiment data before invoking the callback, so a mark issued from
-										// inside onSuccess already sees the cached assignment, unless the user's groups
-										// changed while this request was in flight (the caller still gets the response)
+										// inside onSuccess already sees the cached assignment
 										readResponseToCallback(response, callbacks,
 												new GenericType<List<ExperimentsResponse>>() {
 												}, ae -> {
 													synchronized (assignmentLock) {
-														if (requestGeneration == assignmentGeneration) {
-															allExperiments = ae;
-														}
+														allExperiments = ae;
 													}
 												});
 									} else {
@@ -399,7 +385,6 @@ public class ExperimentClient implements AutoCloseable {
 	private void invalidateUserDependentCaches() {
 		synchronized (assignmentLock) {
 			this.allExperiments = null;
-			this.assignmentGeneration++;
 		}
 		invalidateFeatureFlagCache();
 	}
@@ -407,7 +392,6 @@ public class ExperimentClient implements AutoCloseable {
 	private void invalidateFeatureFlagCache() {
 		synchronized (featureFlagLock) {
 			this.allFeatureFlags = null;
-			this.featureFlagGeneration++;
 		}
 	}
 
@@ -605,12 +589,10 @@ public class ExperimentClient implements AutoCloseable {
 	public void getAllFeatureFlags(boolean ignoreCache, final ResponseCallback<List<String>> callbacks) {
 		final List<String> cachedFlags;
 		final FeatureFlagRequest flagRequest;
-		final long requestGeneration;
 		synchronized (featureFlagLock) {
 			cachedFlags = this.allFeatureFlags;
 			flagRequest = new FeatureFlagRequest(this.context, this.featureFlagGroupsForSession,
 					this.featureFlagIncludeStoredUserGroups);
-			requestGeneration = this.featureFlagGeneration;
 		}
 
 		if (cachedFlags == null || ignoreCache) {
@@ -622,14 +604,11 @@ public class ExperimentClient implements AutoCloseable {
 						@Override
 						public void completed(Response response) {
 							if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-								// Cache featureFlag data before invoking the callback, unless the session groups changed
-								// while this request was in flight (the caller still gets the response it asked for)
+								// Cache featureFlag data before invoking the callback
 								readResponseToCallback(response, callbacks, new GenericType<List<String>>() {
 								}, flags -> {
 									synchronized (featureFlagLock) {
-										if (requestGeneration == featureFlagGeneration) {
-											allFeatureFlags = flags;
-										}
+										allFeatureFlags = flags;
 									}
 								});
 							} else {

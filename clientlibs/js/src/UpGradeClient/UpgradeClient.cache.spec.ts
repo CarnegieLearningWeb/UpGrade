@@ -96,40 +96,20 @@ describe('UpgradeClient caches', () => {
 
       expect(await lookUpAgain(client)).toEqual({ assignRefetched: false, flagsRefetched: false });
     });
-
-    it('does not cache an in-flight /assign response after the groups change', async () => {
-      const inFlight = client.getDecisionPointAssignment('home', 'banner');
-      const groupChange = client.setGroupMembership({ classId: ['c2'] });
-      await respond('groupmembership', { id: 'user1' });
-      await groupChange;
-      await respond('assign', ASSIGNMENTS);
-
-      // the original caller still gets the assignment it asked for...
-      expect((await inFlight).getCondition()).toEqual('control');
-      // ...but it isn't cached, so the next lookup refetches under the new groups
-      expect((await lookUpAgain(client)).assignRefetched).toBe(true);
-    });
   });
 
   describe('feature flag session groups', () => {
-    it('does not cache an in-flight response after the session groups change', async () => {
-      const inFlight = client.getAllFeatureFlags();
-      const inFlightHas = client.hasFeatureFlag('old-groups-flag');
+    it('clears the flag cache and sends the new groups when the session groups change', async () => {
+      const first = client.getAllFeatureFlags();
+      await respond('featureflag', ['flag']);
+      await first;
+
       client.setFeatureFlagUserGroupsForSession(groups('c2'));
-      await respond('featureflag', ['old-groups-flag']);
-      await respond('featureflag', ['old-groups-flag']);
-
-      // the original callers still get the response they asked for...
-      await expect(inFlight).resolves.toEqual(['old-groups-flag']);
-      await expect(inFlightHas).resolves.toBe(true);
-
-      // ...but it isn't cached, so the next lookup refetches under the new groups
       const refetch = client.getAllFeatureFlags();
-      await flush();
-      expect(requestsTo('featureflag')).toBe(3);
-      expect(request.mock.calls[2][1]).toEqual({ context: 'context', ...groups('c2') });
       await respond('featureflag', ['new-groups-flag']);
+
       await expect(refetch).resolves.toEqual(['new-groups-flag']);
+      expect(request.mock.calls[1][1]).toEqual({ context: 'context', ...groups('c2') });
     });
 
     it('caches a response when the session groups did not change', async () => {

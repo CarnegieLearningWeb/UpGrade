@@ -23,8 +23,6 @@ This mirrors the behaviour of the JS ``DataService``.
 
 from __future__ import annotations
 
-import threading
-
 from upgrade_client_lib.types.responses import ExperimentAssignment
 
 
@@ -38,13 +36,6 @@ class DataService:
         # None  → cache cold
         # set   → cache warm (may be empty)
         self._feature_flags: set[str] | None = None
-        # Each cache's generation is bumped on every invalidation, so a response to a request sent before it isn't
-        # cached over it.  The locks make the generation check and cache write atomic across threads using the
-        # _sync methods.
-        self._assignment_generation = 0
-        self._assignment_lock = threading.Lock()
-        self._feature_flag_generation = 0
-        self._feature_flag_lock = threading.Lock()
 
     # ------------------------------------------------------------------
     # Assignments
@@ -56,23 +47,11 @@ class DataService:
 
     def clear_assignments(self) -> None:
         """Invalidate only the assignment cache, so the next lookup refetches."""
-        with self._assignment_lock:
-            self._assignments = None
-            self._assignment_generation += 1
+        self._assignments = None
 
-    def get_assignment_generation(self) -> int:
-        """Return the current invalidation generation; capture it before requesting assignments."""
-        return self._assignment_generation
-
-    def set_assignments(self, assignments: list[ExperimentAssignment], generation: int | None = None) -> None:
-        """Populate the assignment cache from a fresh API response.
-
-        When ``generation`` is given, the cache is only written if no invalidation happened since it was read
-        with :meth:`get_assignment_generation`.
-        """
-        with self._assignment_lock:
-            if generation is None or generation == self._assignment_generation:
-                self._assignments = {self._key(a.site, a.target): a for a in assignments}
+    def set_assignments(self, assignments: list[ExperimentAssignment]) -> None:
+        """Populate the assignment cache from a fresh API response."""
+        self._assignments = {self._key(a.site, a.target): a for a in assignments}
 
     @classmethod
     def find_assignment(
@@ -123,23 +102,11 @@ class DataService:
 
     def clear_feature_flags(self) -> None:
         """Invalidate only the feature flag cache, so the next lookup refetches."""
-        with self._feature_flag_lock:
-            self._feature_flags = None
-            self._feature_flag_generation += 1
+        self._feature_flags = None
 
-    def get_feature_flag_generation(self) -> int:
-        """Return the current invalidation generation; capture it before requesting flags."""
-        return self._feature_flag_generation
-
-    def set_feature_flags(self, flags: list[str], generation: int | None = None) -> None:
-        """Populate the feature-flag cache from a fresh API response.
-
-        When ``generation`` is given, the cache is only written if no invalidation happened since it was read
-        with :meth:`get_feature_flag_generation`.
-        """
-        with self._feature_flag_lock:
-            if generation is None or generation == self._feature_flag_generation:
-                self._feature_flags = set(flags)
+    def set_feature_flags(self, flags: list[str]) -> None:
+        """Populate the feature-flag cache from a fresh API response."""
+        self._feature_flags = set(flags)
 
     def get_feature_flags(self) -> list[str] | None:
         """Return cached flag keys, or ``None`` if the cache is cold."""

@@ -945,38 +945,6 @@ class TestFeatureFlagUserGroupsForSession:
         with pytest.raises(ValidationError):
             make_client().set_feature_flag_user_groups_for_session({"includeStoredUserGroups": True})
 
-    @respx.mock
-    async def test_in_flight_response_is_not_cached_after_session_groups_change(self) -> None:
-        import asyncio
-
-        arrived = asyncio.Event()
-        release = asyncio.Event()
-        responses = iter([["old-groups-flag"], ["new-groups-flag"]])
-
-        async def held_first_response(request: httpx.Request) -> Response:
-            body = next(responses)
-            if body == ["old-groups-flag"]:
-                arrived.set()
-                await release.wait()
-            return Response(200, json=body)
-
-        route = respx.post(f"{BASE}/featureflag").mock(side_effect=held_first_response)
-        client = make_client()
-
-        in_flight = asyncio.create_task(client.has_feature_flag("old-groups-flag"))
-        await arrived.wait()
-        client.set_feature_flag_user_groups_for_session(
-            {"groupsForSession": {"classId": ["c2"]}, "includeStoredUserGroups": True}
-        )
-        release.set()
-
-        # the original caller still gets the answer for the response it asked for...
-        assert await in_flight is True
-        # ...but it isn't cached, so the next lookup refetches under the new groups
-        assert [f.key for f in await client.get_all_feature_flags()] == ["new-groups-flag"]
-        assert route.call_count == 2
-        assert json.loads(route.calls[1].request.content)["groupsForSession"] == {"classId": ["c2"]}
-
 
 # ---------------------------------------------------------------------------
 # Cache invalidation when the user's groups may have changed
@@ -1055,38 +1023,6 @@ class TestGroupChangeInvalidation:
         await client.set_alt_user_ids(["alias-1"])
 
         assert await self._look_up_again(client, assign, flags) == (True, True)
-
-    @respx.mock
-    async def test_in_flight_assign_response_is_not_cached_after_group_change(self) -> None:
-        import asyncio
-
-        arrived = asyncio.Event()
-        release = asyncio.Event()
-        calls = 0
-
-        async def held_first_response(request: httpx.Request) -> Response:
-            nonlocal calls
-            calls += 1
-            if calls == 1:
-                arrived.set()
-                await release.wait()
-            return Response(200, json=ASSIGNMENT_PAYLOAD)
-
-        assign = respx.post(f"{BASE}/assign").mock(side_effect=held_first_response)
-        respx.patch(f"{BASE}/groupmembership").mock(return_value=Response(200, json=USER_PAYLOAD))
-        client = make_client()
-
-        in_flight = asyncio.create_task(client.get_decision_point_assignment("home", "banner"))
-        await arrived.wait()
-        await client.set_group_membership({"classId": ["c2"]})
-        release.set()
-
-        # the original caller still gets the assignment it asked for...
-        assignment = await in_flight
-        assert assignment is not None and assignment.get_condition() == "control"
-        # ...but it isn't cached, so the next lookup refetches under the new groups
-        await client.get_all_experiment_conditions()
-        assert assign.call_count == 2
 
 
 # ---------------------------------------------------------------------------

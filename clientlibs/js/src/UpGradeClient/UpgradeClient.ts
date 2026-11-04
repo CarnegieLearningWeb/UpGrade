@@ -325,10 +325,8 @@ export default class UpgradeClient {
       ? null
       : await this.dataService.getExperimentAssignmentData();
     if (response == null) {
-      const generation = this.dataService.getExperimentAssignmentGeneration();
       response = await this.apiService.getAllExperimentConditions();
-      // don't cache a response for groups that were changed while the request was in flight
-      if (Array.isArray(response) && generation === this.dataService.getExperimentAssignmentGeneration()) {
+      if (Array.isArray(response)) {
         this.dataService.setExperimentAssignmentData(response);
       }
     }
@@ -531,10 +529,8 @@ export default class UpgradeClient {
   async getAllFeatureFlags(options = { ignoreCache: false }): Promise<string[]> {
     let response = options.ignoreCache ? null : this.dataService.getFeatureFlags();
     if (response == null) {
-      const generation = this.dataService.getFeatureFlagGeneration();
       response = await this.apiService.getAllFeatureFlags();
-      // don't cache a response for session groups that were changed while the request was in flight
-      if (Array.isArray(response) && generation === this.dataService.getFeatureFlagGeneration()) {
+      if (Array.isArray(response)) {
         this.dataService.setFeatureFlags(response);
       }
     }

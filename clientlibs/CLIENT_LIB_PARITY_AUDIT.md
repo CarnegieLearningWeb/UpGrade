@@ -210,8 +210,13 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   (always), `setGroupMembership`, `setWorkingGroup` and `setAltUserIds` clear both the assignment and feature-flag
   caches once the server confirms the call; a failed call leaves them alone. Previously only Python's `init()`
   cleared anything, and it did so before the request.
-  - The assignment cache got the same generation guard as feature flags, so an in-flight `/assign` can't refill a
-    cleared cache. Java guards it with a lock, and Python makes the check and write atomic under a lock.
+  - Clearing is best-effort: a response that was already in flight when a cache was cleared can still be cached
+    afterwards. A generation-counter guard against that (for both caches, with locks in Java and Python) was
+    implemented and then removed after review, as over-engineering for a narrow window. Without it, the race
+    leaves the cache exactly as stale as `dev` always did, so this is still a strict improvement. The READMEs
+    tell callers to await these calls before reading, or pass `ignoreCache`. Java keeps a lock around each cache
+    anyway: they're written on Jersey threads and read on the caller's thread, and on `dev` that access had no
+    synchronization, so the caller wasn't guaranteed to see the write.
   - `getDecisionPointAssignment` (JS/Python) looks up in the list it just fetched, not the cache.
   - Side effect: within-subjects condition rotation restarts after a group change, since the refetched list comes
     back in the server's order.

@@ -265,6 +265,11 @@ UpgradeClient.BINARY_REWARD_VALUE.SUCCESS
 UpgradeClient.BINARY_REWARD_VALUE.FAILURE
 ```
 
+## Caching
+Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `set_group_membership`, `set_working_group` or `set_alt_user_ids`, since what a user is assigned can depend on their identity and groups. `set_feature_flag_user_groups_for_session` also clears the flag cache.
+
+This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Await these calls before reading assignments or flags, or pass `ignore_cache=True` to `get_all_experiment_conditions` / `get_all_feature_flags` when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
+
 ## Connection Reuse
 
 - **Sync methods** share one pooled `httpx.Client` per `UpgradeClient`. Release it with `client.close()` or a `with`
