@@ -346,11 +346,10 @@ export default class UpgradeClient {
    */
 
   async getDecisionPointAssignment(site: string, target = ''): Promise<Assignment | null> {
-    // look up in the list this call fetched rather than the cache, which may have been invalidated meanwhile
-    const assignments = await this.getAllExperimentConditions();
+    await this.getAllExperimentConditions();
 
-    if (Array.isArray(assignments)) {
-      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target, assignments);
+    if (this.dataService.getExperimentAssignmentData()) {
+      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
 
       const assignment = new Assignment(experimentAssignment, this.apiService);
 
@@ -551,9 +550,8 @@ export default class UpgradeClient {
    * to see configurations that may affect the responses to this method
    */
   public async hasFeatureFlag(key: string): Promise<boolean> {
-    // check the list this call fetched rather than the cache, which may have been invalidated meanwhile
-    const featureFlags = await this.getAllFeatureFlags();
-    return Array.isArray(featureFlags) && featureFlags.includes(key);
+    await this.getAllFeatureFlags();
+    return this.dataService.hasFeatureFlag(key);
   }
 
   /**

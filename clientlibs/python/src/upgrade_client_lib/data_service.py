@@ -53,13 +53,6 @@ class DataService:
         """Populate the assignment cache from a fresh API response."""
         self._assignments = {self._key(a.site, a.target): a for a in assignments}
 
-    @classmethod
-    def find_assignment(
-        cls, assignments: list[ExperimentAssignment], site: str, target: str | None
-    ) -> ExperimentAssignment | None:
-        """Find the assignment for ``site``/``target`` in a list, matched the same way as :meth:`get_assignment`."""
-        key = cls._key(site, target)
-        return next((a for a in assignments if cls._key(a.site, a.target) == key), None)
     def get_all_assignments(self) -> list[ExperimentAssignment] | None:
         """Return all cached assignments, or ``None`` if the cache is cold."""
         assignments = self._assignments

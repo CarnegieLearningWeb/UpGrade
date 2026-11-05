@@ -214,14 +214,17 @@ class UpgradeClient:
         Fetches all experiment conditions first if the cache is cold.
         Returns ``None`` when no experiment is running at this decision point.
         """
-        # look up in the list this call fetched rather than the cache, which may have been invalidated meanwhile
-        return self._assignment_in(await self._raw_assignments(ignore_cache=False), site, target)
+        if self._data_service.get_all_assignments() is None:
+            await self.get_all_experiment_conditions()
+        return self._assignment_for(site, target)
 
     def get_decision_point_assignment_sync(
         self, site: str, target: str | None = ""
     ) -> Assignment | None:
         """Synchronous variant of :meth:`get_decision_point_assignment`."""
-        return self._assignment_in(self._raw_assignments_sync(ignore_cache=False), site, target)
+        if self._data_service.get_all_assignments() is None:
+            self.get_all_experiment_conditions_sync()
+        return self._assignment_for(site, target)
 
     # ------------------------------------------------------------------
     # mark_decision_point
@@ -296,12 +299,15 @@ class UpgradeClient:
 
         Fetches all feature flags first if the cache is cold.
         """
-        # check the keys this call fetched rather than the cache, which may have been invalidated meanwhile
-        return key in await self._feature_flag_keys(ignore_cache=False)
+        if self._data_service.get_feature_flags() is None:
+            await self.get_all_feature_flags()
+        return self._data_service.has_feature_flag(key)
 
     def has_feature_flag_sync(self, key: str) -> bool:
         """Synchronous variant of :meth:`has_feature_flag`."""
-        return key in self._feature_flag_keys_sync(ignore_cache=False)
+        if self._data_service.get_feature_flags() is None:
+            self.get_all_feature_flags_sync()
+        return self._data_service.has_feature_flag(key)
 
     # ------------------------------------------------------------------
     # log
@@ -444,10 +450,8 @@ class UpgradeClient:
         # marks made through the Assignment rotate the cache the same way client.mark_decision_point does
         return Assignment(raw, self._api_service, on_marked=self._rotate_after_mark)
 
-    def _assignment_in(
-        self, assignments: list[ExperimentAssignment], site: str, target: str | None
-    ) -> Assignment | None:
-        raw = DataService.find_assignment(assignments, site, target)
+    def _assignment_for(self, site: str, target: str | None) -> Assignment | None:
+        raw = self._data_service.get_assignment(site, target)
         return self._wrap(raw) if raw is not None else None
 
     def _mark_request(

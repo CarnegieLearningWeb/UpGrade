@@ -217,7 +217,6 @@ safely would need server-side idempotency (e.g. a client-generated request id).
     tell callers to await these calls before reading, or pass `ignoreCache`. Java keeps a lock around each cache
     anyway: they're written on Jersey threads and read on the caller's thread, and on `dev` that access had no
     synchronization, so the caller wasn't guaranteed to see the write.
-  - `getDecisionPointAssignment` (JS/Python) looks up in the list it just fetched, not the cache.
   - Side effect: within-subjects condition rotation restarts after a group change, since the refetched list comes
     back in the server's order.
 - Retry policy and default timeout, with one documented value across all three. *Decided: leave the differences as

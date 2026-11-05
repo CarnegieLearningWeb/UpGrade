@@ -83,14 +83,10 @@ export class DataService {
       .forEach((assignment) => this.rotateAssignmentList(assignment));
   }
 
-  public findExperimentAssignmentBySiteAndTarget(
-    site: string,
-    target?: string,
-    assignments: IExperimentAssignment[] = this.experimentAssignmentData
-  ): IExperimentAssignment {
+  public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignment {
     const normalizedTarget = target ?? '';
-    // assignments are null if the preceding /assign call failed or returned a non-array
-    const assignment = assignments?.find(
+    // experimentAssignmentData stays null if the preceding /assign call failed or returned a non-array
+    const assignment = this.experimentAssignmentData?.find(
       (assignment) => assignment.site === site && assignment.target === normalizedTarget
     );
 
