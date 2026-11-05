@@ -576,5 +576,29 @@ describe('ThompsonSamplingRewardService', () => {
 
       expect(tsConfigRepository.findOne).toHaveBeenCalledTimes(2);
     });
+
+    it('never mutates the cached config, including its posterior-state rows, across rewards and a batch flush', async () => {
+      const cachedConfig = {
+        ...makeConfig(2),
+        conditionPosteriorStates: [makeStateRow('state-1', CONDITION_ID)],
+      };
+      tsConfigRepository.findOne = jest.fn().mockResolvedValue(cachedConfig);
+      tsConfigRepository.findByDecisionPoint = jest.fn().mockResolvedValue([cachedConfig]);
+      const dpRequest = {
+        rewardValue: BinaryRewardAllowedValue.FAILURE,
+        context: 'context-1',
+        decisionPoint: { site: 'site-1', target: 'target-1' },
+      } as RewardValidator;
+      const before = JSON.parse(JSON.stringify(cachedConfig));
+
+      // batchSize is 2, so the second reward closes a batch and flushes the pending counts.
+      await (service as any).processReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger);
+      await (service as any).processReward(makeUser(), dpRequest, logger);
+      await (service as any).processReward(makeUser(), makeRequest(BinaryRewardAllowedValue.SUCCESS), logger);
+      await (service as any).processReward(makeUser(), dpRequest, logger);
+
+      expect(statesByCondition[CONDITION_ID].totalCount).toBe(4);
+      expect(JSON.parse(JSON.stringify(cachedConfig))).toEqual(before);
+    });
   });
 });

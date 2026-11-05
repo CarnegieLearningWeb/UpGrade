@@ -364,21 +364,114 @@ describe('Experiment Assignment Service Test', () => {
 
       await expectNoMutation(exp, () => testedModule.getAllExperimentConditions(userDoc, context, loggerMock));
     });
+
+    // /mark reads the same cached graph (resolveExperimentForMarkPoint) and goes further with it than /assign:
+    // it hands the cached experiment, its decision point and its conditions to updateEnrollmentExclusion, which
+    // builds enrollment/exclusion documents around them and, for a new user or group, re-runs assignExperiment.
+    // Each test marks both without an experimentId (full selection pipeline) and with one (direct lookup).
+    describe('on /mark', () => {
+      const context = 'context';
+
+      const markBothWays = (exp: any, userDoc: any, condition: string) => async () => {
+        const { site, target } = exp.partitions[0];
+        for (const experimentId of [undefined, exp.id]) {
+          await testedModule.markExperimentPoint(
+            userDoc,
+            site,
+            MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+            condition,
+            loggerMock,
+            context,
+            experimentId,
+            target,
+            'uniquifier-1'
+          );
+        }
+      };
+
+      beforeEach(() => {
+        testedModule.monitoredDecisionPointRepository = {
+          findOne: sandbox.stub().resolves(undefined),
+          saveRawJson: sandbox.stub().callsFake(async (document) => document),
+        };
+        individualEnrollmentRepositoryMock.save = sandbox.stub().callsFake(async (document) => document);
+      });
+
+      it('should not mutate the cached experiment when enrolling a user in a simple individual experiment', async () => {
+        const userDoc = { id: 'user123', group: {}, workingGroup: {} };
+        const exp = structuredClone(simpleIndividualAssignmentExperiment);
+        testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+
+        await expectNoMutation(exp, markBothWays(exp, userDoc, 'ConditionA'));
+
+        sinon.assert.called(individualEnrollmentRepositoryMock.save);
+      });
+
+      it('should not reorder the cached conditions when enrolling a new group in a simple group experiment', async () => {
+        const userDoc = {
+          id: 'user123',
+          group: { 'add-group1': ['school1'] },
+          workingGroup: { 'add-group1': 'school1' },
+        };
+        const exp: any = structuredClone(simpleGroupAssignmentExperiment);
+        expect(exp.conditions.map((condition) => condition.order)).toEqual([2, 1]);
+        testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+        groupEnrollmentRepositoryMock.findOne = sandbox.stub().resolves(undefined);
+        groupEnrollmentRepositoryMock.save = sandbox.stub().resolves();
+        groupExclusionRepositoryMock.findOne = sandbox.stub().resolves(undefined);
+
+        await expectNoMutation(exp, markBothWays(exp, userDoc, 'add-con1'));
+
+        sinon.assert.called(groupEnrollmentRepositoryMock.save);
+      });
+
+      it('should not mutate the cached experiment when recording a within-subjects repeated enrollment', async () => {
+        const userDoc = { id: 'user123', group: {}, workingGroup: {} };
+        const exp = structuredClone(simpleWithinSubjectOrderedRoundRobinExperiment);
+        testedModule.experimentService.getCachedValidExperiments = sandbox.stub().resolves([exp]);
+        const saveRepeatedEnrollment = sandbox.stub().resolves();
+        testedModule.repeatedEnrollmentRepository = { save: saveRepeatedEnrollment };
+
+        await expectNoMutation(exp, markBothWays(exp, userDoc, 'ConditionA'));
+
+        sinon.assert.called(saveRepeatedEnrollment);
+      });
+    });
   });
 
   describe('cached segments and precomputed segment rows are never mutated', () => {
     // Like the experiment graph above, segments (SegmentService.getSegmentByIds / getGlobalExcludeSegmentByContext)
     // and precomputed segment rows (getPrecomputedSets) come out of the in-memory cache as the same objects on every
     // request, so an in-place write during assignment would leak into every later request. The stubs below hand
-    // out the same fixture objects on every call, the way the cache does, and the test checks they come through
-    // two /assign requests unchanged. It covers the global exclude segment, on-the-fly resolution of include and
-    // exclude segments (including a sub-segment) for an experiment with no precomputed row, and the precomputed
-    // row path for another experiment.
-    it('leaves cached segments and precomputed rows unchanged across /assign requests', async () => {
-      const context = 'context';
-      const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: { schoolId: 'school1' } };
+    // out the same fixture objects on every call, the way the cache does, and each test checks they come through
+    // repeated /assign or /mark requests unchanged. Both cover the global exclude segment, on-the-fly resolution
+    // of include and exclude segments (including a sub-segment) for an experiment with no precomputed row, and the
+    // precomputed row path for another experiment.
+    const context = 'context';
+    const userDoc = { id: 'user123', group: { schoolId: ['school1'] }, workingGroup: { schoolId: 'school1' } };
+    let segmentsById: Record<string, any>;
+    let precomputedRows: Map<string, any>;
+    let onTheFlyExperiment: any;
+    let precomputedExperiment: any;
+    let getSegmentByIds: sinon.SinonStub;
+    let getPrecomputedSets: sinon.SinonStub;
 
-      const segmentsById: Record<string, any> = {
+    const snapshot = () =>
+      JSON.parse(JSON.stringify({ segmentsById, precomputedRows: Object.fromEntries(precomputedRows) }));
+
+    // Every cached path ran: global exclude (and its sub-segment), on-the-fly include/exclude (and the
+    // include segment's sub-segment), and the precomputed row.
+    const assertEveryCachedPathRan = () => {
+      sinon.assert.calledWith(getSegmentByIds, ['global-exclude']);
+      sinon.assert.calledWith(getSegmentByIds, ['global-exclude-sub']);
+      sinon.assert.calledWith(getSegmentByIds, ['include-segment']);
+      sinon.assert.calledWith(getSegmentByIds, ['include-sub-segment']);
+      sinon.assert.calledWith(getSegmentByIds, ['exclude-segment']);
+      sinon.assert.called(getPrecomputedSets);
+    };
+
+    beforeEach(() => {
+      segmentsById = {
         'global-exclude': {
           id: 'global-exclude',
           individualForSegment: [{ userId: 'someone-else' }],
@@ -412,14 +505,14 @@ describe('Experiment Assignment Service Test', () => {
       };
 
       // Resolved on the fly (no precomputed row) from the cached segments above.
-      const onTheFlyExperiment: any = structuredClone(simpleIndividualAssignmentExperiment);
+      onTheFlyExperiment = structuredClone(simpleIndividualAssignmentExperiment);
       onTheFlyExperiment.id = 'on-the-fly-experiment';
       onTheFlyExperiment.filterMode = FILTER_MODE.EXCLUDE_ALL;
       // Resolved from its precomputed row.
-      const precomputedExperiment: any = structuredClone(simpleIndividualAssignmentExperiment);
+      precomputedExperiment = structuredClone(simpleIndividualAssignmentExperiment);
       precomputedExperiment.id = 'precomputed-experiment';
       precomputedExperiment.filterMode = FILTER_MODE.EXCLUDE_ALL;
-      const precomputedRows = new Map([
+      precomputedRows = new Map([
         [
           precomputedExperiment.id,
           {
@@ -430,14 +523,14 @@ describe('Experiment Assignment Service Test', () => {
         ],
       ]);
 
-      const getSegmentByIds = sandbox
+      getSegmentByIds = sandbox
         .stub()
         .callsFake(async (ids: string[]) => ids.map((id) => segmentsById[id]).filter(Boolean));
       testedModule.segmentService = {
         getGlobalExcludeSegmentByContext: sandbox.stub().resolves(segmentsById['global-exclude']),
         getSegmentByIds,
       };
-      const getPrecomputedSets = sandbox.stub().resolves(precomputedRows);
+      getPrecomputedSets = sandbox.stub().resolves(precomputedRows);
       testedModule.experimentPrecomputedSegmentService = { getPrecomputedSets };
       const experimentRepository = Object.create(experimentRepositoryMock);
       experimentRepository.getSegmentIdsForExperiments = sandbox.stub().callsFake(async (ids: string[]) =>
@@ -454,22 +547,51 @@ describe('Experiment Assignment Service Test', () => {
         .stub()
         .resolves([onTheFlyExperiment, precomputedExperiment]);
       testedModule.experimentUserService = { getOriginalUserDoc: sandbox.stub().resolves(userDoc) };
+    });
 
-      const snapshot = () =>
-        JSON.parse(JSON.stringify({ segmentsById, precomputedRows: Object.fromEntries(precomputedRows) }));
+    it('leaves cached segments and precomputed rows unchanged across /assign requests', async () => {
       const before = snapshot();
 
       await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
       await testedModule.getAllExperimentConditions(userDoc, context, loggerMock);
 
-      // Every cached path ran: global exclude (and its sub-segment), on-the-fly include/exclude (and the
-      // include segment's sub-segment), and the precomputed row.
-      sinon.assert.calledWith(getSegmentByIds, ['global-exclude']);
-      sinon.assert.calledWith(getSegmentByIds, ['global-exclude-sub']);
-      sinon.assert.calledWith(getSegmentByIds, ['include-segment']);
-      sinon.assert.calledWith(getSegmentByIds, ['include-sub-segment']);
-      sinon.assert.calledWith(getSegmentByIds, ['exclude-segment']);
-      sinon.assert.called(getPrecomputedSets);
+      assertEveryCachedPathRan();
+      expect(snapshot()).toEqual(before);
+    });
+
+    it('leaves cached segments and precomputed rows unchanged across /mark requests', async () => {
+      // /mark reaches the same cached segments and rows through its own entry point
+      // (resolveExperimentForMarkPoint): the full selection pipeline when no experimentId is sent, and a
+      // direct experimentLevelExclusionInclusion call for the named experiment when one is.
+      const { site, target } = onTheFlyExperiment.partitions[0];
+      individualEnrollmentRepositoryMock.save = sandbox.stub().resolves();
+      testedModule.monitoredDecisionPointRepository = {
+        findOne: sandbox.stub().resolves(undefined),
+        saveRawJson: sandbox.stub().callsFake(async (document) => document),
+      };
+      const mark = (experimentId: string | undefined) =>
+        testedModule.markExperimentPoint(
+          userDoc,
+          site,
+          MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+          'ConditionA',
+          loggerMock,
+          context,
+          experimentId,
+          target
+        );
+      const before = snapshot();
+
+      for (let i = 0; i < 2; i++) {
+        await mark(undefined);
+        await mark(onTheFlyExperiment.id);
+        await mark(precomputedExperiment.id);
+      }
+
+      assertEveryCachedPathRan();
+      // The user is included everywhere, so every mark went on to write an enrollment instead of stopping at
+      // an exclusion — i.e. the enrollment path below segment resolution ran too.
+      sinon.assert.callCount(individualEnrollmentRepositoryMock.save, 6);
       expect(snapshot()).toEqual(before);
     });
   });
