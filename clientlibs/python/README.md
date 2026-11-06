@@ -32,8 +32,11 @@ async def main():
     # Experiment assignments
     assignment = await client.get_decision_point_assignment("home", "banner")
     if assignment:
-        condition = assignment.get_condition()   # e.g. "treatment"
-        payload   = assignment.get_payload()     # Payload | None
+        # Apply the condition's payload. It defaults to the condition code, so code written this way keeps
+        # working when someone later gives the experiment custom payloads.
+        payload = assignment.get_payload()
+        condition = payload.value if payload else None   # e.g. "control" or "treatment"
+        # Marking through the assignment always sends its condition code, whatever its payload is.
         await assignment.mark_decision_point(
             UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
         )
@@ -55,7 +58,8 @@ client.init_sync()
 
 assignment = client.get_decision_point_assignment_sync("home", "banner")
 if assignment:
-    condition = assignment.get_condition()
+    payload = assignment.get_payload()
+    condition = payload.value if payload else None
     assignment.mark_decision_point_sync(
         UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
     )
@@ -63,7 +67,7 @@ if assignment:
 
 ## API Reference
 
-### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None, timeout=5.0)`
+### `UpgradeClient(user_id, host_url, context, token="", client_session_id=None, timeout=5.0, feature_flag_user_groups_for_session=None)`
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -73,6 +77,7 @@ if assignment:
 | `token` | `str` | Optional bearer token for the `Authorization` header |
 | `client_session_id` | `str \| None` | Optional session ID; auto-generated UUID when omitted |
 | `timeout` | `float \| httpx.Timeout` | HTTP request timeout in seconds, or an `httpx.Timeout` object for fine-grained control. Defaults to `5.0` seconds, which matches httpx's own default and preserves the previous implicit behavior. |
+| `feature_flag_user_groups_for_session` | `FeatureFlagUserGroupsForSession \| dict \| None` | Optional session-scoped groups for feature flag evaluation; see [Feature Flags](#feature-flags) |
 
 To set a short timeout (e.g. for user-facing synchronous routes where you want fast failure):
 
@@ -101,16 +106,22 @@ client = UpgradeClient(
 
 The configured timeout applies to both the async (`httpx.AsyncClient`) and sync (`httpx.Client`) HTTP clients. Timeout errors raise `httpx.TimeoutException` and are not caught by the library.
 
+`httpx` applies the timeout separately to connecting, each read, each write and waiting for a pooled connection, so it's an idle limit rather than a limit on the whole request.
+
+**The library never retries.** A network failure, timeout or error response is raised on the first attempt, so retry in your own code if you need to. Only retry calls that are safe to repeat (`init`, group and working group updates, aliases, assignments, feature flags): the server doesn't deduplicate `mark_decision_point`, `log` or `send_reward`, so resending one after a lost response can record it twice.
+
+The JS and Java libraries do retry safe requests (each retries once; JS waits 300 ms first), and Java's default timeout is 3 seconds. See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
+
 Every method has an async variant (no suffix) and a synchronous variant (`_sync` suffix).
 
 ### Initialization
 
 | Method | Description |
 |---|---|
-| `init(group=None, working_group=None)` | Initialize the user and clear the local cache |
-| `set_group_membership(group)` | Update the user's group membership |
-| `set_working_group(working_group)` | Update the user's working group |
-| `set_alt_user_ids(aliases)` | Register alternate identifiers for this user |
+| `init(group=None, working_group=None)` | Initialize the user, then clear cached assignments and feature flags |
+| `set_group_membership(group)` | Update the user's group membership, then clear cached assignments and feature flags |
+| `set_working_group(working_group)` | Update the user's working group, then clear cached assignments and feature flags |
+| `set_alt_user_ids(aliases)` | Register alternate identifiers for this user, then clear cached assignments and feature flags |
 
 ### Experiments
 
@@ -118,7 +129,18 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 |---|---|
 | `get_all_experiment_conditions(ignore_cache=False)` | Return all `Assignment` objects for this user/context |
 | `get_decision_point_assignment(site, target="")` | Return the `Assignment` for a specific decision point, or `None` |
-| `mark_decision_point( condition, status, site, target = "", uniquifier="", client_error="")` | Record that the user encountered a decision point |
+| `mark_decision_point(condition, status, site, target="", uniquifier="", client_error="")` | Record that the user encountered a decision point |
+
+**Argument order differs from the JS and Java libraries**, which take `site, target` first and `condition, status` after (JS: `markDecisionPoint(site, target, condition, status, uniquifier, clientError)`; Java additionally puts `clientError` before `uniquifier`). If you're porting code from another library, pass keyword arguments so the order can't matter:
+
+```python
+await client.mark_decision_point(
+    condition="control",
+    status=UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+    site="home",
+    target="banner",
+)
+```
 
 When no experiment is running at a decision point, mark it with `condition=None` and the `NO_CONDITION_ASSIGNED` status:
 
@@ -136,11 +158,14 @@ if assignment is None:
         target="mathbook_tx",
     )
 else:
-    condition = assignment.get_condition()
+    payload = assignment.get_payload()
+    condition = payload.value if payload else None
     assignment.mark_decision_point_sync(
         UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
     )
 ```
+
+Apply the condition's **payload** (`get_payload().value`) rather than its code: the payload defaults to the condition code, so code written this way keeps working when someone later gives the experiment custom payloads. If you mark with `client.mark_decision_point(condition, status, site, target)` instead of through the assignment, pass the condition **code** (`assignment.get_condition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
 
 ### Feature Flags
 
@@ -148,6 +173,25 @@ else:
 |---|---|
 | `get_all_feature_flags(ignore_cache=False)` | Return all active `FeatureFlag` objects |
 | `has_feature_flag(key)` | Return `True` if the named flag is active for this user |
+| `set_feature_flag_user_groups_for_session(options)` | Set (or, with `None`, clear) session-scoped groups for feature flag evaluation; clears the cached flags. Not async, so there's no `_sync` variant |
+
+Session-scoped groups are sent with every feature flag request. `groupsForSession` is merged with the user's stored groups when `includeStoredUserGroups` is `True`, and replaces them when `False`. Both fields are required:
+
+```python
+from upgrade_client_lib.types import FeatureFlagUserGroupsForSession
+
+client = UpgradeClient(
+    "user-1",
+    "https://upgrade.example.com",
+    "my-app",
+    feature_flag_user_groups_for_session={"groupsForSession": {"classId": ["c1"]}, "includeStoredUserGroups": True},
+)
+
+# later, e.g. when the user switches class
+client.set_feature_flag_user_groups_for_session(
+    FeatureFlagUserGroupsForSession(groupsForSession={"classId": ["c2"]}, includeStoredUserGroups=True)
+)
+```
 
 ### Metrics & Rewards
 
@@ -206,7 +250,7 @@ Returned by `get_all_experiment_conditions` and `get_decision_point_assignment`.
 | `factors` | List of factor names (factorial experiments only) |
 | `get_factor_level(factor)` | Assigned level for a factor (`str \| None`) |
 | `get_factor_payload(factor)` | Payload for a factor (`Payload \| None`) |
-| `mark_decision_point(status, uniquifier="", client_error="")` | Mark this decision point |
+| `mark_decision_point(status, uniquifier="", client_error="")` | Mark this decision point. Like `client.mark_decision_point`, a successful mark advances the client's cached within-subjects assignments |
 
 ### Enums
 
@@ -220,6 +264,27 @@ UpgradeClient.MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED
 UpgradeClient.BINARY_REWARD_VALUE.SUCCESS
 UpgradeClient.BINARY_REWARD_VALUE.FAILURE
 ```
+
+## Caching
+Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `set_group_membership`, `set_working_group` or `set_alt_user_ids`, since what a user is assigned can depend on their identity and groups. `set_feature_flag_user_groups_for_session` also clears the flag cache.
+
+This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Await these calls before reading assignments or flags, or pass `ignore_cache=True` to `get_all_experiment_conditions` / `get_all_feature_flags` when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
+
+## Connection Reuse
+
+- **Sync methods** share one pooled `httpx.Client` per `UpgradeClient`. Release it with `client.close()` or a `with`
+  block.
+- **Async methods** share a pooled `httpx.AsyncClient` only inside `async with`, which opens and closes the pool on
+  the same event loop:
+
+  ```python
+  async with UpgradeClient("user-1", "https://upgrade.example.com", "my-app") as client:
+      await client.init()
+      flags = await client.get_all_feature_flags()
+  ```
+
+  Outside `async with`, each async request uses its own short-lived client, so it's safe to call the same
+  `UpgradeClient` from successive `asyncio.run()` loops.
 
 ## Error Handling
 

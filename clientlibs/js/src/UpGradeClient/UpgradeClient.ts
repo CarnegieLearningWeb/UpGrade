@@ -1,7 +1,6 @@
 import { UpGradeClientInterfaces } from '../types';
 import {
   ILogInput,
-  CaliperEnvelope,
   IExperimentAssignment,
   IUserAliases,
   BinaryRewardAllowedValue,
@@ -247,7 +246,10 @@ export default class UpgradeClient {
     group?: Record<string, Array<string>>,
     workingGroup?: Record<string, string>
   ): Promise<UpGradeClientInterfaces.IExperimentUser> {
-    return await this.apiService.init(group, workingGroup);
+    const response = await this.apiService.init(group, workingGroup);
+    // init may have changed the user's groups, which assignments and feature flags depend on
+    this.dataService.clearUserDependentData();
+    return response;
   }
 
   /**
@@ -267,6 +269,7 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setGroupMembership(group);
     // If it does not throw error from setGroupMembership
     this.dataService.setGroup(group);
+    this.dataService.clearUserDependentData();
     response = {
       ...response,
       workingGroup: this.dataService.getWorkingGroup(),
@@ -291,6 +294,7 @@ export default class UpgradeClient {
     let response: UpGradeClientInterfaces.IExperimentUser = await this.apiService.setWorkingGroup(workingGroup);
     // If it does not throw error from setWorkingGroup
     this.dataService.setWorkingGroup(workingGroup);
+    this.dataService.clearUserDependentData();
     response = {
       ...response,
       group: this.dataService.getGroup(),
@@ -595,28 +599,8 @@ export default class UpgradeClient {
   }
 
   /**
- * Will report Caliper user outcome metrics to Upgrade, same as log() but with Caliper envelope.
- * 
- * @example
- * ```ts
- * const logRequest: CaliperEnvelope = {
-      sensor: 'test',
-      sendTime: 'test',
-      dataVersion: 'test',
-      data: [],
-    };
- *
- *
- *  const logCaliperResponse: ILog[] = await upgradeClient.logCaliper(logRequest);
- * 
- * ```
- */
-  async logCaliper(value: CaliperEnvelope): Promise<UpGradeClientInterfaces.ILogResponse[]> {
-    return await this.apiService.logCaliper(value);
-  }
-
-  /**
-   * Will set an array of alternate user ids for the user.
+   * Will set an array of alternate user ids for the user. Once the server confirms, cached assignments and feature
+   * flags are cleared, so the next lookup refetches them.
    *
    * @example
    * ```ts
@@ -626,7 +610,9 @@ export default class UpgradeClient {
    * ```
    */
   async setAltUserIds(altUserIds: string[]): Promise<IUserAliases> {
-    return await this.apiService.setAltUserIds(altUserIds);
+    const response = await this.apiService.setAltUserIds(altUserIds);
+    this.dataService.clearUserDependentData();
+    return response;
   }
 
   /**
@@ -648,6 +634,12 @@ export default class UpgradeClient {
    * 2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment
    *
    * At least one of these methods must be provided.
+   *
+   * **Waiting for the result:**
+   *
+   * By default the server acknowledges the reward immediately (`mode: 'accepted'`) and records it in the
+   * background, so a reward that can't be recorded only shows up in the server logs. Pass `awaitResult: true`
+   * to wait until it is recorded (`mode: 'processed'`); the call then rejects with a 409 if it can't be.
    *
    * @example
    * ```ts
@@ -692,7 +684,8 @@ export default class UpgradeClient {
    *   }
    * });
    * ```
-   *  * @example
+   *
+   * @example
    * ```ts
    * // Example 5: Using decision point without target
    * const response = await upgradeClient.sendReward({
@@ -703,13 +696,21 @@ export default class UpgradeClient {
    *   }
    * });
    * ```
+   *
+   * @example
+   * ```ts
+   * // Example 6: Waiting for the reward to be recorded
+   * const response = await upgradeClient.sendReward({
+   *   rewardValue: 'SUCCESS',
+   *   experimentId: 'exp_adaptive_123',
+   *   awaitResult: true,
+   * });
+   * // response.mode === 'processed', response.success === true
+   * ```
    */
-  async sendReward(params: {
-    rewardValue: 'SUCCESS' | 'FAILURE';
-    experimentId?: string;
-    context?: string;
-    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint;
-  }): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
+  async sendReward(
+    params: UpGradeClientInterfaces.ISendRewardParams
+  ): Promise<UpGradeClientInterfaces.ISendRewardResponse> {
     return await this.apiService.sendReward(params);
   }
 }
