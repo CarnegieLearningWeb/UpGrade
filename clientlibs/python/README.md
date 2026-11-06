@@ -110,7 +110,7 @@ The configured timeout applies to both the async (`httpx.AsyncClient`) and sync 
 
 **The library never retries.** A network failure, timeout or error response is raised on the first attempt, so retry in your own code if you need to. Only retry calls that are safe to repeat (`init`, group and working group updates, aliases, assignments, feature flags): the server doesn't deduplicate `mark_decision_point`, `log` or `send_reward`, so resending one after a lost response can record it twice.
 
-The JS and Java libraries do retry safe requests (JS up to 3 times with backoff, Java once), and Java's default timeout is 3 seconds. See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
+The JS and Java libraries do retry safe requests (each retries once; JS waits 300 ms first), and Java's default timeout is 3 seconds. See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
 
 Every method has an async variant (no suffix) and a synchronous variant (`_sync` suffix).
 

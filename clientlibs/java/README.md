@@ -119,7 +119,7 @@ This is best-effort. If a lookup is already in flight when one of those calls co
 - **Timeout:** 3 seconds to connect and 3 seconds between reads (an idle timeout, not a limit on the whole request). Override with `ClientProperties.CONNECT_TIMEOUT` / `ClientProperties.READ_TIMEOUT` in the constructor's `properties` map.
 - **Retries:** requests that are safe to repeat (`init`, group and working group, aliases, assignments, feature flags) are retried **once**, immediately, after a network failure or a 5xx response. `markDecisionPoint`, `log` and the reward calls are never retried, because the server doesn't deduplicate them. 4xx responses are never retried.
 
-The JS and Python libraries use different defaults (5-second timeouts; JS retries up to 3 times with backoff, and Python doesn't retry). See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
+The JS and Python libraries use different defaults (5-second timeouts; JS also retries once, but waits 300 ms first, and Python doesn't retry). See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
 
 ## getAllFeatureFlags
 Use this function to get feature flags list

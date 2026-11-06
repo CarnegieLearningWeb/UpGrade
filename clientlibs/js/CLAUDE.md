@@ -44,7 +44,7 @@ Jest config (`jest.config.ts`) sets `USE_CUSTOM_HTTP_CLIENT: true` globally, mea
 
 ## HTTP Behavior
 
-`DefaultHttpClient` (non-lite builds): 5s timeout (`DEFAULT_TIMEOUT_MS`, not configurable) and up to 3 retries with 300/600/1200 ms backoff on network errors, timeouts and 5xx. It only retries requests `ApiService` marks `retryable: true` (reads and idempotent upserts); `/mark`, `/log` and `/reward` are never retried because the server doesn't deduplicate them. These defaults intentionally differ from the Java and Python libs; see `clientlibs/TIMEOUT_RETRY_POLICY.md`.
+`DefaultHttpClient` (non-lite builds): 5s timeout (`DEFAULT_TIMEOUT_MS`, not configurable) and 1 retry after a 300 ms wait (`DEFAULT_MAX_RETRIES` / `DEFAULT_RETRY_BACKOFF_MS`, not configurable) on network errors, timeouts and 5xx. It only retries requests `ApiService` marks `retryable: true` (reads and idempotent upserts); `/mark`, `/log` and `/reward` are never retried because the server doesn't deduplicate them. These defaults intentionally differ from the Java and Python libs; see `clientlibs/TIMEOUT_RETRY_POLICY.md`.
 
 ## Publishing
 

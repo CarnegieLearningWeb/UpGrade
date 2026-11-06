@@ -2,6 +2,9 @@ import { UpGradeClientInterfaces, UpGradeClientEnums } from '../types';
 import axios, { AxiosRequestConfig } from 'axios';
 
 const DEFAULT_TIMEOUT_MS = 5000;
+// retried requests are only ones ApiService marks safe to resend; see fetchData
+const DEFAULT_MAX_RETRIES = 1;
+const DEFAULT_RETRY_BACKOFF_MS = 300;
 
 interface FetchDataParams {
   url: string;
@@ -55,8 +58,8 @@ export class DefaultHttpClient implements UpGradeClientInterfaces.IHttpClientWra
     method,
     body,
     options,
-    retries = 3,
-    backOff = 300,
+    retries = DEFAULT_MAX_RETRIES,
+    backOff = DEFAULT_RETRY_BACKOFF_MS,
   }: FetchDataParams): Promise<ResponseType> {
     options.headers['CurrentRetry'] = retries.toString();
 

@@ -3,6 +3,11 @@
 > **Decision:** leave the timeout and retry differences as they are, and document each library's behavior. They're
 > now described in the JS, Java and Python READMEs (and `js/CLAUDE.md` / `java/CLAUDE.md`). The comparison and the
 > options considered are kept below for reference.
+>
+> **Update:** in review, JS's default was lowered from 3 retries to **1** (after a 300 ms wait), because the JS
+> retries had never actually run before this work, and up to 22 seconds of retrying that callers can't turn off
+> was judged too much. The tables below reflect that; the options section describes the choices as they stood
+> before the change.
 
 Here's how the three libraries' timeouts and retry counts differ. Retries are part of the same item, because together they set how long a failing call can take.
 
@@ -22,11 +27,11 @@ Two caveats:
 
 | | JS | Java | Python |
 |---|---|---|---|
-| Retries | up to **3**, after waiting 300 ms, 600 ms, 1200 ms | **1**, immediately | **none** |
-| Rough worst case for a safe request against a stalled server | ~22s (4 attempts × 5s + 2.1s of waiting) | ~6–12s (2 attempts × 3s read, plus connect if that's slow too) | ~5s |
+| Retries | **1**, after waiting 300 ms | **1**, immediately | **none** |
+| Rough worst case for a safe request against a stalled server | ~10s (2 attempts × 5s + 0.3s of waiting) | ~6–12s (2 attempts × 3s read, plus connect if that's slow too) | ~5s |
 | Worst case for `/mark`, `/log`, `/reward` (never retried) | ~5s | ~3s read (+ connect) | ~5s |
 
-So for the same stalled call, a JS user could wait about four times longer than a Python user before seeing an error.
+So for the same stalled call, a JS user could wait about twice as long as a Python user before seeing an error.
 
 ## What would make them consistent
 

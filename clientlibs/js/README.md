@@ -50,7 +50,7 @@ This is best-effort. If a lookup is already in flight when one of those calls co
 ## Timeouts and retries
 The default HTTP client (the browser and node builds):
 - **Timeout:** 5 seconds per attempt. In browsers this limits the whole request; in Node it limits connecting and then the gaps between data. It isn't configurable.
-- **Retries:** requests that are safe to repeat (`init`, group and working group, aliases, assignments, feature flags) are retried up to **3** times after a network failure, timeout or 5xx response, waiting 300 ms, 600 ms and then 1200 ms. A failing safe request can therefore take about 22 seconds to report. `markDecisionPoint`, `log` and `sendReward` are never retried, because the server doesn't deduplicate them. 4xx responses are never retried.
+- **Retries:** requests that are safe to repeat (`init`, group and working group, aliases, assignments, feature flags) are retried **once** after a network failure, timeout or 5xx response, after waiting 300 ms. A failing safe request can therefore take about 10 seconds to report. Retries aren't configurable. `markDecisionPoint`, `log` and `sendReward` are never retried, because the server doesn't deduplicate them. 4xx responses are never retried.
 
 With the **lite** build, timeouts and retries are up to the HTTP client you provide. Each request's config has `retryable: true` when it's safe to resend.
 

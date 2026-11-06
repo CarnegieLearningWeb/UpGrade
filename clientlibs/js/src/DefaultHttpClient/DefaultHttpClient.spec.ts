@@ -59,11 +59,11 @@ describe('DefaultHttpClient', () => {
     expect(mockAxios).toHaveBeenCalledTimes(1);
   });
 
-  it('gives up after 3 retries with doubling backoff', async () => {
+  it('gives up after 1 retry, waiting 300 ms first', async () => {
     mockAxios.mockRejectedValue(httpError(500));
 
     await expect(client.doPost(url, {}, options())).rejects.toThrow();
-    expect(mockAxios).toHaveBeenCalledTimes(4);
-    expect((client as any).wait.mock.calls).toEqual([[300], [600], [1200]]);
+    expect(mockAxios).toHaveBeenCalledTimes(2);
+    expect((client as any).wait.mock.calls).toEqual([[300]]);
   });
 });
