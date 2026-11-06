@@ -243,4 +243,9 @@ safely would need server-side idempotency (e.g. a client-generated request id).
   beans also send `null` `createdAt`/`updatedAt`/`versionNumber`/`requestedUserId` fields; the server strips them, so
   the tests only check that those carry no values.
 - Add a shared, language-neutral endpoint contract checklist (or contract tests against the backend's swagger) so
-  future backend changes show up as drift.
+  future backend changes show up as drift. *Done, as a coverage checklist:* `CLIENT_API_COVERAGE.md` records which
+  method and test implement each v6 client endpoint in each library, with a workflow for keeping it current. It
+  deliberately doesn't restate the contract: the controller and its validators are the source of truth (swagger
+  is a hand-written reference that may lag), apart from two behaviors the libraries depend on that aren't obvious
+  from the validators (`/init` rejecting unknown fields, and `/mark` needing the condition code). The root
+  `CLAUDE.md` points to it. Automated contract tests were not pursued.

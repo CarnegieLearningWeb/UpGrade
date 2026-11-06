@@ -62,6 +62,10 @@ docker-compose up   # frontend :4200, backend :3030, postgres :5432
 
 Environment files: copy `packages/backend/.env.example` to `packages/backend/.env` for local dev.
 
+## Client API Contract
+
+The `/api/v6` client API contract is `ExperimentClientController.v6.ts` and its validators (the swagger comments are a readable reference that may lag the code). `clientlibs/CLIENT_API_COVERAGE.md` records which method and test implement each endpoint in the JS, Java and Python client libraries. When a change touches a v6 client endpoint's contract, mark the client libraries that now need changes in `CLIENT_API_COVERAGE.md`, in the same PR. Review the coverage file before releasing the client libraries.
+
 ## Package Versions
 
 All packages are versioned together (currently v6.8.0). Keep versions in sync when bumping.
