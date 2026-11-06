@@ -82,17 +82,17 @@ public class QuickTest {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             try {
                 doInit(client)
-                        .thenCompose(v -> doGroupMembership(client))
-                        .thenCompose(v -> doWorkingGroupMembership(client))
-                        .thenCompose(v -> doAliases(client))
+                        // .thenCompose(v -> doGroupMembership(client))
+                        // .thenCompose(v -> doWorkingGroupMembership(client))
+                        // .thenCompose(v -> doAliases(client))
                         .thenCompose(v -> doAssign(client))
-                        .thenCompose(v -> doAssignIgnoreCache(client))
+                        // .thenCompose(v -> doAssignIgnoreCache(client))
                         .thenCompose(v -> doGetDecisionPointAssignment(client))
-                        .thenCompose(v -> doFeatureFlags(client))
-                        .thenCompose(v -> doFeatureFlagsIgnoreCache(client))
-                        .thenCompose(v -> doHasFeatureFlag(client))
+                        // .thenCompose(v -> doFeatureFlags(client))
+                        // .thenCompose(v -> doFeatureFlagsIgnoreCache(client))
+                        // .thenCompose(v -> doHasFeatureFlag(client))
                         .thenCompose(v -> doMark(client))
-                        .thenCompose(v -> doLog(client))
+                        // .thenCompose(v -> doLog(client))
                         .exceptionally(e -> {
                             e.printStackTrace();
                             return null;

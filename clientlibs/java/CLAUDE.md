@@ -37,7 +37,7 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 - `getAllExperimentConditions(cb)` — fetch all assignments (cached)
 - `getAllExperimentConditions(ignoreCache, cb)` — bypass cache
 - `getAllExperimentConditions(site, cb)` / `getAllExperimentConditions(site, target, cb)`
-- `getExperimentCondition(site, cb)` / `getExperimentCondition(site, target, cb)` — site/target matched case-insensitively
+- `getExperimentCondition(site, cb)` / `getExperimentCondition(site, target, cb)` — served from the `allExperiments` cache if a full `/assign` already filled it (matched case-insensitively); otherwise sends `/assign` with `decisionPoint` so the server only evaluates that decision point's pool (matched exactly, like `/mark`). That focused response is never cached, so it can't leave the cache holding a single decision point
 - `markDecisionPoint(site, condition, status, cb)` — many overloads adding target, clientError, uniquifier
 - `getAllFeatureFlags(cb)` / `getAllFeatureFlags(ignoreCache, cb)` / `hasFeatureFlag(key, cb)`
 - `addGroupMetrics(metrics, cb)` / `addSingleMetrics(metrics, cb)` / `log(value, cb)`

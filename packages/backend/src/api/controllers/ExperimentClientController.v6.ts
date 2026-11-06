@@ -519,6 +519,16 @@ export class ExperimentClientController {
    *               context:
    *                 type: string
    *                 example: add
+   *               decisionPoint:
+   *                 type: object
+   *                 description: Optional. Returns only this decision point's assignment (or an empty array). An omitted target means the targetless decision point at this site, not every target at it.
+   *                 required:
+   *                   - site
+   *                 properties:
+   *                   site:
+   *                     type: string
+   *                   target:
+   *                     type: string
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -588,7 +598,8 @@ export class ExperimentClientController {
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experimentUserDoc,
       experiment.context,
-      request.logger
+      request.logger,
+      experiment.decisionPoint
     );
 
     return this.experimentAssignmentService.formatAssignments(assignedData);

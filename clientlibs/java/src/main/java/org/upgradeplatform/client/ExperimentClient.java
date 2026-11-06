@@ -223,42 +223,50 @@ public class ExperimentClient implements AutoCloseable {
 	public void getAllExperimentConditions(boolean ignoreCache,
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
 		if (allExperiments == null || ignoreCache) {
-			ExperimentRequest experimentRequest = new ExperimentRequest(this.context);
-			AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
-			Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
-
-			invocation.post(requestContent,
-					new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-							new InvocationCallback<Response>() {
-
-								@Override
-								public void completed(Response response) {
-									if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-										// Cache allExperiment data for future requests
-										readResponseToCallback(response, callbacks,
-												new GenericType<List<ExperimentsResponse>>() {
-												})
-												.ifPresent(ae -> allExperiments = ae);
-									} else {
-										String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-										ErrorResponse error = new ErrorResponse(response.getStatus(),
-												response.readEntity(String.class), status);
-										if (callbacks != null)
-											callbacks.onError(error);
-									}
-								}
-
-								@Override
-								public void failed(Throwable throwable) {
-									callbacks.onError(new ErrorResponse(throwable.getMessage()));
-								}
-
-							}));
+			// Cache allExperiment data for future requests
+			requestAssignments(new ExperimentRequest(this.context), true, callbacks);
 		} else {
 			if (callbacks != null) {
 				callbacks.onSuccess(allExperiments);
 			}
 		}
+	}
+
+	private void requestAssignments(ExperimentRequest experimentRequest, boolean cacheResult,
+			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
+		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
+
+		invocation.post(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+						new InvocationCallback<Response>() {
+
+							@Override
+							public void completed(Response response) {
+								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									readResponseToCallback(response, callbacks,
+											new GenericType<List<ExperimentsResponse>>() {
+											})
+											.ifPresent(ae -> {
+												if (cacheResult) {
+													allExperiments = ae;
+												}
+											});
+								} else {
+									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+									ErrorResponse error = new ErrorResponse(response.getStatus(),
+											response.readEntity(String.class), status);
+									if (callbacks != null)
+										callbacks.onError(error);
+								}
+							}
+
+							@Override
+							public void failed(Throwable throwable) {
+								callbacks.onError(new ErrorResponse(throwable.getMessage()));
+							}
+
+						}));
 	}
 
 	/** @param site This is matched case-insensitively */
@@ -267,12 +275,17 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	/**
-	 * @param site   This is matched case-insensitively
-	 * @param target This is matched case-insensitively
+	 * Uses the cached full response if {@link #getAllExperimentConditions} already fetched one. Otherwise asks /assign
+	 * for just this decision point, so the server skips the rest of the context, and doesn't cache that response: it
+	 * holds only this decision point, so later lookups of any other would find nothing.
+	 *
+	 * @param site   Matched case-insensitively against a cached response; otherwise the server matches it exactly,
+	 *               as /mark does
+	 * @param target Same as site. Null means the decision point with no target, not every target at site
 	 */
 	public void getExperimentCondition(String site, String target,
 			final ResponseCallback<Assignment> callbacks) {
-		getAllExperimentConditions(new ResponseCallback<List<ExperimentsResponse>>() {
+		ResponseCallback<List<ExperimentsResponse>> toAssignment = new ResponseCallback<List<ExperimentsResponse>>() {
 			@Override
 			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
@@ -297,7 +310,14 @@ public class ExperimentClient implements AutoCloseable {
 					callbacks.onError(error);
 
 			}
-		});
+		};
+		if (allExperiments != null) {
+			toAssignment.onSuccess(allExperiments);
+		} else {
+			// Still filtered client-side: a server without decisionPoint support drops the field and returns the
+			// whole context.
+			requestAssignments(new ExperimentRequest(this.context, site, target), false, toAssignment);
+		}
 	}
 
 	/** @param site This is matched case-insensitively */

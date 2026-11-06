@@ -75,6 +75,7 @@ import { precomputedGroupKey } from './precomputedSegmentHelpers';
 import { EntitySegmentMembers, EntitySegmentResolutionInput, SegmentGroupMember } from '../../types';
 import { ThompsonSamplingService, ThompsonSamplingConfig, ConditionRewardSummary } from './ThompsonSamplingService';
 import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
+import { DecisionPointRef } from '../controllers/validators/DecisionPointValidator';
 
 export interface FactorialConditionResult {
   factorialCondition: Omit<ExperimentCondition, 'levelCombinationElements' | 'conditionPayloads'>;
@@ -235,9 +236,7 @@ export class ExperimentAssignmentService {
     exclusionReason: { experiment: Experiment; reason: string; matchedGroup: boolean }[];
   }> {
     const allExperimentsForContext = await this.experimentService.getCachedValidExperiments(context);
-    const allExperimentsAtDP = allExperimentsForContext.filter((exp) =>
-      this.getActiveDecisionPoints(exp).some((p) => p.site === site && p.target === target)
-    );
+    const allExperimentsAtDP = allExperimentsForContext.filter((exp) => this.isAtDecisionPoint(exp, { site, target }));
 
     // Called first because it will throw with 400 if the context is invalid.
     const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(userDoc, context);
@@ -388,7 +387,7 @@ export class ExperimentAssignmentService {
     }
 
     if (experiment) {
-      const selectedExperimentDP = experiment?.partitions.find((p) => p.site === site && p.target === target);
+      const selectedExperimentDP = experiment?.partitions.find((dp) => this.matchesDecisionPoint(dp, { site, target }));
       const { conditions } = experiment;
       const payloadCondition = conditions.flatMap((condition) => condition.conditionPayloads);
 
@@ -457,10 +456,15 @@ export class ExperimentAssignmentService {
     await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
   }
 
+  /**
+   * When decisionPoint is given, only that decision point's assignment is returned, and only the experiments that
+   * can affect it (its pool) are evaluated — see experimentsInPoolOf.
+   */
   public async getAllExperimentConditions(
     experimentUserDoc: RequestedExperimentUser,
     context: string,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    decisionPoint?: DecisionPointRef
   ): Promise<IExperimentAssignment[]> {
     logger.info({ message: `getAllExperimentConditions: User: ${experimentUserDoc.requestedUserId}` });
     const userId = experimentUserDoc.id;
@@ -476,7 +480,7 @@ export class ExperimentAssignmentService {
      */
 
     // 1. Fetch experiments based on user type & moving conditionPayloads at the root level
-    const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context);
+    const experiments: Experiment[] = await this.getExperimentsForUser(previewUser, context, decisionPoint);
 
     // 2. Check if user or group is globally excluded
     const [isUserExcluded, isGroupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUserDoc, context);
@@ -489,12 +493,18 @@ export class ExperimentAssignmentService {
     // 3-5. Filter group experiments, check exclusions, and select from pools via the shared pipeline
     try {
       const {
-        selectedExperiments: filteredExperiments,
+        selectedExperiments,
         mergedIndividualEnrollments: mergedIndividualAssignment,
         groupEnrollments,
         individualExclusions,
         groupExclusions,
       } = await this.selectExperimentsForUser(experiments, experimentUserDoc, previewUser, logger);
+
+      // The rest of the pool was only needed to make the selection at the requested decision point, so don't assign
+      // (or map) experiments selected elsewhere in it.
+      const filteredExperiments = decisionPoint
+        ? selectedExperiments.filter((experiment) => this.isAtDecisionPoint(experiment, decisionPoint))
+        : selectedExperiments;
 
       // return empty if no experiments
       if (filteredExperiments.length === 0) {
@@ -556,7 +566,8 @@ export class ExperimentAssignmentService {
             type,
             factors,
             repeatedEnrollmentCounts,
-            logger
+            logger,
+            decisionPoint
           );
           return [...accumulator, ...decisionPoints];
         } else {
@@ -799,12 +810,56 @@ export class ExperimentAssignmentService {
     }
   }
 
-  private async getExperimentsForUser(previewUser: PreviewUser, context: string): Promise<Experiment[]> {
-    const experiments = previewUser
-      ? await this.experimentRepository.getValidExperimentsWithPreview(context)
-      : await this.experimentService.getCachedValidExperiments(context);
+  private async getExperimentsForUser(
+    previewUser: PreviewUser,
+    context: string,
+    decisionPoint?: DecisionPointRef
+  ): Promise<Experiment[]> {
+    // Get all valid experiment for experiments in the context, even if the decision point is not involved, so
+    // that the cache for all experiments in context stays warm and then we can filter down to the relevant pool for the decision point.
+    // We already know this call is performant so we don't need to worry about the overhead of fetching all experiments upfront.
+    // Trim before anything per-request runs: formatting below copies and sorts every experiment's payloads, and every
+    // later step (enrollment/exclusion queries, segment checks, assignment) scales with what survives here.
+    const experiments = this.experimentsInPoolOf(
+      previewUser
+        ? await this.experimentRepository.getValidExperimentsWithPreview(context)
+        : await this.experimentService.getCachedValidExperiments(context),
+      decisionPoint
+    );
     // adding conditionPayloads at the root level instead of inside conditions.
     return experiments.map((exp) => this.experimentService.formattingConditionPayload(exp));
+  }
+
+  /**
+   * Returns the experiments that can affect assignment at one decision point: the pool containing it (experiments
+   * linked transitively through shared active decision points), in input order. With no decision point, returns
+   * experiments unchanged.
+   *
+   * This is a superset of what the full-context run would pool there. Pools are re-formed later from the
+   * user-filtered list, and the filters (group validity, experiment-level inclusion/exclusion) each judge one
+   * experiment alone, so removing experiments can only split a pool, never join two. Keeping input order means the
+   * pool is traversed in the same order, so processExperimentPools' seeded pick lands on the same experiment.
+   */
+  private experimentsInPoolOf(experiments: Experiment[], decisionPoint?: DecisionPointRef): Experiment[] {
+    if (!decisionPoint) {
+      return experiments;
+    }
+    const pool = this.createExperimentPool(experiments).find((poolExperiments) =>
+      poolExperiments.some((experiment) => this.isAtDecisionPoint(experiment, decisionPoint))
+    );
+    if (!pool) {
+      return [];
+    }
+    const poolExperimentIds = new Set(pool.map((experiment) => experiment.id));
+    return experiments.filter((experiment) => poolExperimentIds.has(experiment.id));
+  }
+
+  private isAtDecisionPoint(experiment: Experiment, decisionPoint: DecisionPointRef): boolean {
+    return this.getActiveDecisionPoints(experiment).some((dp) => this.matchesDecisionPoint(dp, decisionPoint));
+  }
+
+  private matchesDecisionPoint(dp: DecisionPoint, decisionPoint: DecisionPointRef): boolean {
+    return dp.site === decisionPoint.site && dp.target === decisionPoint.target;
   }
 
   private async getExperimentsForContextAndDecisionPoint(
@@ -1008,7 +1063,8 @@ export class ExperimentAssignmentService {
     type: EXPERIMENT_TYPE,
     factors: FactorDTO[],
     repeatedEnrollmentCounts: RepeatedEnrollmentDataCount[],
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    requestedDecisionPoint?: DecisionPointRef
   ): IExperimentAssignment[] {
     // For within-subjects experiments, pre-compute the condition ordering (~100 seedrandom calls)
     // and build a payload lookup Map once, then reuse across all decision points.
@@ -1029,8 +1085,8 @@ export class ExperimentAssignmentService {
       });
     }
 
-    return experiment.partitions
-      .filter((dp) => !dp.pendingActivation || experiment.state === EXPERIMENT_STATE.PREVIEW)
+    return this.getActiveDecisionPoints(experiment)
+      .filter((dp) => !requestedDecisionPoint || this.matchesDecisionPoint(dp, requestedDecisionPoint))
       .map((decisionPoint) => {
         const { target, site } = decisionPoint;
 
@@ -1103,9 +1159,7 @@ export class ExperimentAssignmentService {
       } else {
         payloadFound = conditionPayloads.find(
           (x) =>
-            x.parentCondition.id === conditionAssigned.id &&
-            x.decisionPoint.site === decisionPoint.site &&
-            x.decisionPoint.target === decisionPoint.target
+            x.parentCondition.id === conditionAssigned.id && this.matchesDecisionPoint(x.decisionPoint, decisionPoint)
         );
       }
     }
