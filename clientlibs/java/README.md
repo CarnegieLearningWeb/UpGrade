@@ -45,13 +45,15 @@ Returns the `Assignment` for a decision point, from the assignments fetched by `
 
 > getExperimentCondition(String site, String target, callback)
 
-Apply the condition's **payload**, not its code: the payload defaults to the condition code, so code written this way keeps working when someone later gives the experiment custom payloads. Then mark through the assignment, which always sends the condition code, whatever its payload is:
+Apply the condition's **payload**, not its code, so code written this way keeps working when someone later gives the experiment custom payloads. Payloads default to the condition code, but an experiment created without them has none, so fall back to the code. Then mark through the assignment, which always sends the condition code, whatever its payload is, with the status that matches what happened:
 
 ```java
 Payload payload = assignment.getPayload();
-String condition = payload == null ? null : payload.getValue();   // null when no experiment is assigned here
+String condition = payload != null ? payload.getValue() : assignment.getCondition(); // null when no experiment is assigned here
 if ("control".equals(condition)) { /* use the control flow */ }
-assignment.markDecisionPoint(MarkedDecisionPointStatus.CONDITION_APPLIED, callback);
+assignment.markDecisionPoint(condition == null
+        ? MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED   // no experiment assigned here
+        : MarkedDecisionPointStatus.CONDITION_APPLIED, callback);
 ```
 
 If you mark with `client.markDecisionPoint(site, target, condition, status, callback)` instead, pass the condition **code** (`assignment.getCondition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.

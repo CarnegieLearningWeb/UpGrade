@@ -27,15 +27,20 @@ await client.init();
 // 3. Get an assignment when user hits the "homepage/feature-to-be-tested"
 const assignment = await client.getDecisionPointAssignment(decisionPoint.site, decisionPoint.target);
 
-// 4. Apply the condition's payload. It defaults to the condition code, so code written this way keeps working
-//    when someone later gives the experiment custom payloads. It's null when no experiment is assigned here.
-const condition = assignment.getPayload()?.value; // e.g. 'control' or 'variant'
+// 4. Apply the condition's payload, so code written this way keeps working when someone later gives the experiment
+//    custom payloads. Payloads default to the condition code, but an experiment created without them has none, so
+//    fall back to the code. Both are null when no experiment is assigned here.
+const condition = assignment.getPayload()?.value ?? assignment.getCondition(); // e.g. 'control' or 'variant'
 if (condition === 'control') { /* use the control flow */ }
 if (condition === 'variant') { /* use the variant flow */ }
 
 // 5. Mark that the user passed through the decision point to track or officially enroll the user.
 //    Marking through the assignment always sends its condition code, whatever its payload is.
-await assignment.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+await assignment.markDecisionPoint(
+  condition == null
+    ? MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED // no experiment assigned here
+    : MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
+);
 ```
 
 If you mark with `client.markDecisionPoint(site, target, condition, status)` instead, pass the condition **code** (`assignment.getCondition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.

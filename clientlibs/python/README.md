@@ -32,10 +32,11 @@ async def main():
     # Experiment assignments
     assignment = await client.get_decision_point_assignment("home", "banner")
     if assignment:
-        # Apply the condition's payload. It defaults to the condition code, so code written this way keeps
-        # working when someone later gives the experiment custom payloads.
+        # Apply the condition's payload, so code written this way keeps working when someone later gives the
+        # experiment custom payloads. Payloads default to the condition code, but an experiment created without
+        # them has none, so fall back to the code.
         payload = assignment.get_payload()
-        condition = payload.value if payload else None   # e.g. "control" or "treatment"
+        condition = payload.value if payload else assignment.get_condition()   # e.g. "control" or "treatment"
         # Marking through the assignment always sends its condition code, whatever its payload is.
         await assignment.mark_decision_point(
             UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
@@ -59,7 +60,7 @@ client.init_sync()
 assignment = client.get_decision_point_assignment_sync("home", "banner")
 if assignment:
     payload = assignment.get_payload()
-    condition = payload.value if payload else None
+    condition = payload.value if payload else assignment.get_condition()
     assignment.mark_decision_point_sync(
         UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
     )
@@ -159,13 +160,13 @@ if assignment is None:
     )
 else:
     payload = assignment.get_payload()
-    condition = payload.value if payload else None
+    condition = payload.value if payload else assignment.get_condition()
     assignment.mark_decision_point_sync(
         UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
     )
 ```
 
-Apply the condition's **payload** (`get_payload().value`) rather than its code: the payload defaults to the condition code, so code written this way keeps working when someone later gives the experiment custom payloads. If you mark with `client.mark_decision_point(condition, status, site, target)` instead of through the assignment, pass the condition **code** (`assignment.get_condition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
+Apply the condition's **payload** (`get_payload().value`) rather than its code, so code written this way keeps working when someone later gives the experiment custom payloads. Payloads default to the condition code, but an experiment created without them has none, so fall back to `get_condition()`. If you mark with `client.mark_decision_point(condition, status, site, target)` instead of through the assignment, pass the condition **code** (`assignment.get_condition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
 
 ### Feature Flags
 
