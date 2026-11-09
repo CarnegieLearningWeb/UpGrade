@@ -14,12 +14,14 @@ import static org.upgradeplatform.utils.Utils.SET_GROUP_MEMBERSHIP;
 import static org.upgradeplatform.utils.Utils.SET_WORKING_GROUP;
 import static org.upgradeplatform.utils.Utils.isStringNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import jakarta.ws.rs.ProcessingException;
@@ -64,6 +66,9 @@ public class ExperimentClient implements AutoCloseable {
 	private final String context;
 
 	private List<ExperimentsResponse> allExperiments;
+	// False while allExperiments holds only decision points getExperimentCondition fetched one at a time, so one missing
+	// from it hasn't been asked about yet, rather than having no assignment.
+	private volatile boolean fullContextCached;
 	private List<String> allFeatureFlags;
 
 	/**
@@ -222,8 +227,8 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void getAllExperimentConditions(boolean ignoreCache,
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		if (allExperiments == null || ignoreCache) {
-			requestAssignments(new ExperimentRequest(this.context), true, callbacks);
+		if (!fullContextCached || ignoreCache) {
+			requestAssignments(new ExperimentRequest(this.context), this::cacheFullContext, callbacks);
 		} else {
 			if (callbacks != null) {
 				callbacks.onSuccess(allExperiments);
@@ -231,7 +236,25 @@ public class ExperimentClient implements AutoCloseable {
 		}
 	}
 
-	private void requestAssignments(ExperimentRequest experimentRequest, boolean cacheResult,
+	private synchronized void cacheFullContext(List<ExperimentsResponse> experiments) {
+		allExperiments = experiments;
+		fullContextCached = true;
+	}
+
+	/**
+	 * Adds a single decision point's response to the cache, unless a full-context response already replaced it. Copied
+	 * rather than appended to, since lookups read the list without the lock.
+	 */
+	private synchronized void cacheDecisionPoint(List<ExperimentsResponse> experiments) {
+		if (fullContextCached) {
+			return;
+		}
+		List<ExperimentsResponse> merged = allExperiments != null ? new ArrayList<>(allExperiments) : new ArrayList<>();
+		merged.addAll(experiments);
+		allExperiments = merged;
+	}
+
+	private void requestAssignments(ExperimentRequest experimentRequest, Consumer<List<ExperimentsResponse>> cache,
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
@@ -243,13 +266,12 @@ public class ExperimentClient implements AutoCloseable {
 							@Override
 							public void completed(Response response) {
 								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									// Cached before the callback runs, so a lookup made from inside it hits the cache.
 									readResponseToCallback(response, callbacks,
 											new GenericType<List<ExperimentsResponse>>() {
-											})
-											.ifPresent(ae -> {
-												if (cacheResult) {
-													allExperiments = ae;
-												}
+											}, experiments -> {
+												cache.accept(experiments);
+												return experiments;
 											});
 								} else {
 									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -274,10 +296,11 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	/**
-	 * Uses the cached full response if {@link #getAllExperimentConditions} already fetched one. Otherwise asks /assign
-	 * for just this decision point, so the server skips the rest of the context, and doesn't cache that response: it
-	 * holds only this decision point, so later lookups of any other would find nothing.
-	 * 
+	 * Uses the cache if {@link #getAllExperimentConditions} already filled it with the full context, or if it already
+	 * holds this decision point. Otherwise asks /assign for just this decision point, so the server skips the rest of
+	 * the context, and adds the response to the cache. An empty response (no assignment here) adds nothing, so a later
+	 * lookup of this decision point asks again.
+	 *
 	 * Note: older API version not supporting decision-point param will ignore the target parameter and return the full context.
 	 */
 	public void getExperimentCondition(String site, String target,
@@ -309,10 +332,14 @@ public class ExperimentClient implements AutoCloseable {
 			}
 		};
 
-		if (allExperiments != null) {
-			toAssignment.onSuccess(allExperiments);
+		// Flag read first: once it's true, the volatile read guarantees allExperiments is the full-context list.
+		boolean fullContext = fullContextCached;
+		List<ExperimentsResponse> cached = allExperiments;
+		if (fullContext || (cached != null && cached.stream().anyMatch(t -> isAtDecisionPoint(t, site, target)))) {
+			toAssignment.onSuccess(cached);
 		} else {
-			requestAssignments(new ExperimentRequest(this.context, site, target), false, toAssignment);
+			requestAssignments(new ExperimentRequest(this.context, site, target), this::cacheDecisionPoint,
+					toAssignment);
 		}
 	}
 
@@ -351,12 +378,16 @@ public class ExperimentClient implements AutoCloseable {
 	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> t.getSite().equalsIgnoreCase(site) &&
-						(isStringNull(target) ? isStringNull(t.getTarget().toString())
-								: t.getTarget().toString().equalsIgnoreCase(target)))
+				.filter(t -> isAtDecisionPoint(t, site, target))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
+	}
+
+	private static boolean isAtDecisionPoint(ExperimentsResponse experiment, String site, String target) {
+		return experiment.getSite().equalsIgnoreCase(site) &&
+				(isStringNull(target) ? isStringNull(experiment.getTarget().toString())
+						: experiment.getTarget().toString().equalsIgnoreCase(target));
 	}
 
 	private void rotateConditions(String experimentId) {
@@ -665,6 +696,21 @@ public class ExperimentClient implements AutoCloseable {
 			callback.onError(new ErrorResponse(
 					pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
 			return Optional.empty();
+		}
+	}
+
+	/**
+	 * helper method to include more useful information in the ErrorResponse for a
+	 * ProcessingException
+	 */
+	private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback,
+			GenericType<T> typeToken, UnaryOperator<T> finisher) {
+		response.bufferEntity();
+		try {
+			callback.onSuccess(finisher.apply(response.readEntity(typeToken)));
+		} catch (ProcessingException pe) {
+			callback.onError(new ErrorResponse(
+					pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
 		}
 	}
 
