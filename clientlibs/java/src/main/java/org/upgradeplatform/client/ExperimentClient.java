@@ -361,15 +361,20 @@ public class ExperimentClient implements AutoCloseable {
 
 	private ExperimentsResponse findExperimentResponse(String site, String target,
 			List<ExperimentsResponse> experiments) {
-		return experiments.stream()
-				// exact match: the server's /mark and /reward lookups are case-sensitive, so a case-insensitive
-				// match here would return a condition whose mark the server can't attribute to the experiment
-				.filter(t -> site != null && site.equals(t.getSite()) &&
-						(isStringNull(target) ? isStringNull(t.getTarget())
-								: target.equals(t.getTarget())))
-				.findFirst()
-				.map(ExperimentClient::copyExperimentResponse)
-				.orElse(new ExperimentsResponse());
+		// Copy under assignmentLock so a concurrent rotateConditions can't be observed halfway, with one
+		// assignment's conditions rotated and its factors not yet. Rotation replaces both arrays rather than
+		// mutating them, so the copy is a consistent snapshot once taken.
+		synchronized (assignmentLock) {
+			return experiments.stream()
+					// exact match: the server's /mark and /reward lookups are case-sensitive, so a case-insensitive
+					// match here would return a condition whose mark the server can't attribute to the experiment
+					.filter(t -> site != null && site.equals(t.getSite()) &&
+							(isStringNull(target) ? isStringNull(t.getTarget())
+									: target.equals(t.getTarget())))
+					.findFirst()
+					.map(ExperimentClient::copyExperimentResponse)
+					.orElse(new ExperimentsResponse());
+		}
 	}
 
 	private List<ExperimentsResponse> cachedExperiments() {
@@ -396,24 +401,28 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	private void rotateConditions(String experimentId) {
-		List<ExperimentsResponse> experiments = cachedExperiments();
-		if (experiments == null || isStringNull(experimentId)) {
+		if (isStringNull(experimentId)) {
 			return;
 		}
-
-		experiments.stream()
-				.filter(experiment -> experiment.getAssignedCondition() != null
-						&& experiment.getAssignedCondition().length > 0
-						&& Arrays.stream(experiment.getAssignedCondition())
-								.anyMatch(condition -> condition != null
-										&& experimentId.equals(condition.getExperimentId())))
-				.forEach(experiment -> {
-					experiment.setAssignedCondition(rotateLeft(experiment.getAssignedCondition()));
-					// factorial assignedFactor entries are index-aligned with assignedCondition, so rotate them together
-					if (experiment.getAssignedFactor() != null) {
-						experiment.setAssignedFactor(rotateLeft(experiment.getAssignedFactor()));
-					}
-				});
+		// Rotate conditions and factors as one step under assignmentLock: they're index-aligned, and lookups copy
+		// assignments out under the same lock, so they never see one rotated without the other.
+		synchronized (assignmentLock) {
+			if (this.allExperiments == null) {
+				return;
+			}
+			this.allExperiments.stream()
+					.filter(experiment -> experiment.getAssignedCondition() != null
+							&& experiment.getAssignedCondition().length > 0
+							&& Arrays.stream(experiment.getAssignedCondition())
+									.anyMatch(condition -> condition != null
+											&& experimentId.equals(condition.getExperimentId())))
+					.forEach(experiment -> {
+						experiment.setAssignedCondition(rotateLeft(experiment.getAssignedCondition()));
+						if (experiment.getAssignedFactor() != null) {
+							experiment.setAssignedFactor(rotateLeft(experiment.getAssignedFactor()));
+						}
+					});
+		}
 	}
 
 	/**

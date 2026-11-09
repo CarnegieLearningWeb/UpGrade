@@ -303,6 +303,43 @@ describe('ApiService', () => {
       mockHttpClient.doPost.mockClear();
     });
 
+    it('should use the ids passed in assignedCondition instead of looking up the cache', async () => {
+      MockDataService.findExperimentAssignmentBySiteAndTarget.mockClear();
+
+      await apiService.markDecisionPoint({
+        site: 'testSite',
+        target: 'testTarget',
+        condition: 'variant_x',
+        status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
+        assignedCondition: { id: 'assigned-condition', experimentId: 'assigned-experiment' },
+      });
+
+      expect(MockDataService.findExperimentAssignmentBySiteAndTarget).not.toHaveBeenCalled();
+      const body = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1][1];
+      expect(body.data).toEqual({
+        site: 'testSite',
+        target: 'testTarget',
+        assignedCondition: {
+          conditionCode: 'variant_x',
+          id: 'assigned-condition',
+          experimentId: 'assigned-experiment',
+        },
+      });
+    });
+
+    it('should omit null ids passed in assignedCondition (a "no experiment" assignment)', async () => {
+      await apiService.markDecisionPoint({
+        site: 'testSite',
+        target: undefined,
+        condition: null,
+        status: MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED,
+        assignedCondition: { id: null, experimentId: null },
+      });
+
+      const body = mockHttpClient.doPost.mock.calls[mockHttpClient.doPost.mock.calls.length - 1][1];
+      expect(body.data).toEqual({ site: 'testSite', target: '', assignedCondition: { conditionCode: null } });
+    });
+
     it('should call sendRequest with site, target, condition, and status', async () => {
       const params = {
         site: 'testSite',

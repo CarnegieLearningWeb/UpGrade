@@ -40,6 +40,9 @@ export namespace UpGradeClientInterfaces {
     status: MARKED_DECISION_POINT_STATUS;
     uniquifier?: string;
     clientError?: string;
+    // ids of the condition being marked, when the caller already has them (Assignment does); when omitted they're
+    // looked up in the cached assignments, which may have been cleared or refetched since the condition was shown
+    assignedCondition?: { id: string | null; experimentId: string | null };
   }
 
   export interface IMarkDecisionPointOptions {

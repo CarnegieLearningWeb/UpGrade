@@ -87,6 +87,33 @@ describe('UpgradeClient caches', () => {
       expect(await lookUpAgain(client)).toEqual({ assignRefetched: true, flagsRefetched: true });
     });
 
+    it('marks an Assignment with its own experiment after the cache is cleared and refilled', async () => {
+      // the user is shown experiment A's condition...
+      const lookup = client.getDecisionPointAssignment('home', 'banner');
+      await respond('assign', ASSIGNMENTS);
+      const assignment = await lookup;
+
+      // ...then their groups change, and the refetched assignments put experiment B at the same decision point
+      const groupChange = client.setGroupMembership({ classId: ['c2'] });
+      await respond('groupmembership', { id: 'user1' });
+      await groupChange;
+      const refetch = client.getAllExperimentConditions();
+      await respond('assign', [
+        {
+          ...ASSIGNMENTS[0],
+          assignedCondition: [{ conditionCode: 'b-code', payload: null, experimentId: 'expB', id: 'cB' }],
+        },
+      ]);
+      await refetch;
+
+      // marking the original assignment still records experiment A's condition, not B's
+      const mark = assignment.markDecisionPoint(UpgradeClient.MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+      await respond('mark', { experimentId: 'exp1' });
+      await mark;
+      const body = request.mock.calls[request.mock.calls.length - 1][1] as { data: { assignedCondition: unknown } };
+      expect(body.data.assignedCondition).toEqual({ conditionCode: 'control', id: 'c1', experimentId: 'exp1' });
+    });
+
     it('keeps the caches when the group change fails', async () => {
       await primeCaches(client);
 

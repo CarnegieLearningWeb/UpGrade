@@ -241,13 +241,32 @@ export default class ApiService {
     status,
     uniquifier,
     clientError,
-  }: UpGradeClientInterfaces.IMarkDecisionPointOptions): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
-    const assignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
-
-    const data = {
-      ...assignment,
-      assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition },
-    };
+    assignedCondition,
+  }: UpGradeClientInterfaces.IMarkDecisionPointOptions &
+    Pick<
+      UpGradeClientInterfaces.IMarkDecisionPointParams,
+      'assignedCondition'
+    >): Promise<UpGradeClientInterfaces.IMarkDecisionPoint> {
+    let data: UpGradeClientRequests.IMarkDecisionPointRequestBody['data'];
+    if (assignedCondition) {
+      // marking an Assignment: use the ids it was created with, so the mark is recorded against the experiment the
+      // user was actually shown, even if the cache has been cleared or refetched since (e.g. after a group change)
+      data = {
+        site,
+        target: target ?? '',
+        assignedCondition: {
+          conditionCode: condition,
+          ...(assignedCondition.id ? { id: assignedCondition.id } : {}),
+          ...(assignedCondition.experimentId ? { experimentId: assignedCondition.experimentId } : {}),
+        },
+      };
+    } else {
+      const assignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
+      data = {
+        ...assignment,
+        assignedCondition: { ...assignment.assignedCondition[0], conditionCode: condition },
+      };
+    }
 
     let requestBody: UpGradeClientRequests.IMarkDecisionPointRequestBody = {
       context: this.context,
