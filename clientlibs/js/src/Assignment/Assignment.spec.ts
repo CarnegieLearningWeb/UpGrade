@@ -181,6 +181,8 @@ describe('Assignment', () => {
         status: MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
         uniquifier: undefined,
         clientError: undefined,
+        // the assignment's own ids, not whatever the cache holds by the time it's marked
+        assignedCondition: { id: 'xyz321', experimentId: 'abc123' },
       };
 
       await assignmentUnderTest.markDecisionPoint(MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);

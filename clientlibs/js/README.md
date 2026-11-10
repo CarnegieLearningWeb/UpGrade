@@ -26,14 +26,40 @@ await client.init();
 
 // 3. Get an assignment when user hits the "homepage/feature-to-be-tested"
 const assignment = await client.getDecisionPointAssignment(decisionPoint.site, decisionPoint.target);
-const condition = assignment.getPayload().value; // e.g. 'control' or 'variant'
 
-// 4. Use the condition at the point in user experience when needed
-if (condition === "control") // use the control flow
-if (condition === "variant") // use the variant flow
+// 4. Apply the condition's payload, so code written this way keeps working when someone later gives the experiment
+//    custom payloads. Payloads default to the condition code, but an experiment created without them has none, so
+//    fall back to the code. Both are null when no experiment is assigned here.
+const condition = assignment.getPayload()?.value ?? assignment.getCondition(); // e.g. 'control' or 'variant'
+if (condition === 'control') { /* use the control flow */ }
+if (condition === 'variant') { /* use the variant flow */ }
 
-// 5. Mark that the user passed through the decision point to track or officially enroll the user
-await client.markDecisionPoint(decisionPoint.site, decisionPoint.target, condition, MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED);
+// 5. Mark that the user passed through the decision point to track or officially enroll the user.
+//    Marking through the assignment always sends its condition code, whatever its payload is.
+await assignment.markDecisionPoint(
+  condition == null
+    ? MARKED_DECISION_POINT_STATUS.NO_CONDITION_ASSIGNED // no experiment assigned here
+    : MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED
+);
+```
+
+If you mark with `client.markDecisionPoint(site, target, condition, status)` instead, pass the condition **code** (`assignment.getCondition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
+
+`client.markDecisionPoint` also accepts an options object (`{ site, target, condition, status, uniquifier, clientError }`), which avoids relying on argument order. The Java and Python libraries order these arguments differently: Java puts `clientError` before `uniquifier`, and Python takes `condition, status` before `site, target`.
+
+## Caching
+Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since what a user is assigned can depend on their identity and groups. `setFeatureFlagUserGroupsForSession` also clears the flag cache.
+
+This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Await these calls before reading assignments or flags, or pass `{ ignoreCache: true }` to `getAllExperimentConditions` / `getAllFeatureFlags` when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
+
+## Timeouts and retries
+The default HTTP client (the browser and node builds):
+- **Timeout:** 5 seconds per attempt. In browsers this limits the whole request; in Node it limits connecting and then the gaps between data. It isn't configurable.
+- **Retries:** requests that are safe to repeat (`init`, group and working group, aliases, assignments, feature flags) are retried **once** after a network failure, timeout or 5xx response, after waiting 300 ms. A failing safe request can therefore take about 10 seconds to report. Retries aren't configurable. `markDecisionPoint`, `log` and `sendReward` are never retried, because the server doesn't deduplicate them. 4xx responses are never retried.
+
+With the **lite** build, timeouts and retries are up to the HTTP client you provide. Each request's config has `retryable: true` when it's safe to resend.
+
+The Java and Python libraries use different defaults (Java: 3-second timeouts and 1 retry; Python: 5 seconds and no retries). See `clientlibs/TIMEOUT_RETRY_POLICY.md` in the UpGrade repo.
 
 ## Documentation
 

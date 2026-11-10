@@ -41,20 +41,31 @@ class DataService:
     # Assignments
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _key(site: str, target: str | None) -> str:
+        return f"{site}|{target or ''}"
+
+    def clear_assignments(self) -> None:
+        """Invalidate only the assignment cache, so the next lookup refetches."""
+        self._assignments = None
+
     def set_assignments(self, assignments: list[ExperimentAssignment]) -> None:
         """Populate the assignment cache from a fresh API response."""
-        self._assignments = {f"{a.site}|{a.target or ''}": a for a in assignments}
+        self._assignments = {self._key(a.site, a.target): a for a in assignments}
+
     def get_all_assignments(self) -> list[ExperimentAssignment] | None:
         """Return all cached assignments, or ``None`` if the cache is cold."""
-        if self._assignments is None:
-            return None
-        return list(self._assignments.values())
+        assignments = self._assignments
+        return None if assignments is None else list(assignments.values())
 
-    def get_assignment(self, site: str, target: str) -> ExperimentAssignment | None:
-        """Return the cached assignment for ``site``/``target``, or ``None``."""
-        if self._assignments is None:
-            return None
-        return self._assignments.get(f"{site}|{target}")
+    def get_assignment(self, site: str, target: str | None) -> ExperimentAssignment | None:
+        """Return the cached assignment for ``site``/``target``, or ``None``.
+
+        Matched exactly (case-sensitive), as the server matches decision points.  A ``None`` target is the same
+        as ``""``.
+        """
+        assignments = self._assignments
+        return None if assignments is None else assignments.get(self._key(site, target))
 
     def rotate_assignment(self, assignment: ExperimentAssignment) -> ExperimentAssignment:
         """Round-robin advance the condition (and factor) lists.
@@ -82,15 +93,18 @@ class DataService:
     # Feature flags
     # ------------------------------------------------------------------
 
+    def clear_feature_flags(self) -> None:
+        """Invalidate only the feature flag cache, so the next lookup refetches."""
+        self._feature_flags = None
+
     def set_feature_flags(self, flags: list[str]) -> None:
         """Populate the feature-flag cache from a fresh API response."""
         self._feature_flags = set(flags)
 
     def get_feature_flags(self) -> list[str] | None:
         """Return cached flag keys, or ``None`` if the cache is cold."""
-        if self._feature_flags is None:
-            return None
-        return list(self._feature_flags)
+        flags = self._feature_flags
+        return None if flags is None else list(flags)
 
     def has_feature_flag(self, key: str) -> bool:
         """Return ``True`` only when flags are cached *and* ``key`` is present.
@@ -110,8 +124,9 @@ class DataService:
     def clear(self) -> None:
         """Invalidate all cached data.
 
-        Called by ``UpgradeClient.init`` so that the next request for
-        assignments or flags triggers a fresh fetch.
+        Called after any call that may have changed the user's identity or
+        groups (``init``, ``set_group_membership``, ``set_working_group``,
+        ``set_alt_user_ids``), since assignments and feature flags depend on them.
         """
-        self._assignments = None
-        self._feature_flags = None
+        self.clear_assignments()
+        self.clear_feature_flags()

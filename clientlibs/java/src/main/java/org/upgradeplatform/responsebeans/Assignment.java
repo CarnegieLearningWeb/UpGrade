@@ -51,6 +51,10 @@ public class Assignment {
         this.site = site;
     }
 
+    /**
+     * The experiment type, or null when no experiment is assigned at this decision point. Check for null before
+     * {@code switch}ing on it: switching on a null enum throws a NullPointerException.
+     */
     public ExperimentType getExperimentType() {
         return experimentType;
     }
@@ -59,8 +63,22 @@ public class Assignment {
         this.experimentType = experimentType;
     }
 
+    /**
+     * Null when no experiment is assigned at this decision point, so check it before chaining, or use
+     * {@link #getPayload()} / {@link #getCondition()}, which handle that case.
+     */
     public Condition getAssignedCondition() {
         return assignedCondition;
+    }
+
+    /** The assigned condition code, or null when no experiment is assigned at this decision point. */
+    public String getCondition() {
+        return assignedCondition == null ? null : assignedCondition.getConditionCode();
+    }
+
+    /** The assigned condition's payload, or null. */
+    public Payload getPayload() {
+        return assignedCondition == null ? null : assignedCondition.getPayload();
     }
 
     public void setAssignedCondition(Condition assignedCondition) {
@@ -101,9 +119,16 @@ public class Assignment {
         this.markDecisionPoint(status, "", uniquifier, callbacks);
     }
 
+    /**
+     * Note the argument order differs from the JS and Python libraries, which take {@code uniquifier} before
+     * {@code clientError}. With a single string argument ({@code markDecisionPoint(status, uniquifier, cb)}),
+     * the string is the uniquifier.
+     */
     public void markDecisionPoint(MarkedDecisionPointStatus status, String clientError, String uniquifier, ResponseCallback<MarkDecisionPoint> callbacks){
-        String code = assignedCondition == null  ? null : assignedCondition.getConditionCode();
-        MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, new Condition(code));
+        Condition condition = assignedCondition == null ? new Condition()
+                : new Condition(assignedCondition.getId(), assignedCondition.getConditionCode(),
+                        assignedCondition.getExperimentId(), null);
+        MarkExperimentRequestData markExperimentRequestData = new MarkExperimentRequestData(site, target, condition);
         experimentClient.markDecisionPoint(status, markExperimentRequestData, clientError, uniquifier, callbacks);
     }
 

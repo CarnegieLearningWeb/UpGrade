@@ -34,6 +34,19 @@ export class DataService {
     this.experimentAssignmentData = experimentAssignmentData;
   }
 
+  clearExperimentAssignmentData() {
+    this.experimentAssignmentData = null;
+  }
+
+  /**
+   * Invalidate everything that depends on the user's identity or groups (assignments and feature flags), after a
+   * call that may have changed them: init, group membership, working group, or aliases.
+   */
+  clearUserDependentData() {
+    this.clearExperimentAssignmentData();
+    this.clearFeatureFlags();
+  }
+
   getFeatureFlags(): string[] {
     return this.featureFlags;
   }
@@ -72,7 +85,8 @@ export class DataService {
 
   public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignment {
     const normalizedTarget = target ?? '';
-    const assignment = this.experimentAssignmentData.find(
+    // experimentAssignmentData stays null if the preceding /assign call failed or returned a non-array
+    const assignment = this.experimentAssignmentData?.find(
       (assignment) => assignment.site === site && assignment.target === normalizedTarget
     );
 

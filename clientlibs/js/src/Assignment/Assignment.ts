@@ -7,6 +7,8 @@ export default class Assignment {
   private _site: string;
   private _target: string;
   private _conditionCode: string;
+  private _conditionId: string | null;
+  private _experimentId: string | null;
   private _payloadType: PAYLOAD_TYPE;
   private _payloadValue: string | null;
   private _experimentType: EXPERIMENT_TYPE;
@@ -19,6 +21,8 @@ export default class Assignment {
     this._site = site;
     this._target = target;
     this._conditionCode = assignedCondition[0] && assignedCondition[0].conditionCode;
+    this._conditionId = assignedCondition[0]?.id ?? null;
+    this._experimentId = assignedCondition[0]?.experimentId ?? null;
     this._payloadType =
       assignedCondition[0] && assignedCondition[0].payload ? assignedCondition[0].payload.type : PAYLOAD_TYPE.STRING;
     this._payloadValue =
@@ -118,6 +122,7 @@ export default class Assignment {
       status,
       uniquifier,
       clientError,
+      assignedCondition: { id: this._conditionId, experimentId: this._experimentId },
     };
 
     return await this.apiService.markDecisionPoint(markDecisionPointParams);

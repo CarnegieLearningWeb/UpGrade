@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.responsebeans.*;
+import org.upgradeplatform.utils.Utils.BinaryRewardValue;
 import org.upgradeplatform.utils.Utils.ExperimentType;
 import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 import org.upgradeplatform.utils.Utils.PayloadType;
@@ -16,7 +17,8 @@ import org.upgradeplatform.requestbeans.LogMetrics;
 
 /**
  * Manual end-to-end smoke test: one user runs init, group and working-group membership, aliases, assign,
- * decision-point assignment, feature flags, mark and log, in order, against a running server.
+ * decision-point assignment, feature flags (with stored groups, then with each session-group mode), mark, reward
+ * (by experiment id and by decision point, each queued and awaited) and log, in order, against a running server.
  *
  * <pre>
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTest"
@@ -46,10 +48,15 @@ public class QuickTest {
     private static final String alias = "alias" + userId;
     private static final String context = "upgrade-internal";
     private static final String site = "SelectSection";
-    private static final String target = "my_fave_workspace";
+    private static final String target = "my_fave_workspac";
     private static final String condition = "control";
     private static final MarkedDecisionPointStatus status = MarkedDecisionPointStatus.CONDITION_APPLIED;
     private static final String featureFlagKey = "TEST_FEATURE_FLAG";
+    // session-scoped groups for the feature-flag modes; the modes only return different flags if some flag's
+    // segment includes this group
+    private static final Map<String, List<String>> groupsForSession = Collections.singletonMap("classId",
+            Collections.singletonList("EPHEMERAL_USER_GROUP"));
+    private static final BinaryRewardValue rewardValue = BinaryRewardValue.SUCCESS;
 
     private static final List<LogInput> logRequest = new ArrayList<>();
 
@@ -91,7 +98,14 @@ public class QuickTest {
                         .thenCompose(v -> doFeatureFlags(client))
                         .thenCompose(v -> doFeatureFlagsIgnoreCache(client))
                         .thenCompose(v -> doHasFeatureFlag(client))
+                        .thenCompose(v -> doFeatureFlagsWithSessionGroups(client, true))
+                        .thenCompose(v -> doFeatureFlagsWithSessionGroups(client, false))
+                        .thenCompose(v -> doFeatureFlagsWithSessionGroupsCleared(client))
                         .thenCompose(v -> doMark(client))
+                        .thenCompose(v -> doSendRewardForExperiment(client, false))
+                        .thenCompose(v -> doSendRewardForExperiment(client, true))
+                        .thenCompose(v -> doSendRewardForDecisionPoint(client, false))
+                        .thenCompose(v -> doSendRewardForDecisionPoint(client, true))
                         .thenCompose(v -> doLog(client))
                         .exceptionally(e -> {
                             e.printStackTrace();
@@ -320,6 +334,43 @@ public class QuickTest {
         return future;
     }
 
+    /**
+     * Evaluate the flags with session groups: merged with the user's stored groups when
+     * {@code includeStoredUserGroups} is true, or in place of them when false.
+     */
+    private static CompletableFuture<Void> doFeatureFlagsWithSessionGroups(ExperimentClient client,
+            boolean includeStoredUserGroups) {
+        // clears the cached flags, so the fetch goes to the server with the session groups
+        client.setFeatureFlagUserGroupsForSession(groupsForSession, includeStoredUserGroups);
+        return fetchFeatureFlags(client, includeStoredUserGroups ? "session + stored groups" : "session groups only");
+    }
+
+    /** Back to the user's stored groups alone, after the session-group modes above. */
+    private static CompletableFuture<Void> doFeatureFlagsWithSessionGroupsCleared(ExperimentClient client) {
+        client.clearFeatureFlagUserGroupsForSession();
+        return fetchFeatureFlags(client, "session groups cleared");
+    }
+
+    private static CompletableFuture<Void> fetchFeatureFlags(ExperimentClient client, String mode) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        client.getAllFeatureFlags(new ResponseCallback<List<String>>() {
+            @Override
+            public void onSuccess(@NonNull List<String> response) {
+                System.out.println("\n[Feature Flag (" + mode + ") response]:" + response);
+                System.out.println("\n[Feature Flag (" + mode + ") response] has " + featureFlagKey + ": "
+                        + response.contains(featureFlagKey));
+                future.complete(null);
+            }
+
+            @Override
+            public void onError(@NonNull ErrorResponse error) {
+                System.err.println("\n[Feature Flag (" + mode + ") error]:" + error);
+                future.completeExceptionally(new RuntimeException(error.toString()));
+            }
+        });
+        return future;
+    }
+
     private static CompletableFuture<Void> doMark(ExperimentClient client) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         client.markDecisionPoint(site, target, condition, status, new ResponseCallback<MarkDecisionPoint>() {
@@ -336,6 +387,63 @@ public class QuickTest {
             }
         });
         return future;
+    }
+
+    /**
+     * Reward the experiment assigned at the decision point, by its id. Without {@code awaitResult} the server
+     * queues the reward (mode "accepted"); with it, the server records the reward before responding (mode
+     * "processed") and answers one it can't record with a 409. The server doesn't deduplicate rewards, so the four
+     * reward paths add four observations for this user to a Thompson Sampling experiment.
+     */
+    private static CompletableFuture<Void> doSendRewardForExperiment(ExperimentClient client, boolean awaitResult) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        String label = "Send Reward (by experiment id, awaitResult=" + awaitResult + ")";
+        client.getExperimentCondition(site, target, new ResponseCallback<Assignment>() {
+            @Override
+            public void onSuccess(@NonNull Assignment response) {
+                Condition assignedCondition = response.getAssignedCondition();
+                if (assignedCondition == null || assignedCondition.getExperimentId() == null) {
+                    System.out.println("\n[" + label + "] skipped: no experiment assigned at " + site + "/" + target);
+                    future.complete(null);
+                    return;
+                }
+                client.sendRewardForExperiment(rewardValue, assignedCondition.getExperimentId(), awaitResult,
+                        rewardCallback(label, future));
+            }
+
+            @Override
+            public void onError(@NonNull ErrorResponse error) {
+                System.err.println("\n[" + label + " error]:" + error);
+                future.complete(null);
+            }
+        });
+        return future;
+    }
+
+    /** Reward the experiment at the decision point, by context, site and target; see doSendRewardForExperiment. */
+    private static CompletableFuture<Void> doSendRewardForDecisionPoint(ExperimentClient client, boolean awaitResult) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        client.sendRewardForDecisionPoint(rewardValue, context, site, target, awaitResult,
+                rewardCallback("Send Reward (by decision point, awaitResult=" + awaitResult + ")", future));
+        return future;
+    }
+
+    // A failed reward is printed but doesn't stop the run: the decision point needn't be a Thompson Sampling
+    // experiment, and with awaitResult the server answers a reward for any other experiment with a 409.
+    private static ResponseCallback<SendRewardResponse> rewardCallback(String label, CompletableFuture<Void> future) {
+        return new ResponseCallback<SendRewardResponse>() {
+            @Override
+            public void onSuccess(@NonNull SendRewardResponse response) {
+                System.out.println("\n[" + label + " response]:" + response);
+                future.complete(null);
+            }
+
+            @Override
+            public void onError(@NonNull ErrorResponse error) {
+                System.err.println("\n[" + label + " error]:" + error);
+                future.complete(null);
+            }
+        };
     }
 
     private static CompletableFuture<Void> doLog(ExperimentClient client) {

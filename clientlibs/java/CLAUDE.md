@@ -37,21 +37,25 @@ new ExperimentClient(userId, context, authToken, sessionId, baseUrl, properties)
 - `getAllExperimentConditions(cb)` — fetch all assignments (cached)
 - `getAllExperimentConditions(ignoreCache, cb)` — bypass cache
 - `getAllExperimentConditions(site, cb)` / `getAllExperimentConditions(site, target, cb)`
-- `getExperimentCondition(site, cb)` / `getExperimentCondition(site, target, cb)` — site/target matched case-insensitively
+- `getExperimentCondition(site, cb)` / `getExperimentCondition(site, target, cb)` — site/target matched exactly (case-sensitive, like the server); a null target equals "". With no experiment assigned there, `onSuccess` gets a placeholder `Assignment` (never `null`) whose `getAssignedCondition()`, `getCondition()`, `getPayload()` and `getExperimentType()` are all `null` (a null type only occurs for the placeholder). `getCondition()`/`getPayload()` are null-safe; chaining `getAssignedCondition().getConditionCode()` throws an NPE for the placeholder
 - `markDecisionPoint(site, condition, status, cb)` — many overloads adding target, clientError, uniquifier
 - `getAllFeatureFlags(cb)` / `getAllFeatureFlags(ignoreCache, cb)` / `hasFeatureFlag(key, cb)`
-- `addGroupMetrics(metrics, cb)` / `addSingleMetrics(metrics, cb)` / `log(value, cb)`
+- `setFeatureFlagUserGroupsForSession(groupsForSession, includeStoredUserGroups)` / `clearFeatureFlagUserGroupsForSession()` — session-scoped groups for feature flag evaluation; both clear the flag cache
+- `log(value, cb)`
+- `sendRewardForExperiment(value, experimentId, [awaitResult], cb)` / `sendRewardForDecisionPoint(value, context, site, target, [awaitResult], cb)` — binary reward for adaptive experiments; `context` is explicit, not the client's own
 - `close()` — implements AutoCloseable; always call this or use try-with-resources to avoid resource leaks
 
 ## Key Gotchas
 
-**Caching:** `allExperiments` and `allFeatureFlags` are cached in-memory for the client's lifetime. No expiry. Use the `ignoreCache` overloads when fresh data is needed.
+**Caching:** `allExperiments` and `allFeatureFlags` are cached in memory with no expiry. Both are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since assignments and flags depend on the user's identity and groups. The flag cache is also cleared by the session-group setters. Clearing is best-effort: a response that was already in flight when a cache was cleared can still be cached afterwards (a guard against that was considered and dropped as over-engineering; see the audit). Both caches are read and written under a lock (`assignmentLock` / `featureFlagLock`), since responses arrive on Jersey threads. Within-subjects rotation after a mark, and lookups that copy an assignment out of the cache, also hold `assignmentLock`, so a lookup never sees conditions rotated without their factors. Use the `ignoreCache` overloads when fresh data is needed for any other reason, e.g. an experiment started on the server.
 
-**Retry logic:** `PublishingRetryCallback` retries once (max 1 retry) on network failures and 5xx errors. 4xx errors fail immediately with no retry.
+**Retry logic:** `PublishingRetryCallback` retries once (`MAX_RETRIES`) on network failures and 5xx errors, for reads and idempotent upserts only (init, group/working group, aliases, assign, feature flags). `/mark`, `/log` and `/reward` use `NO_RETRIES`: the server doesn't deduplicate them, so resending after a lost response could record a write twice (and a duplicated reward biases adaptive assignment). 4xx errors never retry.
 
 **API version is hard-coded:** All endpoints use `api/v6` (constant in `Utils.java`). Updating to a new API version requires a code change and recompile.
 
-**Timeouts:** Hard-coded 3-second connect/read timeouts in `APIService`. Not configurable via constructor.
+**Timeouts:** 3-second connect/read defaults set in `APIService.createClient`. Override them by passing `ClientProperties.CONNECT_TIMEOUT` / `ClientProperties.READ_TIMEOUT` in the constructor's `properties` map (applied after the defaults). `properties` may be `null`.
+
+**Auth token:** Optional (may be `null` or empty), like the JS and Python libs. When present it's sent as `Authorization: Bearer <token>`; when absent the header is omitted. Only servers with client API auth enabled (the `toCheckAuth` setting, enforced in `ClientLibMiddleware`) require it, and they answer a request without one with a 401.
 
 **Session ID:** Auto-generated UUID per client instance if not provided. Appears in all request headers for tracing.
 
@@ -68,7 +72,9 @@ src/main/java/org/upgradeplatform/
 
 ## Tests
 
-TestNG is the test framework but there is no `src/test/java` directory — `QuickTest.java` lives in the main source tree and is the de facto integration test. It chains calls with `CompletableFuture` to test the full flow against a running server.
+TestNG unit tests live in `src/test/java`. `ExperimentClientTest` runs `ExperimentClient` against an in-process JDK `HttpServer` with canned `/v6` responses, and asserts on what each request sends. It covers the method and body of every endpoint (checked against the backend validators' expectations; `/init` for its exact field set, since the server rejects unknown fields there), the standard headers, and the client's caching, retry and lookup behavior. `mvn test` runs them.
+
+`QuickTest.java` (main source tree) is a separate manual integration scratchpad. It chains calls with `CompletableFuture` to test the full flow against a running server.
 
 To run a manual integration test:
 ```bash

@@ -29,6 +29,7 @@ not constructed directly::
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from upgrade_client_lib.types.enums import ExperimentType, MarkedDecisionPointStatus
@@ -49,9 +50,18 @@ class Assignment:
     api_service:
         The :class:`~upgrade_client_lib.api_service.ApiService` instance used
         to send mark requests.  Injected by ``UpgradeClient``.
+    on_marked:
+        Called with each successful mark response.  ``UpgradeClient`` uses it to
+        rotate cached within-subjects assignments, exactly as its own
+        ``mark_decision_point`` does.
     """
 
-    def __init__(self, raw: ExperimentAssignment, api_service: ApiService) -> None:
+    def __init__(
+        self,
+        raw: ExperimentAssignment,
+        api_service: ApiService,
+        on_marked: Callable[[MarkDecisionPointResponse], None] | None = None,
+    ) -> None:
         self._site = raw.site
         self._target = raw.target
         self._experiment_type = raw.experimentType
@@ -68,6 +78,7 @@ class Assignment:
         )
 
         self._api_service = api_service
+        self._on_marked = on_marked
 
     # ------------------------------------------------------------------
     # Accessors
@@ -146,7 +157,7 @@ class Assignment:
         client_error:
             Optional string describing why a condition was not applied.
         """
-        return await self._api_service.mark_decision_point(
+        response = await self._api_service.mark_decision_point(
             site=self._site,
             target=self._target,
             condition_code=self._condition_code,
@@ -158,6 +169,9 @@ class Assignment:
             uniquifier=uniquifier or None,
             client_error=client_error or None,
         )
+        if self._on_marked is not None:
+            self._on_marked(response)
+        return response
 
     def mark_decision_point_sync(
         self,
@@ -166,7 +180,7 @@ class Assignment:
         client_error: str = "",
     ) -> MarkDecisionPointResponse:
         """Synchronous variant of :meth:`mark_decision_point`."""
-        return self._api_service.mark_decision_point_sync(
+        response = self._api_service.mark_decision_point_sync(
             site=self._site,
             target=self._target,
             condition_code=self._condition_code,
@@ -178,6 +192,9 @@ class Assignment:
             uniquifier=uniquifier or None,
             client_error=client_error or None,
         )
+        if self._on_marked is not None:
+            self._on_marked(response)
+        return response
 
     # ------------------------------------------------------------------
     # Internal helpers
