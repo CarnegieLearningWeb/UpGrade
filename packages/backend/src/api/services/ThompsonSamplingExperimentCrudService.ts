@@ -260,6 +260,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
         conditionCode: state.condition?.conditionCode ?? state.conditionId,
         successes,
         failures,
+        totalRewardCount: state.totalCount + state.pendingTotalCount,
         successRate,
         order: state.condition?.order ?? 0,
         priorSuccess: state.priorSuccess,

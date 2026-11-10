@@ -16,13 +16,13 @@
   @if (isSectionCardExpanded) {
   <ng-container content>
     <!-- batchSize <= 1 never buffers a reward, and warmupThreshold 0 means no warmup phase --
-         both are "default/not in play" configurations, shown grayed out rather than hidden. -->
+         both are "default/not in play" configurations, so their rows are hidden entirely. -->
     @let isBatchingActive = summary.batchSize > 1; @let isWarmupConfigured = summary.warmupThreshold > 0; @let
     isWarmupActive = isWarmupConfigured && summary.totalRewardCount <= summary.warmupThreshold;
     <div class="reward-status-section">
+      @if (isBatchingActive) {
       <div
         class="item-key-value"
-        [class.inactive]="!isBatchingActive"
         [matTooltip]="
           'experiments.details.posteriors.pending-rewards-tooltip.text' | translate : { batchSize: summary.batchSize }
         "
@@ -31,9 +31,9 @@
         <span class="ft-14-600">{{ 'experiments.details.posteriors.pending-rewards.text' | translate }}:</span>
         <span class="ft-14-400 item-value">{{ summary.pendingRewardsCount }}/{{ summary.batchSize }}</span>
       </div>
+      } @if (isWarmupConfigured) {
       <div
         class="item-key-value"
-        [class.inactive]="!isWarmupConfigured"
         [matTooltip]="
           'experiments.details.posteriors.warmup-threshold-tooltip.text'
             | translate : { warmupThreshold: summary.warmupThreshold }
@@ -51,6 +51,15 @@
           {{ 'experiments.details.posteriors.algorithm-active.text' | translate }}
           }
         </span>
+      </div>
+      }
+      <div
+        class="item-key-value"
+        [matTooltip]="'experiments.details.posteriors.total-reward-count-tooltip.text' | translate"
+        matTooltipPosition="left"
+      >
+        <span class="ft-14-600">{{ 'experiments.details.posteriors.total-reward-count.text' | translate }}:</span>
+        <span class="ft-14-400 item-value">{{ summary.totalRewardCount }}</span>
       </div>
     </div>
     <app-ts-configurable-reward-count-table
