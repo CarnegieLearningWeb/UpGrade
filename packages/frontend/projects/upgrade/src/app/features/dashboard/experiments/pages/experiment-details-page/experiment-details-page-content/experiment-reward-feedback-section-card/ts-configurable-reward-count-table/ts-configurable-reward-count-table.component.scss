@@ -76,7 +76,11 @@
     .condition-column {
       text-align: left;
       padding-left: 32px;
-      width: 20%;
+      width: 16%;
+    }
+
+    .received-column {
+      width: 8%;
     }
 
     .successes-column {
@@ -91,8 +95,10 @@
       width: 8%;
     }
 
+    // Three spacers now (Received | Successes | Failures | Est. Weight) -- narrowed from 8% so the
+    // extra Received column fits without squeezing the data columns.
     .spacer-column {
-      width: 8%;
+      width: 6%;
     }
 
     .failures-column {
