@@ -380,3 +380,37 @@ export interface ExperimentRewardsSummary {
   batchSize: number;
   scalingFactor: number;
 }
+
+export interface ExperimentRewardsReplayCondition {
+  conditionId: string;
+  /** Display code from experiment_condition; falls back to conditionId when the condition has no code. */
+  conditionCode: string;
+  order: number;
+  priorSuccess: number;
+  priorFailure: number;
+}
+
+/**
+ * One recorded reward. Deliberately carries no user identifier: the replay needs only the
+ * condition, the outcome and when it arrived.
+ */
+export interface ExperimentRewardsReplayReward {
+  conditionId: string;
+  success: boolean;
+  /** ISO-8601 timestamp the reward was recorded. */
+  createdAt: string;
+}
+
+/**
+ * Everything needed to replay an adaptive experiment's posteriors reward by reward: its conditions
+ * (sorted by display order), every recorded reward oldest first, and the experiment's current
+ * algorithm config. The replay itself runs on the client.
+ */
+export interface ExperimentRewardsReplay {
+  conditions: ExperimentRewardsReplayCondition[];
+  rewards: ExperimentRewardsReplayReward[];
+  batchSize: number;
+  warmupThreshold: number;
+  minimumDrawDifference: number;
+  scalingFactor: number;
+}

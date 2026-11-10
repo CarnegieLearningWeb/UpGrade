@@ -16,6 +16,7 @@ import { ExperimentEnrollmentDataSectionCardComponent } from './experiment-enrol
 import { ExperimentMetricsDataSectionCardComponent } from './experiment-metrics-data-section-card/experiment-metrics-data-section-card.component';
 import { ExperimentPayloadsSectionCardComponent } from './experiment-payloads-section-card/experiment-payloads-section-card.component';
 import { ExperimentRewardFeedbackSectionCardComponent } from './experiment-reward-feedback-section-card/experiment-reward-feedback-section-card.component';
+import { ExperimentRewardReplaySectionCardComponent } from './experiment-reward-replay-section-card/experiment-reward-replay-section-card.component';
 import { ExperimentLogSectionCardComponent } from './experiment-log-section-card/experiment-log-section-card.component';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
@@ -42,6 +43,7 @@ import { ASSIGNMENT_ALGORITHM } from 'upgrade_types';
     ExperimentMetricsSectionCardComponent,
     ExperimentEnrollmentDataSectionCardComponent,
     ExperimentRewardFeedbackSectionCardComponent,
+    ExperimentRewardReplaySectionCardComponent,
     ExperimentMetricsDataSectionCardComponent,
     ExperimentLogSectionCardComponent,
   ],

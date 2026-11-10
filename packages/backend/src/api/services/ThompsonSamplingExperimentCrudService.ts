@@ -2,10 +2,11 @@ import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
 import { ConditionPosteriorStateRepository } from '../repositories/ConditionPosteriorStateRepository';
+import { ThompsonSamplingRewardRepository } from '../repositories/ThompsonSamplingRewardRepository';
 import { ThompsonSamplingExperimentConfig } from '../models/ThompsonSamplingExperimentConfig';
 import { DEFAULT_SCALING_FACTOR, ThompsonSamplingService } from './ThompsonSamplingService';
 import { CacheService } from './CacheService';
-import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX, ExperimentRewardsSummary } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX, ExperimentRewardsReplay, ExperimentRewardsSummary } from 'upgrade_types';
 import { ExperimentDTO } from '../DTO/ExperimentDTO';
 import { AdaptiveExperimentConfigService } from './AdaptiveExperimentConfigService';
 
@@ -25,6 +26,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   constructor(
     @InjectRepository() private configRepository: ThompsonSamplingExperimentConfigRepository,
     @InjectRepository() private posteriorStateRepository: ConditionPosteriorStateRepository,
+    @InjectRepository() private rewardRepository: ThompsonSamplingRewardRepository,
     private thompsonSamplingService: ThompsonSamplingService,
     private cacheService: CacheService
   ) {}
@@ -308,6 +310,56 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
       warmupThreshold: config.warmupThreshold,
       batchSize: config.batchSize,
       scalingFactor: config.scalingFactor,
+    };
+  }
+
+  /**
+   * The inputs for replaying an experiment's posteriors reward by reward: its conditions (display
+   * code, order, priors), every recorded reward oldest first, and the current algorithm config. The
+   * replay itself runs on the client. It uses today's priors, batchSize and scalingFactor, so if any
+   * was edited mid-experiment the replay won't match what was applied at the time. (scalingFactor is
+   * applied at draw time to every stored reward, so the replay's final step always matches what the
+   * algorithm draws from now.) Rewards carry no user identifier. Read-only.
+   */
+  public async getRewardsReplay(experimentId: string): Promise<ExperimentRewardsReplay> {
+    const config = await this.configRepository.findByExperimentIdWithConditions(experimentId);
+
+    if (!config) {
+      return {
+        conditions: [],
+        rewards: [],
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        scalingFactor: DEFAULT_SCALING_FACTOR,
+      };
+    }
+
+    const conditions = config.conditionPosteriorStates
+      .map((state) => ({
+        conditionId: state.conditionId,
+        conditionCode: state.condition?.conditionCode ?? state.conditionId,
+        order: state.condition?.order ?? 0,
+        priorSuccess: state.priorSuccess,
+        priorFailure: state.priorFailure,
+      }))
+      .sort((a, b) => a.order - b.order);
+
+    const rewards = await this.rewardRepository.findByConditionIdsInArrivalOrder(
+      conditions.map((condition) => condition.conditionId)
+    );
+
+    return {
+      conditions,
+      rewards: rewards.map(({ conditionId, success, createdAt }) => ({
+        conditionId,
+        success,
+        createdAt: new Date(createdAt).toISOString(),
+      })),
+      batchSize: config.batchSize,
+      warmupThreshold: config.warmupThreshold,
+      minimumDrawDifference: config.minimumDrawDifference,
+      scalingFactor: config.scalingFactor ?? DEFAULT_SCALING_FACTOR,
     };
   }
 

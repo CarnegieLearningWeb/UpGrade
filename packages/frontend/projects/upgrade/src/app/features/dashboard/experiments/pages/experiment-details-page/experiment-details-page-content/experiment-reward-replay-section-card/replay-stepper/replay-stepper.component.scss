@@ -1,0 +1,134 @@
+.replay-stepper {
+  display: flex;
+  flex-direction: column;
+  row-gap: 12px;
+
+  .heading {
+    display: block;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    column-gap: 4px;
+
+    .slider {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .position {
+      min-width: 150px;
+      margin-left: 12px;
+      color: var(--dark-grey);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+  }
+
+  .color-box {
+    display: inline-block;
+    flex: none;
+    border-radius: 4px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .condition-label {
+    display: inline-flex;
+    align-items: center;
+    column-gap: 8px;
+  }
+
+  .condition-rows {
+    display: grid;
+    // Condition, outcome, posterior, mean.
+    grid-template-columns: minmax(120px, max-content) repeat(3, minmax(0, max-content));
+    // Lines the color boxes up with the chart's left axis, which ngx-charts places 64px in from the
+    // left for this chart's margins and y-axis label. That's also within 4px of where the slider's
+    // track starts (past the 48px previous button, the 4px gap and the slider's 8px margin).
+    padding-left: 64px;
+    column-gap: 32px;
+    row-gap: 4px;
+    // Adds to the stepper's 12px row gap, for more room above the chart.
+    margin-bottom: 12px;
+
+    // Each row's spans become cells of the shared grid, so the columns line up across rows.
+    .condition-row {
+      display: contents;
+      color: var(--dark-grey);
+    }
+
+    .condition-name.rewarded {
+      color: var(--black-2);
+    }
+
+    // Always as wide as its text in bold, so the columns don't shift when a different name is bold.
+    .reserve-bold {
+      display: inline-grid;
+
+      &::after {
+        content: attr(data-text);
+        height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        font-weight: 600;
+      }
+    }
+
+    // Every row's outcome cell is as wide as the wider of the bold success and failure labels (the
+    // hidden ::before/::after), so the columns after it stay put as the outcome moves between rows,
+    // switches between success and failure, or is absent at the prior.
+    .outcome {
+      display: inline-grid;
+
+      &::before,
+      &::after {
+        height: 0;
+        overflow: hidden;
+        visibility: hidden;
+        font-weight: 600;
+      }
+
+      &::before {
+        content: attr(data-success);
+      }
+
+      &::after {
+        content: attr(data-failure);
+      }
+    }
+
+    .outcome.success {
+      color: var(--green);
+    }
+
+    .outcome.failure {
+      color: var(--red);
+    }
+
+    .posterior,
+    .mean {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mean {
+      position: relative;
+    }
+
+    // Hangs to the right of the mean, outside the grid, so the centered rows don't jump sideways as
+    // the tag comes and goes from step to step.
+    .batch-tag {
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+      margin-left: 16px;
+      border: 1px solid var(--light-grey);
+      border-radius: 4px;
+      padding: 0 6px;
+      color: var(--dark-grey);
+      white-space: nowrap;
+    }
+  }
+}

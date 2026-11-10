@@ -1,0 +1,17 @@
+.reward-replay-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  row-gap: 32px;
+  padding: 22px 32px 32px;
+
+  .loading-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .no-data {
+    color: var(--dark-grey);
+  }
+}

@@ -35,6 +35,8 @@ import {
   selectTotalExperiment,
   selectRewardsDataForSelectedExperiment,
   selectIsLoadingRewardsSummary,
+  selectRewardsReplayForSelectedExperiment,
+  selectIsLoadingRewardsReplay,
   selectExperimentDetailsPageError,
   selectExperimentMenuItems,
 } from './experiments.selectors';
@@ -955,6 +957,42 @@ describe('Experiments Selectors', () => {
       const result = selectIsLoadingRewardsSummary.projector(state);
 
       expect(result).toEqual(false);
+    });
+  });
+
+  describe('#selectRewardsReplayForSelectedExperiment', () => {
+    const experimentId = '1f12cd8f-7ff9-4731-a4eb-7104918ed252';
+    const rewardsReplay = {
+      conditions: [{ conditionId: 'c1', conditionCode: 'A', order: 1, priorSuccess: 1, priorFailure: 1 }],
+      rewards: [],
+      batchSize: 1,
+      warmupThreshold: 0,
+      minimumDrawDifference: 0,
+      scalingFactor: 1,
+    };
+
+    it('should return the replay stored for the selected experiment', () => {
+      const state = { ...mockState, rewardsReplays: { [experimentId]: rewardsReplay } };
+      const selectedExperiment = state.experiments.find((exp) => exp.id === experimentId);
+
+      expect(selectRewardsReplayForSelectedExperiment.projector(selectedExperiment, state)).toBe(rewardsReplay);
+    });
+
+    it('should return null until the replay has been fetched', () => {
+      const state = { ...mockState, rewardsReplays: {} };
+      const selectedExperiment = state.experiments.find((exp) => exp.id === experimentId);
+
+      expect(selectRewardsReplayForSelectedExperiment.projector(selectedExperiment, state)).toBeNull();
+    });
+
+    it('should return null when no experiment is selected', () => {
+      expect(selectRewardsReplayForSelectedExperiment.projector(undefined, mockState)).toBeNull();
+    });
+  });
+
+  describe('#selectIsLoadingRewardsReplay', () => {
+    it('should return the replay loading flag', () => {
+      expect(selectIsLoadingRewardsReplay.projector({ ...mockState, isLoadingRewardsReplay: true })).toBe(true);
     });
   });
 

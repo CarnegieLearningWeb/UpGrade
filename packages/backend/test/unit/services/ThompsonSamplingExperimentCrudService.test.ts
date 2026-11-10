@@ -5,6 +5,7 @@ import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX } from 'upgrade_types';
 describe('ThompsonSamplingExperimentCrudService', () => {
   let configRepository: any;
   let posteriorStateRepository: any;
+  let rewardRepository: any;
   let cacheService: any;
   let service: ThompsonSamplingExperimentCrudService;
 
@@ -21,6 +22,9 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       update: jest.fn().mockResolvedValue(undefined),
       remove: jest.fn().mockResolvedValue(undefined),
     };
+    rewardRepository = {
+      findByConditionIdsInArrivalOrder: jest.fn().mockResolvedValue([]),
+    };
     cacheService = { resetPrefixCache: jest.fn().mockResolvedValue(undefined) };
 
     // Real ThompsonSamplingService — it's a pure, dependency-free service, so using the genuine
@@ -30,6 +34,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
     service = new ThompsonSamplingExperimentCrudService(
       configRepository,
       posteriorStateRepository,
+      rewardRepository,
       new ThompsonSamplingService(),
       cacheService
     );
@@ -40,6 +45,102 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       await service.createConfig('experiment-1', [{ id: 'condition-1' }]);
 
       expect(configRepository.save).toHaveBeenCalledWith(expect.objectContaining({ scalingFactor: 1 }));
+    });
+  });
+
+  describe('getRewardsReplay', () => {
+    it('returns empty lists and default config when the experiment has no Thompson Sampling config', async () => {
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(replay).toEqual({
+        conditions: [],
+        rewards: [],
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        scalingFactor: 1,
+      });
+      expect(rewardRepository.findByConditionIdsInArrivalOrder).not.toHaveBeenCalled();
+    });
+
+    it('returns conditions in display order with codes and priors, rewards oldest first, and the config', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 5,
+        warmupThreshold: 10,
+        minimumDrawDifference: 0.05,
+        scalingFactor: 0.25,
+        conditionPosteriorStates: [
+          { conditionId: 'condition-b', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'B', order: 2 } },
+          { conditionId: 'condition-a', priorSuccess: 3, priorFailure: 2, condition: { conditionCode: 'A', order: 1 } },
+        ],
+      });
+      rewardRepository.findByConditionIdsInArrivalOrder.mockResolvedValue([
+        { id: 'reward-1', conditionId: 'condition-a', success: true, createdAt: new Date('2026-10-27T12:03:19.222Z') },
+        { id: 'reward-2', conditionId: 'condition-b', success: false, createdAt: new Date('2026-10-27T12:05:00.772Z') },
+      ]);
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(rewardRepository.findByConditionIdsInArrivalOrder).toHaveBeenCalledWith(['condition-a', 'condition-b']);
+      expect(replay).toEqual({
+        conditions: [
+          { conditionId: 'condition-a', conditionCode: 'A', order: 1, priorSuccess: 3, priorFailure: 2 },
+          { conditionId: 'condition-b', conditionCode: 'B', order: 2, priorSuccess: 1, priorFailure: 1 },
+        ],
+        rewards: [
+          { conditionId: 'condition-a', success: true, createdAt: '2026-10-27T12:03:19.222Z' },
+          { conditionId: 'condition-b', success: false, createdAt: '2026-10-27T12:05:00.772Z' },
+        ],
+        batchSize: 5,
+        warmupThreshold: 10,
+        minimumDrawDifference: 0.05,
+        scalingFactor: 0.25,
+      });
+    });
+
+    it('never passes a user id through to the replay, even if a reward row carries one', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        conditionPosteriorStates: [
+          { conditionId: 'condition-a', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'A', order: 1 } },
+        ],
+      });
+      rewardRepository.findByConditionIdsInArrivalOrder.mockResolvedValue([
+        {
+          id: 'reward-1',
+          conditionId: 'condition-a',
+          userId: 'user-1',
+          success: true,
+          createdAt: new Date('2026-10-27T12:03:19.222Z'),
+        },
+      ]);
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(replay.rewards).toHaveLength(1);
+      expect(replay.rewards[0]).not.toHaveProperty('userId');
+    });
+
+    it('falls back to the condition id when a condition has no code', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        conditionPosteriorStates: [
+          {
+            conditionId: 'condition-a',
+            priorSuccess: 1,
+            priorFailure: 1,
+            condition: { conditionCode: null, order: 1 },
+          },
+        ],
+      });
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(replay.conditions[0].conditionCode).toBe('condition-a');
     });
   });
 

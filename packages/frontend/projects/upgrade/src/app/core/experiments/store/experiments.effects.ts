@@ -807,6 +807,20 @@ export class ExperimentEffects {
     )
   );
 
+  fetchRewardsReplayForExperiment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchRewardsReplayForExperiment),
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.fetchRewardsReplayForExperiment(experimentId).pipe(
+          map((rewardsReplay) =>
+            experimentAction.actionFetchRewardsReplayForExperimentSuccess({ experimentId, rewardsReplay })
+          ),
+          catchError((error) => of(experimentAction.actionFetchRewardsReplayForExperimentFailure({ error })))
+        )
+      )
+    )
+  );
+
   private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
     isZip

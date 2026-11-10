@@ -60,6 +60,8 @@ export class LocalStorageService {
       isLoadingImportExperiment: false,
       isLoadingRewardsSummary: false,
       rewardsSummaries: {},
+      isLoadingRewardsReplay: false,
+      rewardsReplays: {},
       hasInitialExperimentsDataLoaded: false,
       detailsPageError: null,
     };

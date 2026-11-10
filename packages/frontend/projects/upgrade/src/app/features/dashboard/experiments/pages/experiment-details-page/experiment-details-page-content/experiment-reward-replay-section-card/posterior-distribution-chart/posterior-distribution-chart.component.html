@@ -1,0 +1,28 @@
+<div class="posterior-distribution">
+  <div class="chart-data">
+    <ngx-charts-line-chart
+      [scheme]="colorScheme"
+      [results]="chartData"
+      [xAxis]="true"
+      [yAxis]="true"
+      [legend]="false"
+      [showXAxisLabel]="true"
+      [xAxisLabel]="'experiments.details.reward-replay.distribution.x-axis.text' | translate"
+      [xAxisTickFormatting]="formatXAxisTick"
+      [showYAxisLabel]="true"
+      [yAxisLabel]="'experiments.details.reward-replay.distribution.y-axis.text' | translate"
+      [yAxisTicks]="yAxisTicks"
+      [xScaleMin]="0"
+      [xScaleMax]="1"
+      [yScaleMin]="0"
+      [rangeFillOpacity]="0.2"
+      [tooltipDisabled]="true"
+      [animations]="false"
+    ></ngx-charts-line-chart>
+  </div>
+  <p class="ft-12-400 caption">{{ 'experiments.details.reward-replay.distribution.caption.text' | translate }}</p>
+  <p class="ft-12-400 caption">{{ 'experiments.details.reward-replay.distribution.mean-note.text' | translate }}</p>
+  <p class="ft-12-400 caption">
+    {{ 'experiments.details.reward-replay.distribution.confidence-note.text' | translate }}
+  </p>
+</div>

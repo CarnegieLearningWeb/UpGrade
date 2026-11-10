@@ -26,6 +26,7 @@ import {
   ExperimentQueryPayload,
   ExperimentQueryComparator,
   ExperimentRewardsSummary,
+  ExperimentRewardsReplay,
 } from 'upgrade_types';
 import { Segment } from '../../segments/store/segments.model';
 
@@ -642,6 +643,8 @@ export interface ExperimentState {
   isLoadingImportExperiment: boolean;
   isLoadingRewardsSummary: boolean;
   rewardsSummaries: Record<string, ExperimentRewardsSummary>;
+  isLoadingRewardsReplay: boolean;
+  rewardsReplays: Record<string, ExperimentRewardsReplay>;
   isLoadingUpsertPrivateSegmentList?: boolean;
   // Details page fetch error state - drives the not-found / load-failed page
   detailsPageError: DetailsPageError | null;

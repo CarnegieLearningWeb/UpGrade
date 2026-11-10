@@ -17,7 +17,7 @@ import { HANDLES_404_CONTEXTUALLY } from '../http-interceptors/http-context-toke
 import { API_ENDPOINTS } from '../api-endpoints.constants';
 import { Observable } from 'rxjs';
 import { ExperimentSegmentListRequest, SegmentFile } from '../segments/store/segments.model';
-import { IImportFile, LIST_FILTER_MODE, ExperimentRewardsSummary } from 'upgrade_types';
+import { IImportFile, LIST_FILTER_MODE, ExperimentRewardsSummary, ExperimentRewardsReplay } from 'upgrade_types';
 
 @Injectable()
 export class ExperimentDataService {
@@ -142,6 +142,11 @@ export class ExperimentDataService {
   fetchRewardsDataForExperiment(experimentId: string): Observable<ExperimentRewardsSummary> {
     const url = `${API_ENDPOINTS.experimentsRewardsSummary}/${experimentId}`;
     return this.http.get<ExperimentRewardsSummary>(url);
+  }
+
+  fetchRewardsReplayForExperiment(experimentId: string): Observable<ExperimentRewardsReplay> {
+    const url = `${API_ENDPOINTS.experimentsRewardsSummary}/${experimentId}/replay`;
+    return this.http.get<ExperimentRewardsReplay>(url);
   }
 
   addInclusionList(list: ExperimentSegmentListRequest): Observable<ExperimentSegmentListResponse> {
