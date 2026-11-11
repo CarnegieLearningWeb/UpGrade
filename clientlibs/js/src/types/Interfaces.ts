@@ -40,6 +40,9 @@ export namespace UpGradeClientInterfaces {
     status: MARKED_DECISION_POINT_STATUS;
     uniquifier?: string;
     clientError?: string;
+    // ids of the condition being marked, when the caller already has them (Assignment does); when omitted they're
+    // looked up in the cached assignments, which may have been cleared or refetched since the condition was shown
+    assignedCondition?: { id: string | null; experimentId: string | null };
   }
 
   export interface IMarkDecisionPointOptions {
@@ -101,7 +104,20 @@ export namespace UpGradeClientInterfaces {
     target?: string;
   }
 
+  export interface ISendRewardParams {
+    rewardValue: 'SUCCESS' | 'FAILURE';
+    experimentId?: string;
+    context?: string;
+    decisionPoint?: IDecisionPoint;
+    // wait for the reward to be recorded and surface failures (409) instead of returning a queued receipt
+    awaitResult?: boolean;
+  }
+
   export interface ISendRewardResponse {
+    // 'accepted' = queued for background processing; 'processed' = recorded synchronously (awaitResult=true)
+    mode?: 'accepted' | 'processed';
+    // only present when mode is 'processed'
+    success?: boolean;
     message: string;
     request: {
       rewardValue: 'SUCCESS' | 'FAILURE';
@@ -116,6 +132,9 @@ export namespace UpGradeClientInterfaces {
       [key: string]: string | string[];
     };
     withCredentials?: boolean;
+    // true when the request is safe to resend (reads and idempotent upserts). Unset for writes that the server
+    // doesn't deduplicate (/mark, /log, /reward): resending one after a lost response can record it twice.
+    retryable?: boolean;
   }
   export interface IHttpClientWrapper {
     config?: IHttpClientWrapperRequestConfig;

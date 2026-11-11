@@ -42,6 +42,10 @@ Run `npm run build` as a unit — do not invoke the sub-steps (webpack, build:ty
 
 Jest config (`jest.config.ts`) sets `USE_CUSTOM_HTTP_CLIENT: true` globally, meaning tests always run against the custom-HTTP-client code path (lite variant behavior). Account for this when writing or reading tests.
 
+## HTTP Behavior
+
+`DefaultHttpClient` (non-lite builds): 5s timeout (`DEFAULT_TIMEOUT_MS`, not configurable) and 1 retry after a 300 ms wait (`DEFAULT_MAX_RETRIES` / `DEFAULT_RETRY_BACKOFF_MS`, not configurable) on network errors, timeouts and 5xx. It only retries requests `ApiService` marks `retryable: true` (reads and idempotent upserts); `/mark`, `/log` and `/reward` are never retried because the server doesn't deduplicate them. These defaults intentionally differ from the Java and Python libs; see `clientlibs/TIMEOUT_RETRY_POLICY.md`.
+
 ## Publishing
 
 Manual, push-button trigger only — `.github/workflows/clientlibs-js-publish.yml` is `workflow_dispatch`-only (no push trigger). `main` is not used for anything in this repo; run the workflow with the `ref` input set to the branch/tag to publish (defaults to `dev`). Uses npm trusted publishing (OIDC, no stored token) — the workflow only appears in the Actions UI once it exists on the repo's default branch (`dev`). Do not run `npm publish` locally.
@@ -56,6 +60,6 @@ Main class exported as default. Key methods:
 - `markDecisionPoint(site, target, condition?, status, ...)` — record that a user saw a condition
 - `getAllFeatureFlags(options?)` — fetch feature flags for user (cached)
 - `hasFeatureFlag(key)` — check if a feature flag is enabled
-- `log(value)` / `logCaliper(value)` — report outcome metrics
+- `log(value)` — report outcome metrics
 - `setGroupMembership(group)` / `setWorkingGroup(workingGroup)` — update group metadata
 - `sendReward(params)` — send binary reward for adaptive experiments

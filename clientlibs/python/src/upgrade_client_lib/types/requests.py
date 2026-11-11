@@ -81,6 +81,18 @@ class FeatureFlagRequest(BaseModel):
     context: str
 
 
+class FeatureFlagUserGroupsForSession(BaseModel):
+    """Session-scoped groups for feature flag evaluation.
+
+    ``groupsForSession`` is used for this client's feature flag requests.  When ``includeStoredUserGroups`` is
+    ``True`` it is merged with the user's stored groups; when ``False`` it replaces them.  Both fields are
+    required, matching the server's both-or-neither rule.
+    """
+
+    groupsForSession: dict[str, list[str]]
+    includeStoredUserGroups: bool
+
+
 class DecisionPointRef(BaseModel):
     site: str
     target: str

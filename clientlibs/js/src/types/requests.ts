@@ -40,7 +40,7 @@ export namespace UpGradeClientRequests {
     data: {
       site: string;
       target: string;
-      assignedCondition: { conditionCode: string; experimentId?: string };
+      assignedCondition: { conditionCode: string; experimentId?: string; id?: string };
     };
     uniquifier?: string;
     clientError?: string;
