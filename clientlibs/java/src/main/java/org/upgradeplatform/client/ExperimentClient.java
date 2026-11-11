@@ -911,21 +911,6 @@ public class ExperimentClient implements AutoCloseable {
 	 * helper method to include more useful information in the ErrorResponse for a
 	 * ProcessingException
 	 */
-	private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback,
-			GenericType<T> typeToken, UnaryOperator<T> finisher) {
-		response.bufferEntity();
-		try {
-			callback.onSuccess(finisher.apply(response.readEntity(typeToken)));
-		} catch (ProcessingException pe) {
-			callback.onError(new ErrorResponse(
-					pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
-		}
-	}
-
-	/**
-	 * helper method to include more useful information in the ErrorResponse for a
-	 * ProcessingException
-	 */
 	private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback, Class<T> clazz) {
 		readResponseToCallback(response, callback, clazz, UnaryOperator.identity());
 	}
