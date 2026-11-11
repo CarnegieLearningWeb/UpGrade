@@ -500,6 +500,32 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     );
 
+    test('single segment deletion recomputes an owner attached before its deletion lock', async () => {
+      const [segment] = await create('segments');
+      const [experiment] = await create('experiments');
+      // An archived owner does not make the segment Used, so the deletion is allowed and must update this owner.
+      await db.getRepository(Experiment).update(experiment.id, { state: EXPERIMENT_STATE.ARCHIVED });
+      await db.getRepository(IndividualForSegment).insert({ segmentId: segment.id, userId: 'deleted-member' });
+      const findForDeletion = DeletionRepository.prototype.findForDeletion;
+      jest
+        .spyOn(DeletionRepository.prototype, 'findForDeletion')
+        .mockImplementationOnce(async function (this: DeletionRepository, ...args) {
+          // Commit a list edit on another connection just before the deletion acquires its target lock.
+          await ownedList('experiments', experiment.id, segment.id, writer);
+          await Container.get(ExperimentPrecomputedSegmentService).recomputeForExperiment(
+            experiment.id,
+            new UpgradeLogger()
+          );
+          return findForDeletion.apply(this, args);
+        });
+
+      await request(app).delete(`/api/segments/${segment.id}`).expect(200);
+      expect(await db.getRepository(Segment).countBy({ id: segment.id })).toBe(0);
+      expect(
+        await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId: experiment.id })
+      ).toMatchObject({ inclusionIds: ['batch-member'], exclusionIds: [] });
+    });
+
     test('keeps a committed segment deletion when post-commit cache invalidation fails', async () => {
       const rows = await create('segments', 2);
       const cache = Container.get(CacheService);

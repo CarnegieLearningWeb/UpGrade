@@ -685,8 +685,7 @@ export class SegmentController {
     return this.segmentService.deleteSegment(
       segmentId,
       request.logger,
-      this.deletionPolicyService.singleDeletionTransaction('segments', segmentId),
-      false
+      this.deletionPolicyService.singleDeletionTransaction('segments', segmentId)
     );
   }
 
