@@ -101,7 +101,16 @@ export {
   BatchDeleteItemOutcome,
   BatchDeleteItemResult,
   BatchDeleteResult,
+  DELETABLE_EXPERIMENT_STATES,
 } from './BatchActions';
+export {
+  PermissionAction,
+  PermissionResource,
+  ResourcePermissions,
+  RolePermissions,
+  ROLE_PERMISSIONS,
+  isPermitted,
+} from './Permissions';
 export {
   Prior,
   BinaryRewardAllowedValue,

@@ -63,6 +63,15 @@ npm run migration:run
 - `@Authorized()` decorator (from routing-controllers) enforces auth on controllers
 - `@CurrentUser()` injects the authenticated `User` object into handler params
 
+## Deletion Policy
+
+`DeletionPolicyService` is the one role/state/usage policy for the user-facing deletion APIs (`DELETE /experiments/:id`, `/flags/:id`, `/segments/:segmentId` and the three `POST /…/batch-delete` routes). Deletable experiment states (`DELETABLE_EXPERIMENT_STATES`) live in `upgrade_types` so the frontend checks the same list.
+
+- The role is checked per request (`assertRoleCanDelete` → `PermissionService.assertPermitted(user, resource, 'delete')` → 403) before any target is locked. Role permissions for every resource and action live in the shared `ROLE_PERMISSIONS` table in `upgrade_types`, which the frontend also uses; enforce other actions through `PermissionService` rather than per-action role lists. State and usage rules stay per action (as `DeletionPolicyService` does for deletion).
+- State and usage are checked by `getRefusalReason()` on fields read by `DeletionRepository.findForDeletion()` under the target's `pessimistic_write` lock, in the deletion transaction, never from an earlier unlocked read. Segment usage (`isSegmentInUse`) is evaluated for that one segment and mirrors the Used status from `SegmentService.getSegmentStatus()`.
+- Single routes pass `singleDeletionTransaction()` to the entity service and return 409 (`SERVER_ERROR.DELETION_NOT_ALLOWED`) on refusal. Batch items are reported `refused` with a policy `DeletionReasonCode`, and the batch continues.
+- Internal deletions (create rollback, private-list removal via `deleteList`) call the entity services without the policy executor, deliberately.
+
 ## Environment
 
 Copy `.env.example` to `.env` for local dev. Never commit `.env` files. Key sections: `app`, `db`, `google`, `swagger`, `aws`. See `src/env.ts` for the full typed schema.

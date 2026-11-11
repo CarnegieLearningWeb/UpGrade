@@ -2,6 +2,7 @@ import { UserDTO } from '../DTO/UserDTO';
 import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/BatchDeleteService';
+import { DeletionPolicyService } from '../services/DeletionPolicyService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import {
   JsonController,
@@ -64,10 +65,10 @@ interface SegmentPaginationInfo extends PaginationResponse {
  *         format: uuid
  *       outcome:
  *         type: string
- *         enum: [deleted, not_found, failed, unknown, not_attempted]
+ *         enum: [deleted, not_found, refused, failed, unknown, not_attempted]
  *       reasonCode:
  *         type: string
- *         enum: [not_found, delete_failed, lock_timeout, outcome_unknown, post_delete_failed]
+ *         enum: [not_found, delete_failed, lock_timeout, outcome_unknown, post_delete_failed, state_not_deletable, segment_in_use, global_exclude_protected]
  *   BatchDeleteResult:
  *     type: object
  *     required: [results]
@@ -273,7 +274,8 @@ interface SegmentPaginationInfo extends PaginationResponse {
 export class SegmentController {
   constructor(
     public segmentService: SegmentService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    @Inject(() => DeletionPolicyService) private deletionPolicyService: DeletionPolicyService
   ) {}
 
   /**
@@ -281,7 +283,7 @@ export class SegmentController {
    * /segments/batch-delete:
    *   post:
    *     summary: Delete the selected segments
-   *     description: Deletes selected segments sequentially using the existing deletion workflow, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
+   *     description: Deletes selected segments sequentially using the existing deletion workflow. Requires the Admin, Creator or User Manager role. Missing items are skipped; Used and global-exclude segments are refused and skipped. Execution failures stop the remaining items. Returns one result per ID.
    *     tags:
    *       - Segment
    *     parameters:
@@ -299,6 +301,8 @@ export class SegmentController {
    *         description: Expected a nonempty array of unique UUIDs.
    *       '401':
    *         description: AuthorizationRequiredError
+   *       '403':
+   *         description: The current user's role cannot delete segments. Nothing is deleted.
    */
   @Post('/batch-delete')
   public batchDelete(
@@ -664,15 +668,26 @@ export class SegmentController {
    *            $ref: '#/definitions/segmentResponse'
    *        '401':
    *          description: Authorization Required Error
+   *        '403':
+   *          description: The current user's role cannot delete segments
+   *        '409':
+   *          description: The segment is Used or is a global-exclude segment, and was not deleted
    *        '500':
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Delete('/:segmentId')
-  public deleteSegment(
+  public async deleteSegment(
     @Params({ validate: true }) { segmentId }: SegmentIdValidator,
+    @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<Segment> {
-    return this.segmentService.deleteSegment(segmentId, request.logger);
+    this.deletionPolicyService.assertRoleCanDelete('segments', currentUser);
+    return this.segmentService.deleteSegment(
+      segmentId,
+      request.logger,
+      this.deletionPolicyService.singleDeletionTransaction('segments', segmentId),
+      false
+    );
   }
 
   /**

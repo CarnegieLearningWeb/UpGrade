@@ -108,6 +108,7 @@ export enum SERVER_ERROR {
   TOKEN_VALIDATION_FAILED = 'JWT Token validation failed',
   MIGRATION_ERROR = 'Error in migration',
   EMAIL_SEND_ERROR = 'Email send error',
+  DELETION_NOT_ALLOWED = 'Deletion is not allowed for the current state or usage of this item',
   CONDITION_NOT_FOUND = 'Condition not found',
   EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT = 'Experiment ID not provided for shared Decision Point',
   INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT = 'Experiment ID provided is invalid for shared Decision Point',

@@ -536,16 +536,21 @@ export class SegmentService {
     return this.addSegmentDataWithPipeline(segment, logger, transactionalEntityManager, skipScheduleRecompute);
   }
 
+  /**
+   * `awaitPostCommit` (the batch path) collects owners inside the supplied transaction after the target lock and
+   * awaits their recomputation after commit; otherwise recomputation runs in the background.
+   */
   public async deleteSegment(
     id: string,
     logger: UpgradeLogger,
-    executeTransaction?: DeletionTransaction
+    executeTransaction?: DeletionTransaction,
+    awaitPostCommit = executeTransaction !== undefined
   ): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}` });
 
     const transaction: DeletionTransaction = executeTransaction || ((work) => this.dataSource.transaction(work));
 
-    if (executeTransaction) {
+    if (awaitPostCommit) {
       let affectedFlagIds: string[];
       let affectedExperimentIds: string[];
       const deletedSegment = await transaction(async (transactionalEntityManager) => {
