@@ -15,9 +15,10 @@ public class ExperimentRequest {
 		this.context = context;
 	}
 
+	/** A null target is sent as "", the targetless decision point, as the reward request does. */
 	public ExperimentRequest(String context, String site, String target) {
 		this(context);
-		this.decisionPoint = new DecisionPoint(site, target);
+		this.decisionPoint = new DecisionPoint(site, target == null ? "" : target);
 	}
 
 	public String getContext() {
@@ -34,25 +35,5 @@ public class ExperimentRequest {
 
 	public void setDecisionPoint(DecisionPoint decisionPoint) {
 		this.decisionPoint = decisionPoint;
-	}
-
-	public static class DecisionPoint {
-		private String site;
-
-		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private String target;
-
-		public DecisionPoint(String site, String target) {
-			this.site = site;
-			this.target = target;
-		}
-
-		public String getSite() {
-			return site;
-		}
-
-		public String getTarget() {
-			return target;
-		}
 	}
 }

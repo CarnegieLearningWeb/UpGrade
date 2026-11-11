@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
-import org.upgradeplatform.requestbeans.ExperimentRequest.DecisionPoint;
+import org.upgradeplatform.requestbeans.DecisionPoint;
 import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
 import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
