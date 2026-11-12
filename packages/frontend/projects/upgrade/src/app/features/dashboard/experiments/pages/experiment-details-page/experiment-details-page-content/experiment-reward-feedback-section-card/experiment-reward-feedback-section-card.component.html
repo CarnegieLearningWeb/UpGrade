@@ -31,7 +31,7 @@
         <span class="ft-14-600">{{ 'experiments.details.posteriors.pending-rewards.text' | translate }}:</span>
         <span class="ft-14-400 item-value">{{ summary.pendingRewardsCount }}/{{ summary.batchSize }}</span>
       </div>
-      } @if (isWarmupConfigured) {
+      } @if (summary.warmupThreshold > 1) {
       <div
         class="item-key-value"
         [matTooltip]="
