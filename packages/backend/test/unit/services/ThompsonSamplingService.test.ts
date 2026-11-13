@@ -4,6 +4,7 @@ import {
   ConditionRewardSummary,
   ThompsonSamplingConfig,
   DEFAULT_PRIOR,
+  DEFAULT_SCALING_FACTOR,
 } from '../../../src/api/services/ThompsonSamplingService';
 import { configureLogger } from '../../utils/logger';
 
@@ -155,6 +156,31 @@ describe('ThompsonSamplingService', () => {
           }
         }
         expect(aCount / runs).toBeGreaterThan(0.95);
+      });
+
+      it('scales reward counts by scalingFactor without scaling the prior', () => {
+        // The prior favors B and the rewards favor A. At α = 1 the 200 rewards swamp the prior;
+        // at α = 0.01 they count as 2, so the (unscaled) prior decides.
+        const conditions = ['A', 'B'];
+        const priors = { A: { success: 1, failure: 10 }, B: { success: 10, failure: 1 } };
+        const summaries: ConditionRewardSummary[] = [
+          { conditionId: 'A', successCount: 200, failureCount: 0, totalCount: 200 },
+          { conditionId: 'B', successCount: 0, failureCount: 200, totalCount: 200 },
+        ];
+
+        const runs = 100;
+        let aWinsUnscaled = 0;
+        let aWinsScaledDown = 0;
+        for (let i = 0; i < runs; i++) {
+          if (service.selectCondition(conditions, summaries, 400, { priors, scalingFactor: 1 }) === 'A') {
+            aWinsUnscaled++;
+          }
+          if (service.selectCondition(conditions, summaries, 400, { priors, scalingFactor: 0.01 }) === 'A') {
+            aWinsScaledDown++;
+          }
+        }
+        expect(aWinsUnscaled / runs).toBeGreaterThan(0.95);
+        expect(aWinsScaledDown / runs).toBeLessThan(0.05);
       });
 
       it('uses DEFAULT_PRIOR for conditions missing a prior entry', () => {
@@ -353,9 +379,31 @@ describe('ThompsonSamplingService', () => {
     });
   });
 
+  describe('computePosterior', () => {
+    it('adds counts to the prior unscaled when no scalingFactor is given', () => {
+      expect(service.computePosterior(1, 1, 100, 0)).toEqual({ alpha: 101, beta: 1 });
+    });
+
+    it('multiplies the counts, not the prior, by scalingFactor', () => {
+      expect(service.computePosterior(1, 1, 100, 0, 0.2)).toEqual({ alpha: 21, beta: 1 });
+      expect(service.computePosterior(2, 3, 10, 5, 3)).toEqual({ alpha: 32, beta: 18 });
+    });
+
+    it('leaves the prior unchanged before any reward, whatever the scalingFactor', () => {
+      expect(service.computePosterior(1, 1, 0, 0, 10)).toEqual({ alpha: 1, beta: 1 });
+      expect(service.computePosterior(1, 1, 0, 0, 0.01)).toEqual({ alpha: 1, beta: 1 });
+    });
+  });
+
   describe('DEFAULT_PRIOR', () => {
     it('is Beta(1,1) — the uninformative prior', () => {
       expect(DEFAULT_PRIOR).toEqual({ success: 1, failure: 1 });
+    });
+  });
+
+  describe('DEFAULT_SCALING_FACTOR', () => {
+    it('is 1 — rewards count at face value', () => {
+      expect(DEFAULT_SCALING_FACTOR).toBe(1);
     });
   });
 });

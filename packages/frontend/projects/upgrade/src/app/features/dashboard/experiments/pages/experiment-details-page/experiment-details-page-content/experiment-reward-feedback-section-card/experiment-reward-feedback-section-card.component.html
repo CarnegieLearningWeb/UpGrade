@@ -22,14 +22,11 @@
     <div class="reward-status-section">
       <div
         class="item-key-value"
-        [class.inactive]="!isBatchingActive"
-        [matTooltip]="
-          'experiments.details.posteriors.pending-rewards-tooltip.text' | translate : { batchSize: summary.batchSize }
-        "
+        [matTooltip]="'experiments.details.posteriors.scaling-factor-tooltip.text' | translate"
         matTooltipPosition="left"
       >
-        <span class="ft-14-600">{{ 'experiments.details.posteriors.pending-rewards.text' | translate }}:</span>
-        <span class="ft-14-400 item-value">{{ summary.pendingRewardsCount }}/{{ summary.batchSize }}</span>
+        <span class="ft-14-600">{{ 'experiments.details.posteriors.scaling-factor.text' | translate }}:</span>
+        <span class="ft-14-400 item-value">{{ summary.scalingFactor ?? 1 }}</span>
       </div>
       <div
         class="item-key-value"
@@ -52,9 +49,21 @@
           }
         </span>
       </div>
+      <div
+        class="item-key-value"
+        [class.inactive]="!isBatchingActive"
+        [matTooltip]="
+          'experiments.details.posteriors.pending-rewards-tooltip.text' | translate : { batchSize: summary.batchSize }
+        "
+        matTooltipPosition="left"
+      >
+        <span class="ft-14-600">{{ 'experiments.details.posteriors.pending-rewards.text' | translate }}:</span>
+        <span class="ft-14-400 item-value">{{ summary.pendingRewardsCount }}/{{ summary.batchSize }}</span>
+      </div>
     </div>
     <app-ts-configurable-reward-count-table
       [dataSource]="summary.conditions"
+      [scalingFactor]="summary.scalingFactor ?? 1"
       [isLoading]="isLoading$ | async"
     ></app-ts-configurable-reward-count-table>
   </ng-container>

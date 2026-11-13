@@ -2835,6 +2835,26 @@ describe('Experiment Assignment Service Test', () => {
       const totalRewardCountArg = testedModule.thompsonSamplingService.selectCondition.getCall(0).args[2];
       expect(totalRewardCountArg).toBe(10);
     });
+
+    it('passes the configured scalingFactor through to the algorithm', async () => {
+      testedModule.thompsonSamplingConfigRepository = {
+        findByExperimentId: sandbox.stub().resolves({
+          warmupThreshold: 0,
+          minimumDrawDifference: 0,
+          scalingFactor: 0.2,
+          conditionPosteriorStates: [makePosteriorState('condition-a', 0, 0), makePosteriorState('condition-b', 0, 0)],
+        }),
+      };
+      testedModule.thompsonSamplingService = {
+        selectCondition: sandbox.stub().returns('condition-a'),
+        buildPriorsRecord: sandbox.stub().returns({}),
+      };
+
+      await (testedModule as any).assignThompsonSampling(thompsonExperiment, thompsonUser, loggerMock);
+
+      const configArg = testedModule.thompsonSamplingService.selectCondition.getCall(0).args[3];
+      expect(configArg.scalingFactor).toBe(0.2);
+    });
   });
 
   describe('[updateEnrollmentExclusion] Thompson Sampling trusts the client-reported condition', () => {

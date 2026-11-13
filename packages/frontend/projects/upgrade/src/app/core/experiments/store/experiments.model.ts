@@ -30,6 +30,7 @@ import {
 import { Segment } from '../../segments/store/segments.model';
 
 export interface ThompsonSamplingConfigDTO {
+  scalingFactor?: number;
   warmupThreshold?: number;
   minimumDrawDifference?: number;
   batchSize?: number;
@@ -601,6 +602,7 @@ export const EXPERIMENT_OVERVIEW_LABELS = {
 } as const;
 
 export const THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS = {
+  SCALING_FACTOR: 'home.new-experiment.design.ts-configurable-policy.scaling-factor.label.text',
   BATCH_SIZE: 'home.new-experiment.design.ts-configurable-policy.batch-size.label.text',
   WARMUP_THRESHOLD: 'home.new-experiment.design.ts-configurable-policy.uniform-threshold.label.text',
   MINIMUM_DRAW_DIFFERENCE: 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.label.text',

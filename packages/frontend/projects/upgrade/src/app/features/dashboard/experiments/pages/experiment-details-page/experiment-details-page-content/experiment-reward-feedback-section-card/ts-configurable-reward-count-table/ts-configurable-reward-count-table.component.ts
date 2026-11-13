@@ -17,6 +17,11 @@ import { ExperimentRewardsByCondition } from 'upgrade_types';
 export class TSConfigurableRewardCountTableComponent {
   @Input() dataSource: ExperimentRewardsByCondition[] = [];
   @Input() isLoading = false;
+  @Input() scalingFactor = 1;
+
+  get isScaled(): boolean {
+    return this.scalingFactor !== 1;
+  }
 
   groupHeaderColumns = [
     'conditionGroup',
@@ -56,4 +61,26 @@ export class TSConfigurableRewardCountTableComponent {
     'spacer2',
     'estimatedWeight',
   ];
+
+  /**
+   * Display values for one Successes or Failures group: Count shows `count (scaledCount)` when α
+   * isn't 1 (scaledCount = count × α), and Posterior shows `prior + scaledCount`. `posterior` is the
+   * backend's value (what the algorithm actually draws from); it's only recomputed here for the
+   * placeholder rows shown before a rewards summary has loaded.
+   */
+  scaledValues(
+    prior: number | undefined,
+    count: number,
+    posterior: number | undefined
+  ): { scaledCount: string; posterior: string } {
+    const scaledCount = this.scalingFactor * count;
+    return {
+      scaledCount: toHundredths(scaledCount),
+      posterior: toHundredths(posterior ?? (prior ?? 1) + scaledCount),
+    };
+  }
+}
+
+function toHundredths(value: number): string {
+  return String(Math.round(value * 100) / 100);
 }
