@@ -355,6 +355,7 @@ export interface ExperimentRewardsByCondition {
   conditionCode: string;
   successes: number;
   failures: number;
+  totalRewardCount: number;
   successRate: string;
   order: number;
   priorSuccess?: number;
