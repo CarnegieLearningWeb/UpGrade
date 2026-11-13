@@ -62,7 +62,6 @@ import { DeletionTransaction } from '../../types/DeletionTransaction';
 import { SegmentFile, SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import dayjs from 'dayjs';
 import { getDateRangeNames } from '../repositories/utils/dateQuery';
-import { FeatureFlagExposure } from '../models/FeatureFlagExposure';
 import {
   LIST_VALUE_SEARCH_PATTERN_PARAMETER,
   buildListValueSearchPattern,
@@ -242,38 +241,29 @@ export class FeatureFlagService {
     const countQueryBuilder = queryBuilder.clone();
 
     queryBuilder = queryBuilder.offset(skip).limit(take);
-    const [featureFlagsWithExposures, count] = await Promise.all([
-      queryBuilder
-        .addSelect(
-          (subQuery) =>
-            subQuery
-              .select('COUNT(*)', 'count')
-              .from(FeatureFlagExposure, 'feature_flag_exposure')
-              .where('"feature_flag_exposure"."featureFlagId" = "feature_flag"."id"'),
-          'feature_flag_exposureCount'
-        )
-        .getMany(),
-      countQueryBuilder.getCount(),
-    ]);
+    const [featureFlags, count] = await Promise.all([queryBuilder.getMany(), countQueryBuilder.getCount()]);
 
     // Get the feature flag ids
-    const featureFlagIds = featureFlagsWithExposures.map(({ id }) => id);
+    const featureFlagIds = featureFlags.map(({ id }) => id);
 
-    // Get the relevant segment inclusion documents
-    const featureFlagWithInclusionSegments = await this.featureFlagRepository.find({
-      select: {
-        id: true,
-        featureFlagSegmentInclusion: true,
-      },
-      where: { id: In(featureFlagIds) },
-      relations: {
-        featureFlagSegmentInclusion: true,
-      },
-    });
+    // Get the relevant segment inclusion documents and the maintained exposure counts
+    const [featureFlagWithInclusionSegments, exposureCounts] = await Promise.all([
+      this.featureFlagRepository.find({
+        select: {
+          id: true,
+          featureFlagSegmentInclusion: true,
+        },
+        where: { id: In(featureFlagIds) },
+        relations: {
+          featureFlagSegmentInclusion: true,
+        },
+      }),
+      this.featureFlagExposureRepository.getExposureCountsByFlagIds(featureFlagIds),
+    ]);
 
-    // Add the inclusion documents to the featureFlagsWithExposures
+    // Add the exposure counts and inclusion documents to the feature flags
     return [
-      featureFlagsWithExposures.map((featureFlag) => {
+      featureFlags.map((featureFlag) => {
         // Find the matching featureFlagSegmentInclusion for the current item
         const inclusionSegment = featureFlagWithInclusionSegments.find(
           ({ id }) => id === featureFlag.id
@@ -282,6 +272,8 @@ export class FeatureFlagService {
         // Construct the new object with conditional properties
         return {
           ...featureFlag,
+          // A flag with no exposures yet has no counter row
+          exposureCount: exposureCounts.get(featureFlag.id) ?? 0,
           // Only include featureFlagSegmentInclusion if inclusionSegment is defined and not empty
           ...(inclusionSegment && inclusionSegment.length > 0 ? { featureFlagSegmentInclusion: inclusionSegment } : {}),
         };

@@ -295,6 +295,7 @@ describe('Feature Flag Service Testing', () => {
           provide: getRepositoryToken(FeatureFlagExposureRepository),
           useValue: {
             recordExposureIfNotExists: jest.fn().mockResolvedValue(undefined),
+            getExposureCountsByFlagIds: jest.fn().mockResolvedValue(new Map()),
           },
         },
         {
@@ -364,6 +365,9 @@ describe('Feature Flag Service Testing', () => {
     expect(results).toEqual(mockFlagArr.length);
   });
 
+  // findPaginated() fills exposureCount from the counter table; flags without a counter row get 0
+  const withZeroExposureCounts = (flags: typeof mockFlagArr) => flags.map((flag) => ({ ...flag, exposureCount: 0 }));
+
   it('should find all paginated feature flags with search string all', async () => {
     const results = await service.findPaginated(
       1,
@@ -378,7 +382,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual([mockFlagArr, 3]);
+    expect(results).toEqual([withZeroExposureCounts(mockFlagArr), 3]);
   });
 
   it('should find all paginated feature flags with search string key', async () => {
@@ -395,7 +399,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual([mockFlagArr, 3]);
+    expect(results).toEqual([withZeroExposureCounts(mockFlagArr), 3]);
   });
 
   it('should find all paginated feature flags with search string name', async () => {
@@ -412,7 +416,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual([mockFlagArr, 3]);
+    expect(results).toEqual([withZeroExposureCounts(mockFlagArr), 3]);
   });
 
   it('should find all paginated feature flags with search string status', async () => {
@@ -429,7 +433,7 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual([mockFlagArr, 3]);
+    expect(results).toEqual([withZeroExposureCounts(mockFlagArr), 3]);
   });
 
   it('should find all paginated feature flags with search string context', async () => {
@@ -446,12 +450,22 @@ describe('Feature Flag Service Testing', () => {
         sortAs: SORT_AS_DIRECTION.ASCENDING,
       }
     );
-    expect(results).toEqual([mockFlagArr, 3]);
+    expect(results).toEqual([withZeroExposureCounts(mockFlagArr), 3]);
   });
 
   it('should find all paginated feature flags without search params', async () => {
     const results = await service.findPaginated(1, 2, logger);
-    expect(results).toEqual([mockFlagArr, 3]);
+    expect(results).toEqual([withZeroExposureCounts(mockFlagArr), 3]);
+  });
+
+  it('should attach maintained exposure counts to the page, defaulting to 0 for flags without a counter row', async () => {
+    const exposureRepo = module.get(getRepositoryToken(FeatureFlagExposureRepository)) as any;
+    exposureRepo.getExposureCountsByFlagIds.mockResolvedValueOnce(new Map([[mockFlag1.id, 42]]));
+
+    const [flags] = await service.findPaginated(0, 20, logger);
+
+    expect(exposureRepo.getExposureCountsByFlagIds).toHaveBeenCalledWith(mockFlagArr.map(({ id }) => id));
+    expect(flags.map(({ exposureCount }) => exposureCount)).toEqual([42, 0, 0]);
   });
 
   describe('paginated list-value search', () => {

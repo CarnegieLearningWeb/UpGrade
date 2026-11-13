@@ -166,3 +166,21 @@ This is enforced consistently across all read paths:
 - `FeatureFlagService.featureFlagLevelInclusionExclusion` — the precomputed read path returns `!inGroupExclusion` for `INCLUDE_ALL` and only consults inclusion in the `EXCLUDE_ALL` branch.
 
 The precomputed rows still store the full inclusion arrays regardless of `filterMode` (the read paths simply ignore them for `INCLUDE_ALL`), so no `filterMode`-change recompute is required for correctness. Trimming the unread inclusion members from `INCLUDE_ALL` rows remains an available storage/cache optimization (the deferred Phase 0.5 in `.claude/plans/precomputed-segments-experiments.md`), not a correctness concern.
+
+## Feature Flag Exposure Counts
+
+The feature flags list shows each flag's unique-user exposure count. It used to be a correlated `COUNT(*)` over `feature_flag_exposure` per flag on every `/flags/paginated` call, which grew with the table (30s+ in prod). It is now a maintained counter in **`feature_flag_exposure_count`** (`FeatureFlagExposureCount` entity: `featureFlagId` PK + `count`, FK to `feature_flag` `ON DELETE CASCADE`), backfilled by migration `1794418860625-featureFlagExposureCount`.
+
+- **Write path** — `FeatureFlagExposureRepository.recordExposureIfNotExists()` runs one raw-SQL statement: insert the (flag, user) exposures `ON CONFLICT DO NOTHING RETURNING "featureFlagId"`, then upsert-increment the counter by the number actually inserted per flag (rows ordered by `featureFlagId` so concurrent statements lock counter rows in the same order). Only first-time exposures come back from `RETURNING`, so each user is counted once per flag even under concurrent requests.
+- **Read path** — `FeatureFlagService.findPaginated()` calls `getExposureCountsByFlagIds()` (a PK lookup for the page's flags) and fills `exposureCount`, defaulting to `0` for flags with no counter row. `FeatureFlag.exposureCount` is a plain, non-column property.
+- **Why a separate table, not a column on `feature_flag`** — increments must not bump the flag's `updatedAt`/`versionNumber` (the list shows and sorts by Updated At), leak into flag-edit audit diffs or design exports, or contend with admin edits for the flag's row lock.
+
+**Key invariant:** every insert into `feature_flag_exposure` must go through `recordExposureIfNotExists()` (or otherwise increment the counter in the same statement/transaction). An insert path that skips it leaves the counter permanently low, since that exposure will never be "new" again. Exposure rows are only ever deleted by the flag-delete cascade, which removes the counter row too.
+
+**Re-sync** — if the counter ever drifts (e.g. exposures inserted by old app instances still serving traffic while this migration was deployed), recompute it from the exposure table. It overwrites with the statement's snapshot, so an increment committed while it runs can be lost — run it off-peak:
+
+```sql
+INSERT INTO "feature_flag_exposure_count" ("featureFlagId", "count")
+SELECT "featureFlagId", COUNT(*)::int FROM "feature_flag_exposure" GROUP BY "featureFlagId"
+ON CONFLICT ("featureFlagId") DO UPDATE SET "count" = EXCLUDED."count";
+```
