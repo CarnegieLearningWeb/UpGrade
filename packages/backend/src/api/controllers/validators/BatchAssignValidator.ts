@@ -1,18 +1,10 @@
 import { IsNotEmpty, IsString } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { DecisionPointValidator } from './DecisionPointValidator';
 
-export class BatchAssignValidator {
+export class BatchAssignValidator extends DecisionPointValidator {
   @IsNotEmpty()
   @IsString()
   public context: string;
-
-  @IsNotEmpty()
-  @IsString()
-  public site: string;
-
-  @Transform(({ value }) => value ?? '')
-  @IsString()
-  public target = '';
 
   @IsNotEmpty()
   @IsString({ each: true })

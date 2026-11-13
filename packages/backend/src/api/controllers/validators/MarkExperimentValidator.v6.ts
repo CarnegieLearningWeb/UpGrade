@@ -1,6 +1,7 @@
-import { Type, Transform } from 'class-transformer';
-import { IsNotEmpty, IsDefined, IsString, IsOptional, IsEnum, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDefined, IsString, IsOptional, IsEnum, ValidateNested } from 'class-validator';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
+import { DecisionPointValidator } from './DecisionPointValidator';
 
 class AssignedCondition {
   @IsOptional()
@@ -16,15 +17,8 @@ class AssignedCondition {
   experimentId?: string;
 }
 
-class Data {
-  @IsString()
-  @IsNotEmpty()
-  site: string;
-
-  @Transform(({ value }) => value ?? '')
-  @IsString()
-  target = '';
-
+// The marked decision point (site, target), plus the condition the client applied there.
+class Data extends DecisionPointValidator {
   @IsOptional()
   @ValidateNested()
   @Type(() => AssignedCondition)

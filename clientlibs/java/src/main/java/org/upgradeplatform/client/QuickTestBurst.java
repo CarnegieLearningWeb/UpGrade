@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,10 +18,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.requestbeans.DecisionPoint;
 import org.upgradeplatform.requestbeans.MarkExperimentRequestData;
+import org.upgradeplatform.responsebeans.Assignment;
 import org.upgradeplatform.responsebeans.Condition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentUserResponse;
@@ -55,6 +57,13 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  * Pairs are streamed: a new pair starts only when one of the {@code --concurrency} slots frees up, and nothing is
  * kept per pair once it finishes except its latency samples, so memory stays flat however many loops run.
  *
+ * With {@code --singleDecisionPoint}, each alias's /assign asks for only the decision point it then marks, the way
+ * ExperimentClient.getExperimentCondition does on a client that hasn't fetched the whole context. Without it, /assign
+ * asks for the whole context, as getAllExperimentConditions does and as getExperimentCondition did before /assign took
+ * a decision point. Run the same options and {@code --seed} with and without it to compare the two. There's no full
+ * response to pick a decision point from, so each alias picks it before its /assign (see decisionPointToRequest),
+ * landing where it would have marked without the flag wherever it can, so both runs send comparable /marks.
+ *
  * <pre>
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" -Dexec.args="185"
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" \
@@ -65,6 +74,8 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  *   -Dexec.args="--loops 360 --minBurst 1 --maxBurst 50 --ratePerSecond 6 --seed 42 --env qa"
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" \
  *   -Dexec.args="--loops 360 --burstTiers 90:1,8:2-10,1:11-30,1:31-200 --ratePerSecond 6 --seed 42 --env qa"
+ * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" \
+ *   -Dexec.args="185 --seed 42 --percentEnroll 10 --singleDecisionPoint"
  * mvn exec:java -Dexec.mainClass="org.upgradeplatform.client.QuickTestBurst" \
  *   -Dexec.args="185 --url https://some-host.example.com"
  * </pre>
@@ -108,6 +119,11 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
  * test_site/test_target_1) that its /assign returned, with the condition /assign gave it. Every other alias marks
  * ws_site/ws_target_none with no condition. Other targets /assign returns are never marked. Without this flag, each
  * alias marks one of whatever decision points /assign returned.</li>
+ * <li>{@code --singleDecisionPoint} send each /assign for one decision point instead of the whole context (see above).
+ * With {@code --percentEnroll}, an enrolling alias asks for one of the expected targets and every other alias for
+ * ws_site/ws_target_none. Without it, one full-context /assign before the run (not timed) lists the decision points,
+ * and alias i asks for the (i mod n)th of them. Needs a backend whose /assign takes decisionPoint: an older one ignores
+ * it and returns the whole context, so the run would measure the old way.</li>
  * <li>{@code --concurrency N} pairs in flight at once, per burst (default 50)</li>
  * <li>{@code --env local|local:<port>|qa|staging} (default local, which is localhost:3030; {@code local:3031} uses
  * another port; qa and staging read UPGRADE_QA_URL / UPGRADE_STAGING_URL from your environment, see above), or
@@ -146,12 +162,19 @@ public class QuickTestBurst {
     private static double[] burstSizeCdf = null;
     // Null means marks work as before --percentEnroll existed (see markFromAssignments).
     private static Double percentEnroll = null;
-    // The mock data's decision points an enrolling alias may mark, as decisionPointKey(site, target).
-    private static final Set<String> ENROLL_DECISION_POINTS = enrollDecisionPoints();
+    private static boolean singleDecisionPoint = false;
+    // --singleDecisionPoint without --percentEnroll: the decision points aliases ask for (see discoverDecisionPoints).
+    private static List<DecisionPoint> discoveredDecisionPoints = null;
+    // The mock data's decision points an enrolling alias may mark, in decisionPointKey order.
+    private static final List<DecisionPoint> ENROLL_DECISION_POINTS = enrollDecisionPoints();
+    // The same, as decisionPointKey(site, target), to look up the decision points /assign returned.
+    private static final Set<String> ENROLL_DECISION_POINT_KEYS = ENROLL_DECISION_POINTS.stream()
+            .map(dp -> decisionPointKey(dp.getSite(), dp.getTarget())).collect(Collectors.toUnmodifiableSet());
     // Every non-enrolling alias marks this, with no condition. It isn't one of the mock data's targets, and being a
     // single fixed decision point it doesn't add a new monitored decision point for every alias.
     private static final String NULL_MARK_SITE = "ws_site";
     private static final String NULL_MARK_TARGET = "ws_target_none";
+    private static final DecisionPoint NULL_MARK_DECISION_POINT = new DecisionPoint(NULL_MARK_SITE, NULL_MARK_TARGET);
     // Across every user's burst, so overlapping bursts in --ratePerSecond mode show their combined load.
     private static final AtomicInteger pairsInFlight = new AtomicInteger();
     private static final AtomicInteger peakPairsInFlight = new AtomicInteger();
@@ -207,6 +230,14 @@ public class QuickTestBurst {
             System.out.printf("marks: %s%% enroll on one of the %d expected targets /assign returns,"
                     + " the rest mark %s/%s with no condition%n", percentEnroll, ENROLL_DECISION_POINTS.size(),
                     NULL_MARK_SITE, NULL_MARK_TARGET);
+        }
+        if (singleDecisionPoint) {
+            System.out.println("assign: one decision point per request, as getExperimentCondition sends it");
+            if (percentEnroll == null) {
+                discoveredDecisionPoints = discoverDecisionPoints(runId);
+            }
+        } else {
+            System.out.println("assign: the whole context per request, as getAllExperimentConditions sends it");
         }
 
         Stats total = ratePerSecond > 0 ? runAtRate(random, runId) : runSequentially(random, runId);
@@ -348,7 +379,10 @@ public class QuickTestBurst {
         return stats;
     }
 
-    /** Setup, like production: the user is initialized and has its groups and aliases set before the burst. */
+    /**
+     * Setup, like production: the user is initialized and has its groups and aliases set before the burst. No aliases
+     * (for discoverDecisionPoints) skips setting them.
+     */
     private static void setUpUser(String userId, List<String> aliases) {
         try (ExperimentClient userClient = new ExperimentClient(userId, context, authToken, sessionId, hostUrl,
                 Collections.emptyMap())) {
@@ -367,12 +401,47 @@ public class QuickTestBurst {
             }
             call("workinggroup", (ResponseCallback<ExperimentUserResponse> cb) -> userClient
                     .setWorkingGroup(workingGroup, cb)).join();
-            call("useraliases", (ResponseCallback<UserAliasResponse> cb) -> userClient.setAltUserIds(aliases, cb))
-                    .join();
-            if (verbose || loops == 1) {
-                System.out.printf("Set %d aliases%n", aliases.size());
+            if (!aliases.isEmpty()) {
+                call("useraliases", (ResponseCallback<UserAliasResponse> cb) -> userClient.setAltUserIds(aliases, cb))
+                        .join();
+                if (verbose || loops == 1) {
+                    System.out.printf("Set %d aliases%n", aliases.size());
+                }
             }
         }
+    }
+
+    /**
+     * --singleDecisionPoint without --percentEnroll: the decision points to ask for, from one full-context /assign
+     * before the run (not timed), as a user set up the same way as each burst's (or --user). Exits if that fails or
+     * finds none, since there's then nothing to ask for.
+     */
+    private static List<DecisionPoint> discoverDecisionPoints(String runId) {
+        String userId = existingUserId != null ? existingUserId : runId + "_decision_points";
+        List<DecisionPoint> decisionPoints = new ArrayList<>();
+        try {
+            setUpUser(userId, Collections.emptyList());
+            try (ExperimentClient client = new ExperimentClient(userId, context, authToken, sessionId, hostUrl,
+                    Collections.emptyMap())) {
+                List<ExperimentsResponse> assignments = call("assign",
+                        (ResponseCallback<List<ExperimentsResponse>> cb) -> client.getAllExperimentConditions(true, cb))
+                        .join();
+                for (ExperimentsResponse dp : assignments) {
+                    decisionPoints.add(new DecisionPoint(dp.getSite(), dp.getTarget()));
+                }
+            }
+        } catch (RuntimeException e) {
+            System.err.println("error: couldn't list the decision points to ask for: " + rootMessage(e));
+            System.exit(1);
+        }
+        if (decisionPoints.isEmpty()) {
+            System.err.printf("error: /assign returned no decision points for %s in context %s, so there are none to"
+                    + " ask for one at a time%n", userId, context);
+            System.exit(1);
+        }
+        System.out.printf("decision points: %d, from a full /assign as %s (not timed); alias i asks for the"
+                + " (i mod %d)th%n", decisionPoints.size(), userId, decisionPoints.size());
+        return decisionPoints;
     }
 
     /**
@@ -405,7 +474,7 @@ public class QuickTestBurst {
         if (enroll) {
             List<ExperimentsResponse> enrollable = new ArrayList<>();
             for (ExperimentsResponse dp : assignments) {
-                if (ENROLL_DECISION_POINTS.contains(decisionPointKey(dp.getSite(), dp.getTarget()))
+                if (ENROLL_DECISION_POINT_KEYS.contains(decisionPointKey(dp.getSite(), dp.getTarget()))
                         && assignedCondition(dp) != null) {
                     enrollable.add(dp);
                 }
@@ -421,8 +490,31 @@ public class QuickTestBurst {
             }
             stats.enrollFallbacks.incrementAndGet();
         }
+        return nullMark(stats);
+    }
+
+    private static MarkExperimentRequestData nullMark(Stats stats) {
         stats.nullMarks.incrementAndGet();
         return new MarkExperimentRequestData(NULL_MARK_SITE, NULL_MARK_TARGET, new Condition(null, null));
+    }
+
+    /**
+     * The decision point an alias asks /assign for with --singleDecisionPoint. It's picked before the request, with no
+     * full response to pick from, and lands where the alias would mark without the flag wherever it can:
+     * <ul>
+     * <li>With --percentEnroll, an enrolling alias takes one of ENROLL_DECISION_POINTS by {@code pick}, the one
+     * markEnrollOrNull picks when /assign gives all of them a condition. Every other alias asks for the null-mark
+     * decision point, the one it marks.</li>
+     * <li>Without it, alias i takes the (i mod n)th of the n discoveredDecisionPoints, the one markFromAssignments
+     * marks when the alias's own full response lists the same decision points in the same order.</li>
+     * </ul>
+     */
+    private static DecisionPoint decisionPointToRequest(int index, boolean enroll, double pick) {
+        if (percentEnroll == null) {
+            return discoveredDecisionPoints.get(index % discoveredDecisionPoints.size());
+        }
+        return enroll ? ENROLL_DECISION_POINTS.get((int) (pick * ENROLL_DECISION_POINTS.size()))
+                : NULL_MARK_DECISION_POINT;
     }
 
     /** The decision point's assigned condition, or null if /assign gave it none. */
@@ -438,14 +530,16 @@ public class QuickTestBurst {
         return (site + "/" + target).toLowerCase(Locale.ROOT);
     }
 
-    private static Set<String> enrollDecisionPoints() {
-        Set<String> keys = new HashSet<>();
+    private static List<DecisionPoint> enrollDecisionPoints() {
+        List<DecisionPoint> decisionPoints = new ArrayList<>();
         for (int i = 1; i <= 45; i++) {
-            keys.add(decisionPointKey("ws_site", "ws_target_" + i));
+            decisionPoints.add(new DecisionPoint("ws_site", "ws_target_" + i));
         }
-        keys.add(decisionPointKey("site", "target_group_1"));
-        keys.add(decisionPointKey("test_site", "test_target_1"));
-        return Collections.unmodifiableSet(keys);
+        decisionPoints.add(new DecisionPoint("site", "target_group_1"));
+        decisionPoints.add(new DecisionPoint("test_site", "test_target_1"));
+        // Sorted as markEnrollOrNull sorts what /assign returned, so a pick lands on the same decision point in both.
+        decisionPoints.sort(Comparator.comparing(dp -> decisionPointKey(dp.getSite(), dp.getTarget())));
+        return Collections.unmodifiableList(decisionPoints);
     }
 
     /** One alias: /assign, then /mark on one of the decision points it was assigned. */
@@ -454,21 +548,13 @@ public class QuickTestBurst {
         ExperimentClient client = new ExperimentClient(alias, context, authToken, sessionId, hostUrl,
                 Collections.emptyMap());
         long pairStart = System.nanoTime();
-        long assignStart = System.nanoTime();
         peakPairsInFlight.accumulateAndGet(pairsInFlight.incrementAndGet(), Math::max);
 
-        return call("assign", (ResponseCallback<List<ExperimentsResponse>> cb) -> client
-                .getAllExperimentConditions(true, cb))
-                .thenCompose(assignments -> {
-                    long ms = elapsedMs(assignStart);
-                    stats.assignMs.add(ms);
-                    if (verbose) {
-                        System.out.printf("[%d] assign %d ms, %d decision points%n", index, ms, assignments.size());
-                    }
-
-                    MarkExperimentRequestData markData = percentEnroll == null
-                            ? markFromAssignments(index, assignments, stats)
-                            : markEnrollOrNull(assignments, enroll, pick, stats);
+        CompletableFuture<MarkExperimentRequestData> assigned = singleDecisionPoint
+                ? assignOneDecisionPoint(client, index, enroll, pick, stats)
+                : assignWholeContext(client, index, enroll, pick, stats);
+        return assigned
+                .thenCompose(markData -> {
                     String site = markData.getSite();
                     String target = markData.getTarget();
 
@@ -501,6 +587,62 @@ public class QuickTestBurst {
                         System.out.printf("  %d/%d pairs done%n", done, count);
                     }
                     return null;
+                });
+    }
+
+    /** /assign for the whole context, then the mark picked from everything it returned. */
+    private static CompletableFuture<MarkExperimentRequestData> assignWholeContext(ExperimentClient client, int index,
+            boolean enroll, double pick, Stats stats) {
+        long assignStart = System.nanoTime();
+        return call("assign", (ResponseCallback<List<ExperimentsResponse>> cb) -> client
+                .getAllExperimentConditions(true, cb))
+                .thenApply(assignments -> {
+                    long ms = elapsedMs(assignStart);
+                    stats.assignMs.add(ms);
+                    if (verbose) {
+                        System.out.printf("[%d] assign %d ms, %d decision points%n", index, ms, assignments.size());
+                    }
+                    return percentEnroll == null
+                            ? markFromAssignments(index, assignments, stats)
+                            : markEnrollOrNull(assignments, enroll, pick, stats);
+                });
+    }
+
+    /**
+     * --singleDecisionPoint: /assign for only the decision point picked for this alias (see decisionPointToRequest),
+     * then the mark for what it returned. On a client with nothing cached, as here, getExperimentCondition sends
+     * /assign with that decision point. With --percentEnroll, an enrolling alias whose decision point came back with no
+     * condition falls back to the null mark, as markEnrollOrNull does when none of its decision points has one.
+     */
+    private static CompletableFuture<MarkExperimentRequestData> assignOneDecisionPoint(ExperimentClient client,
+            int index, boolean enroll, double pick, Stats stats) {
+        DecisionPoint requested = decisionPointToRequest(index, enroll, pick);
+        long assignStart = System.nanoTime();
+        return call("assign", (ResponseCallback<Assignment> cb) -> client
+                .getExperimentCondition(requested.getSite(), requested.getTarget(), cb))
+                .thenApply(assignment -> {
+                    long ms = elapsedMs(assignStart);
+                    stats.assignMs.add(ms);
+                    if (verbose) {
+                        System.out.printf("[%d] assign %s/%s %d ms%n", index, requested.getSite(),
+                                requested.getTarget(), ms);
+                    }
+                    Condition condition = assignment.getAssignedCondition();
+                    if (percentEnroll == null) {
+                        return new MarkExperimentRequestData(requested.getSite(), requested.getTarget(),
+                                condition != null
+                                        ? new Condition(condition.getConditionCode(), condition.getExperimentId())
+                                        : new Condition(null, null));
+                    }
+                    if (enroll && condition != null && condition.getConditionCode() != null) {
+                        stats.enrollMarks.incrementAndGet();
+                        return new MarkExperimentRequestData(requested.getSite(), requested.getTarget(),
+                                new Condition(condition.getConditionCode(), condition.getExperimentId()));
+                    }
+                    if (enroll) {
+                        stats.enrollFallbacks.incrementAndGet();
+                    }
+                    return nullMark(stats);
                 });
     }
 
@@ -627,6 +769,10 @@ public class QuickTestBurst {
             }
             if (flag.equals("--evenArrivals")) {
                 evenArrivals = true;
+                continue;
+            }
+            if (flag.equals("--singleDecisionPoint")) {
+                singleDecisionPoint = true;
                 continue;
             }
             if (i + 1 >= args.length) {
@@ -861,7 +1007,8 @@ public class QuickTestBurst {
         System.err.println(problem);
         System.err.println("usage: QuickTestBurst [<count>] [--loops 1] [--minBurst N --maxBurst N]"
                 + " [--minBurstWait 0 --maxBurstWait 0 | --ratePerSecond N [--evenArrivals]] [--seed N]"
-                + " [--burstMean N | --burstTiers 90:1,8:2-10,...] [--percentEnroll N] [--concurrency 50]"
+                + " [--burstMean N | --burstTiers 90:1,8:2-10,...] [--percentEnroll N] [--singleDecisionPoint]"
+                + " [--concurrency 50]"
                 + " [--env local|local:<port>|qa|staging | --url <url>] [--context assign-prog]"
                 + " [--user <existing user id>]"
                 + " [--group-type schoolId] [--group-id test_class_group] [--token BearerToken] [--verbose]");

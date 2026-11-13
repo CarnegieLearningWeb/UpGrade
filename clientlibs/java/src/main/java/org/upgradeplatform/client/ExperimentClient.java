@@ -15,6 +15,7 @@ import static org.upgradeplatform.utils.Utils.SET_GROUP_MEMBERSHIP;
 import static org.upgradeplatform.utils.Utils.SET_WORKING_GROUP;
 import static org.upgradeplatform.utils.Utils.isStringNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +69,10 @@ public class ExperimentClient implements AutoCloseable {
 	// read or cleared on the caller's thread, so unsynchronized access isn't guaranteed to see the latest value.
 	private final Object assignmentLock = new Object();
 	private List<ExperimentsResponse> allExperiments;
+	// False while allExperiments holds only decision points getExperimentCondition fetched one at a time, so one missing
+	// from it hasn't been asked about yet, rather than having no assignment. Guarded by assignmentLock, and always
+	// read and written together with allExperiments.
+	private boolean fullContextCached;
 	// Feature flag cache and session groups. Guarded by featureFlagLock, for the same reason.
 	private final Object featureFlagLock = new Object();
 	private List<String> allFeatureFlags;
@@ -237,50 +242,77 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void getAllExperimentConditions(boolean ignoreCache,
 			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-		final List<ExperimentsResponse> cachedExperiments = cachedExperiments();
+		// Only a full-context cache can answer this: one holding just the decision points getExperimentCondition
+		// fetched would be missing the rest.
+		final List<ExperimentsResponse> cachedExperiments;
+		synchronized (assignmentLock) {
+			cachedExperiments = fullContextCached ? allExperiments : null;
+		}
 
 		if (cachedExperiments == null || ignoreCache) {
-			ExperimentRequest experimentRequest = new ExperimentRequest(this.context);
-			AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
-			Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
-
-			invocation.post(requestContent,
-					new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
-							new InvocationCallback<Response>() {
-
-								@Override
-								public void completed(Response response) {
-									if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-										// Cache allExperiment data before invoking the callback, so a mark issued from
-										// inside onSuccess already sees the cached assignment
-										readResponseToCallback(response, callbacks,
-												new GenericType<List<ExperimentsResponse>>() {
-												}, ae -> {
-													synchronized (assignmentLock) {
-														allExperiments = ae;
-													}
-												});
-									} else {
-										String status = Response.Status.fromStatusCode(response.getStatus()).toString();
-										ErrorResponse error = new ErrorResponse(response.getStatus(),
-												response.readEntity(String.class), status);
-										if (callbacks != null)
-											callbacks.onError(error);
-									}
-								}
-
-								@Override
-								public void failed(Throwable throwable) {
-									if (callbacks != null)
-										callbacks.onError(new ErrorResponse(throwable.getMessage()));
-								}
-
-							}));
+			requestAssignments(new ExperimentRequest(this.context), this::cacheFullContext, callbacks);
 		} else {
 			if (callbacks != null) {
 				callbacks.onSuccess(cachedExperiments);
 			}
 		}
+	}
+
+	private void cacheFullContext(List<ExperimentsResponse> experiments) {
+		synchronized (assignmentLock) {
+			allExperiments = experiments;
+			fullContextCached = true;
+		}
+	}
+
+	/**
+	 * Adds a single decision point's response to the cache, unless a full-context response already replaced it. Copied
+	 * rather than appended to, so a caller still reading the previous list outside the lock isn't affected.
+	 */
+	private void cacheDecisionPoint(List<ExperimentsResponse> experiments) {
+		synchronized (assignmentLock) {
+			if (fullContextCached) {
+				return;
+			}
+			List<ExperimentsResponse> merged = allExperiments != null ? new ArrayList<>(allExperiments)
+					: new ArrayList<>();
+			merged.addAll(experiments);
+			allExperiments = merged;
+		}
+	}
+
+	private void requestAssignments(ExperimentRequest experimentRequest, Consumer<List<ExperimentsResponse>> cache,
+			final ResponseCallback<List<ExperimentsResponse>> callbacks) {
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
+		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
+
+		invocation.post(requestContent,
+				new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+						new InvocationCallback<Response>() {
+
+							@Override
+							public void completed(Response response) {
+								if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+									// Cached before the callback runs, so a lookup or mark made from inside it hits the cache.
+									readResponseToCallback(response, callbacks,
+											new GenericType<List<ExperimentsResponse>>() {
+											}, cache);
+								} else {
+									String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+									ErrorResponse error = new ErrorResponse(response.getStatus(),
+											response.readEntity(String.class), status);
+									if (callbacks != null)
+										callbacks.onError(error);
+								}
+							}
+
+							@Override
+							public void failed(Throwable throwable) {
+								if (callbacks != null)
+									callbacks.onError(new ErrorResponse(throwable.getMessage()));
+							}
+
+						}));
 	}
 
 	/** @param site Matched exactly (case-sensitive), as the server does */
@@ -296,12 +328,19 @@ public class ExperimentClient implements AutoCloseable {
 	 * {@code getAssignedCondition()} needs a null check. It can still be marked, e.g. with
 	 * {@code MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED}.
 	 *
+	 * Uses the cache if {@link #getAllExperimentConditions} already filled it with the full context, or if it already
+	 * holds this decision point. Otherwise asks /assign for just this decision point, so the server skips the rest of
+	 * the context, and adds the response to the cache. An empty response (no assignment here) adds nothing, so a later
+	 * lookup of this decision point asks again.
+	 *
+	 * Note: an older server that doesn't support the decisionPoint parameter ignores it and returns the full context.
+	 *
 	 * @param site   Matched exactly (case-sensitive), as the server does
 	 * @param target Matched exactly (case-sensitive); null and "" are equivalent
 	 */
 	public void getExperimentCondition(String site, String target,
 			final ResponseCallback<Assignment> callbacks) {
-		getAllExperimentConditions(new ResponseCallback<List<ExperimentsResponse>>() {
+		ResponseCallback<List<ExperimentsResponse>> toAssignment = new ResponseCallback<List<ExperimentsResponse>>() {
 			@Override
 			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
@@ -324,7 +363,22 @@ public class ExperimentClient implements AutoCloseable {
 					callbacks.onError(error);
 
 			}
-		});
+		};
+
+		// A full-context cache answers any decision point, even with no assignment there. A partial one answers only a
+		// decision point it holds. The callback runs outside the lock.
+		final List<ExperimentsResponse> cached;
+		synchronized (assignmentLock) {
+			boolean hit = allExperiments != null && (fullContextCached
+					|| allExperiments.stream().anyMatch(t -> isAtDecisionPoint(t, site, target)));
+			cached = hit ? allExperiments : null;
+		}
+		if (cached != null) {
+			toAssignment.onSuccess(cached);
+		} else {
+			requestAssignments(new ExperimentRequest(this.context, site, target), this::cacheDecisionPoint,
+					toAssignment);
+		}
 	}
 
 	/** @param site Matched exactly (case-sensitive), as the server does */
@@ -366,11 +420,7 @@ public class ExperimentClient implements AutoCloseable {
 		// mutating them, so the copy is a consistent snapshot once taken.
 		synchronized (assignmentLock) {
 			return experiments.stream()
-					// exact match: the server's /mark and /reward lookups are case-sensitive, so a case-insensitive
-					// match here would return a condition whose mark the server can't attribute to the experiment
-					.filter(t -> site != null && site.equals(t.getSite()) &&
-							(isStringNull(target) ? isStringNull(t.getTarget())
-									: target.equals(t.getTarget())))
+					.filter(t -> isAtDecisionPoint(t, site, target))
 					.findFirst()
 					.map(ExperimentClient::copyExperimentResponse)
 					.orElse(new ExperimentsResponse());
@@ -390,6 +440,7 @@ public class ExperimentClient implements AutoCloseable {
 	private void invalidateUserDependentCaches() {
 		synchronized (assignmentLock) {
 			this.allExperiments = null;
+			this.fullContextCached = false;
 		}
 		invalidateFeatureFlagCache();
 	}
@@ -398,6 +449,15 @@ public class ExperimentClient implements AutoCloseable {
 		synchronized (featureFlagLock) {
 			this.allFeatureFlags = null;
 		}
+	}
+
+	/**
+	 * Exact match: the server's /mark and /reward lookups are case-sensitive, so a case-insensitive match here would
+	 * return a condition whose mark the server can't attribute to the experiment. A null target equals "".
+	 */
+	private static boolean isAtDecisionPoint(ExperimentsResponse experiment, String site, String target) {
+		return site != null && site.equals(experiment.getSite()) &&
+				(isStringNull(target) ? isStringNull(experiment.getTarget()) : target.equals(experiment.getTarget()));
 	}
 
 	private void rotateConditions(String experimentId) {

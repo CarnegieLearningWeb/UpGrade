@@ -19,9 +19,43 @@ describe('ExperimentAssignmentValidatorv6', () => {
       expect(errors).toEqual([]);
       expect(instance.context).toBe('upgrade-internal');
     });
+
+    it('keeps a decisionPoint with site and target', async () => {
+      const body = { context: 'upgrade-internal', decisionPoint: { site: 'fakesite', target: 'faketarget' } };
+
+      const instance = plainToInstance(ExperimentAssignmentValidatorv6, body);
+      const errors = await validate(instance, WHITELIST_OPTIONS);
+
+      expect(errors).toEqual([]);
+      expect(instance.decisionPoint).toEqual({ site: 'fakesite', target: 'faketarget' });
+    });
+
+    it.each([
+      ['omitted', { site: 'fakesite' }],
+      ['null', { site: 'fakesite', target: null }],
+    ])('turns a %s decisionPoint.target into the targetless decision point', async (_, decisionPoint) => {
+      const body = { context: 'upgrade-internal', decisionPoint };
+
+      const instance = plainToInstance(ExperimentAssignmentValidatorv6, body);
+      const errors = await validate(instance, WHITELIST_OPTIONS);
+
+      expect(errors).toEqual([]);
+      expect(instance.decisionPoint).toEqual({ site: 'fakesite', target: '' });
+    });
   });
 
   describe('field-level validation', () => {
+    it('rejects a decisionPoint without a site', async () => {
+      const body = { context: 'upgrade-internal', decisionPoint: { target: 'faketarget' } };
+
+      const instance = plainToInstance(ExperimentAssignmentValidatorv6, body);
+      const errors = await validate(instance, WHITELIST_OPTIONS);
+
+      expect(errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ property: 'decisionPoint', children: expect.any(Array) })])
+      );
+    });
+
     it('rejects when context is missing', async () => {
       const body = {};
 
