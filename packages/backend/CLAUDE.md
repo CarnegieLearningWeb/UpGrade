@@ -63,6 +63,15 @@ npm run migration:run
 - `@Authorized()` decorator (from routing-controllers) enforces auth on controllers
 - `@CurrentUser()` injects the authenticated `User` object into handler params
 
+## Deletion Policy
+
+`DeletionPolicyService` is the one role/state/usage policy for the user-facing deletion APIs (`DELETE /experiments/:id`, `/flags/:id`, `/segments/:segmentId` and the three `POST /…/batch-delete` routes). Deletable experiment states (`DELETABLE_EXPERIMENT_STATES`) live in `upgrade_types` so the frontend checks the same list.
+
+- The role is checked per request (`assertRoleCanDelete` → `PermissionService.assertPermitted(user, resource, 'delete')` → 403) before any target is locked. Role permissions for every resource and action live in the shared `ROLE_PERMISSIONS` table in `upgrade_types`, which the frontend also uses; enforce other actions through `PermissionService` rather than per-action role lists. State and usage rules stay per action (as `DeletionPolicyService` does for deletion).
+- State and usage are checked by `getRefusalReason()` on fields read by `DeletionRepository.findForDeletion()` under the target's `pessimistic_write` lock, in the deletion transaction, never from an earlier unlocked read. Segment usage (`isSegmentInUse`) is evaluated for that one segment and mirrors the Used status from `SegmentService.getSegmentStatus()`.
+- Single routes pass `singleDeletionTransaction()` to the entity service and return 409 (`SERVER_ERROR.DELETION_NOT_ALLOWED`) on refusal. Batch items are reported `refused` with a policy `DeletionReasonCode`, and the batch continues.
+- Internal deletions (create rollback, private-list removal via `deleteList`) call the entity services without the policy executor, deliberately.
+
 ## Environment
 
 Copy `.env.example` to `.env` for local dev. Never commit `.env` files. Key sections: `app`, `db`, `google`, `swagger`, `aws`. See `src/env.ts` for the full typed schema.
@@ -105,10 +114,10 @@ Segment inclusion/exclusion for **feature flags** is precomputed and stored flat
 | Private list added to a shared segment | `SegmentService.addList` → `scheduleRecomputeForSegment` |
 | Private list removed from a shared segment | `SegmentService.deleteList` → `scheduleRecomputeForSegment` |
 | Segment members/structure updated | `SegmentService.addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` |
-| Segment deleted entirely | `SegmentService.deleteSegment` → `withRecompute` for single deletion; batch deletion collects affected flag IDs after the target lock and **before** deletion, then awaits recomputation **after** commit |
+| Segment deleted entirely | `SegmentService.deleteSegment` → the single and batch deletion routes collect affected flag IDs after the target lock and **before** deletion, then await recomputation **after** commit; internal callers (`deleteList`) use `withRecompute` |
 | Server startup | `app.ts` → `backfillMissingFlags` — backfills any flag with no row |
 
-Ordinary write paths use **fire-and-forget** recomputation. The `import*` paths await `recomputeForFlag` so "import complete" means the rows are ready. Batch segment deletion also awaits post-commit recomputation for both flags and experiments before processing the next segment. `SegmentService.deleteSegment` selects this awaited branch when supplied with the batch transaction executor; ordinary callers retain background recomputation.
+Ordinary write paths use **fire-and-forget** recomputation. The `import*` paths await `recomputeForFlag` so "import complete" means the rows are ready. Segment deletion through the single and batch routes also awaits post-commit recomputation for both flags and experiments (a batch finishes it before processing the next segment). `SegmentService.deleteSegment` selects this awaited branch when supplied with a deletion transaction executor; internal callers retain background recomputation.
 
 ### Key invariant
 
@@ -143,10 +152,10 @@ Experiment join tables (`ExperimentSegmentInclusion` / `ExperimentSegmentExclusi
 | Experiment lists imported | `ExperimentService.importExperimentLists` → `await recomputeForExperiment` after the import transaction commits |
 | Experiment context changed (deletes all its lists) | `ExperimentService.updateExperimentInDB` → `scheduleRecomputeForExperiments` after commit (recomputes to empty; `deleteAllListsFromExperiment` deletes the private segments directly, so the precomputed row would otherwise keep stale IDs) |
 | Shared segment members/structure changed | `SegmentService.addList` / `deleteList` / `addSegmentDataWithPipeline` → `scheduleRecomputeForSegment` for **both** the flag and experiment services |
-| Segment deleted entirely | `SegmentService.deleteSegment` → collects affected experiment IDs **before** deletion and recomputes **after** commit; single deletion schedules background work, while batch deletion collects owners after the target lock and awaits recomputation |
+| Segment deleted entirely | `SegmentService.deleteSegment` → collects affected experiment IDs **before** deletion and recomputes **after** commit; the single and batch deletion routes collect owners after the target lock and await recomputation, while internal callers schedule background work |
 | Server startup | `app.ts` → `backfillExperimentPrecomputedSegments` (guarded by `.catch` — a missing table never crashes startup) |
 
-Same invariant as feature flags: recompute **after** the change commits; for deletes, collect affected experiment IDs **before**. Write-path recomputes are fire-and-forget except the `create` / import paths and batch segment deletion, which await recomputation. A batch finishes each segment's post-commit updates before deleting the next segment.
+Same invariant as feature flags: recompute **after** the change commits; for deletes, collect affected experiment IDs **before**. Write-path recomputes are fire-and-forget except the `create` / import paths and segment deletion through the single and batch deletion routes, which await recomputation. A batch finishes each segment's post-commit updates before deleting the next segment.
 
 ### INCLUDE_ALL semantics (resolved)
 

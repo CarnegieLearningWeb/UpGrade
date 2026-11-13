@@ -77,6 +77,8 @@
   "batch-delete.success.segments.other": "{{deleted}} segments deleted.",
   "batch-delete.result.absent.one": "1 item was already absent.",
   "batch-delete.result.absent.other": "{{count}} items were already absent.",
+  "batch-delete.result.refused.one": "1 item is no longer eligible for deletion and was skipped.",
+  "batch-delete.result.refused.other": "{{count}} items are no longer eligible for deletion and were skipped.",
   "batch-delete.result.failed": "1 item could not be deleted.",
   "batch-delete.result.notAttempted.one": "1 item was not attempted.",
   "batch-delete.result.notAttempted.other": "{{count}} items were not attempted.",

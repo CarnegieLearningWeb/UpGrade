@@ -15,7 +15,9 @@ import {
   FEATURE_FLAG_STATUS,
   LOG_TYPE,
   POST_EXPERIMENT_RULE,
+  SEGMENT_STATUS,
   SEGMENT_TYPE,
+  SERVER_ERROR,
   STANDARD_LIST_TYPE,
   SYSTEM_USER_EMAIL,
   UserRole,
@@ -32,7 +34,6 @@ import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition
 import { ExperimentPrecomputedSegment } from '../../../src/api/models/ExperimentPrecomputedSegment';
 import { ExperimentSegmentInclusion } from '../../../src/api/models/ExperimentSegmentInclusion';
 import { FeatureFlag } from '../../../src/api/models/FeatureFlag';
-import { FeatureFlagPrecomputedSegment } from '../../../src/api/models/FeatureFlagPrecomputedSegment';
 import { FeatureFlagSegmentInclusion } from '../../../src/api/models/FeatureFlagSegmentInclusion';
 import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 import { Segment } from '../../../src/api/models/Segment';
@@ -42,8 +43,7 @@ import { User } from '../../../src/api/models/User';
 import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
 import { CacheService } from '../../../src/api/services/CacheService';
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
-import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/FeatureFlagPrecomputedSegmentService';
-import { SegmentService } from '../../../src/api/services/SegmentService';
+import { SegmentService, SegmentWithStatus } from '../../../src/api/services/SegmentService';
 import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import { currentUserChecker } from '../../../src/auth/currentUserChecker';
 import { env } from '../../../src/env';
@@ -53,6 +53,16 @@ import { iocLoader } from '../../../src/loaders/iocLoader';
 const entities: BatchDeleteEntity[] = ['experiments', 'flags', 'segments'];
 const model = { experiments: Experiment, flags: FeatureFlag, segments: Segment };
 const route = (entity: BatchDeleteEntity) => `/api/${entity}/batch-delete`;
+const deletionAudit = { experiments: LOG_TYPE.EXPERIMENT_DELETED, flags: LOG_TYPE.FEATURE_FLAG_DELETED };
+const storedStates = [
+  ...new Set(Object.values(EXPERIMENT_STATE).map((state) => EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[state] || state)),
+];
+const deletableStates = [
+  EXPERIMENT_STATE.DRAFT,
+  EXPERIMENT_STATE.INACTIVE,
+  EXPERIMENT_STATE.CANCELLED,
+  EXPERIMENT_STATE.ARCHIVED,
+];
 
 export function registerBatchDeleteTests(connections: () => [DataSource, DataSource]) {
   describe('Batch deletion', () => {
@@ -173,30 +183,48 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         .expect(401);
       expect(spy).not.toHaveBeenCalled();
 
+      // With authentication off and no system user there is no caller role, so nothing may be deleted.
       env.google.authTokenRequired = false;
       await db.getRepository(User).delete({ email: SYSTEM_USER_EMAIL });
       const [single, batch] = await create(entity, 2);
-      await request(app).delete(`/api/${entity}/${single.id}`).expect(200);
-      const { body } = await request(app)
+      await request(app).delete(`/api/${entity}/${single.id}`).expect(403);
+      await request(app)
         .post(route(entity))
         .send({ ids: [batch.id] })
-        .expect(200);
-      expect(body.results).toEqual([{ id: batch.id, outcome: 'deleted' }]);
-      expect(await db.getRepository(model[entity]).countBy({ id: In([single.id, batch.id]) })).toBe(0);
+        .expect(403);
+      expect(await db.getRepository(model[entity]).countBy({ id: In([single.id, batch.id]) })).toBe(2);
     });
 
-    test.each(Object.values(UserRole))('matches single-delete behavior for the %s role', async (role) => {
+    const permitted: Record<UserRole, BatchDeleteEntity[]> = {
+      [UserRole.ADMIN]: ['experiments', 'flags', 'segments'],
+      [UserRole.CREATOR]: ['experiments', 'flags', 'segments'],
+      [UserRole.USER_MANAGER]: ['segments'],
+      [UserRole.READER]: [],
+    };
+    test.each(Object.values(UserRole))('applies the %s role to single and batch deletion', async (role) => {
       await db.getRepository(User).update(SYSTEM_USER_EMAIL, { role });
       for (const entity of entities) {
         const [single, batch] = await create(entity, 2);
-        await request(app).delete(`/api/${entity}/${single.id}`).expect(200);
-        const { body } = await request(app)
-          .post(route(entity))
-          .send({ ids: [batch.id] })
-          .expect(200);
-        expect(body.results).toEqual([{ id: batch.id, outcome: 'deleted' }]);
-        expect(await db.getRepository(model[entity]).countBy({ id: In([single.id, batch.id]) })).toBe(0);
+        if (permitted[role].includes(entity)) {
+          await request(app).delete(`/api/${entity}/${single.id}`).expect(200);
+          const { body } = await request(app)
+            .post(route(entity))
+            .send({ ids: [batch.id] })
+            .expect(200);
+          expect(body.results).toEqual([{ id: batch.id, outcome: 'deleted' }]);
+          expect(await db.getRepository(model[entity]).countBy({ id: In([single.id, batch.id]) })).toBe(0);
+        } else {
+          await request(app).delete(`/api/${entity}/${single.id}`).expect(403);
+          await request(app)
+            .post(route(entity))
+            .send({ ids: [batch.id] })
+            .expect(403);
+          expect(await db.getRepository(model[entity]).countBy({ id: In([single.id, batch.id]) })).toBe(2);
+        }
       }
+      expect(await db.getRepository(ExperimentAuditLog).countBy({ type: In(Object.values(deletionAudit)) })).toBe(
+        permitted[role].filter((entity) => entity !== 'segments').length * 2
+      );
     });
 
     test.each(entities)('%s deletes owned lists and members while preserving public children', async (entity) => {
@@ -217,25 +245,16 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
     test.each(entities)('%s deletes with one pooled connection', async (entity) => {
       const [row] = await create(entity);
       const list = await ownedList(entity, row.id);
-      let flagId: string;
       let experimentId: string;
       if (entity === 'segments') {
-        const [flag] = await create('flags');
+        // A list of an archived experiment does not make a segment Used, but its precomputed row still updates.
         const [experiment] = await create('experiments');
-        flagId = flag.id;
         experimentId = experiment.id;
-        const flagList = await ownedList('flags', flagId, row.id);
-        await db.getRepository(FeatureFlagSegmentInclusion).update({ segmentId: flagList.id }, { enabled: true });
+        await db.getRepository(Experiment).update(experimentId, { state: EXPERIMENT_STATE.ARCHIVED });
         await ownedList('experiments', experimentId, row.id);
         await db.getRepository(IndividualForSegment).insert({ segmentId: row.id, userId: 'deleted-member' });
         const logger = new UpgradeLogger();
-        await Container.get(FeatureFlagPrecomputedSegmentService).recomputeForFlag(flagId, logger);
         await Container.get(ExperimentPrecomputedSegmentService).recomputeForExperiment(experimentId, logger);
-        expect(
-          await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flagId })
-        ).toMatchObject({
-          inclusionIds: expect.arrayContaining(['deleted-member']),
-        });
         expect(await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId })).toMatchObject({
           inclusionIds: expect.arrayContaining(['deleted-member']),
         });
@@ -261,12 +280,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
         expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
         expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
         if (entity === 'segments') {
-          expect(
-            await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flagId })
-          ).toMatchObject({
-            inclusionIds: ['batch-member'],
-            exclusionIds: [],
-          });
           expect(await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId })).toMatchObject({
             inclusionIds: ['batch-member'],
             exclusionIds: [],
@@ -408,31 +421,20 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     });
 
-    test.each([false, true])('updates shared owners after segment deletion (recompute fails: %s)', async (fails) => {
+    test.each([false, true])('updates archived owners after segment deletion (recompute fails: %s)', async (fails) => {
       const rows = await create('segments', 2);
-      const [flag] = await create('flags');
       const [experiment] = await create('experiments');
+      await db.getRepository(Experiment).update(experiment.id, { state: EXPERIMENT_STATE.ARCHIVED });
       const members = rows.map((row) => `member-${row.id}`);
       await db
         .getRepository(IndividualForSegment)
         .insert(rows.map((row, index) => ({ segmentId: row.id, userId: members[index] })));
-      await db.getRepository(FeatureFlagSegmentInclusion).insert(
-        rows.map((row) => ({
-          featureFlagId: flag.id,
-          segmentId: row.id,
-          enabled: true,
-          listType: STANDARD_LIST_TYPE.SEGMENT,
-        }))
-      );
       await db
         .getRepository(ExperimentSegmentInclusion)
         .insert(rows.map((row) => ({ experimentId: experiment.id, segmentId: row.id })));
-      const flags = Container.get(FeatureFlagPrecomputedSegmentService);
       const experiments = Container.get(ExperimentPrecomputedSegmentService);
-      const logger = new UpgradeLogger();
-      await flags.recomputeForFlag(flag.id, logger);
-      await experiments.recomputeForExperiment(experiment.id, logger);
-      if (fails) jest.spyOn(flags, 'recomputeForFlag').mockRejectedValueOnce(new Error('Recompute failed'));
+      await experiments.recomputeForExperiment(experiment.id, new UpgradeLogger());
+      if (fails) jest.spyOn(experiments, 'recomputeForExperiment').mockRejectedValueOnce(new Error('Recompute failed'));
 
       const { body } = await request(app)
         .post(route('segments'))
@@ -448,12 +450,6 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       } else {
         expect(body.results).toEqual(rows.map((row) => ({ id: row.id, outcome: 'deleted' })));
         expect(
-          await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flag.id })
-        ).toMatchObject({
-          inclusionIds: [],
-          exclusionIds: [],
-        });
-        expect(
           await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId: experiment.id })
         ).toMatchObject({
           inclusionIds: [],
@@ -462,36 +458,69 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     });
 
-    test('recomputes owners attached before the segment deletion lock is acquired', async () => {
+    test.each(['single', 'batch'])(
+      '%s deletion refuses a target that becomes ineligible before its deletion lock',
+      async (mode) => {
+        for (const entity of entities) {
+          const [row] = await create(entity);
+          const [flag] = await create('flags');
+          const findForDeletion = DeletionRepository.prototype.findForDeletion;
+          jest
+            .spyOn(DeletionRepository.prototype, 'findForDeletion')
+            .mockImplementationOnce(async function (this: DeletionRepository, ...args) {
+              // Commit a change on another connection just before the deletion acquires its target lock.
+              if (entity === 'experiments') {
+                await writer.getRepository(Experiment).update(row.id, { state: EXPERIMENT_STATE.ENROLLING });
+              } else if (entity === 'flags') {
+                await writer.getRepository(FeatureFlag).update(row.id, { status: FEATURE_FLAG_STATUS.ENABLED });
+              } else {
+                await ownedList('flags', flag.id, row.id, writer);
+              }
+              return findForDeletion.apply(this, args);
+            });
+          const reasonCode =
+            entity === 'segments' ? DeletionReasonCode.SEGMENT_IN_USE : DeletionReasonCode.STATE_NOT_DELETABLE;
+          if (mode === 'single') {
+            const { body } = await request(app).delete(`/api/${entity}/${row.id}`).expect(409);
+            expect(body).toMatchObject({
+              type: SERVER_ERROR.DELETION_NOT_ALLOWED,
+              message: expect.stringContaining(reasonCode),
+            });
+          } else {
+            const { body } = await request(app)
+              .post(route(entity))
+              .send({ ids: [row.id] })
+              .expect(200);
+            expect(body.results).toEqual([{ id: row.id, outcome: 'refused', reasonCode }]);
+          }
+          expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(1);
+          jest.restoreAllMocks();
+        }
+        expect(await db.getRepository(ExperimentAuditLog).countBy({ type: In(Object.values(deletionAudit)) })).toBe(0);
+      }
+    );
+
+    test('single segment deletion recomputes an owner attached before its deletion lock', async () => {
       const [segment] = await create('segments');
-      const [flag] = await create('flags');
       const [experiment] = await create('experiments');
+      // An archived owner does not make the segment Used, so the deletion is allowed and must update this owner.
+      await db.getRepository(Experiment).update(experiment.id, { state: EXPERIMENT_STATE.ARCHIVED });
       await db.getRepository(IndividualForSegment).insert({ segmentId: segment.id, userId: 'deleted-member' });
-      const flags = Container.get(FeatureFlagPrecomputedSegmentService);
-      const experiments = Container.get(ExperimentPrecomputedSegmentService);
-      const logger = new UpgradeLogger();
       const findForDeletion = DeletionRepository.prototype.findForDeletion;
       jest
         .spyOn(DeletionRepository.prototype, 'findForDeletion')
         .mockImplementationOnce(async function (this: DeletionRepository, ...args) {
           // Commit a list edit on another connection just before the deletion acquires its target lock.
-          const flagList = await ownedList('flags', flag.id, segment.id, writer);
-          await writer.getRepository(FeatureFlagSegmentInclusion).update({ segmentId: flagList.id }, { enabled: true });
           await ownedList('experiments', experiment.id, segment.id, writer);
-          await flags.recomputeForFlag(flag.id, logger);
-          await experiments.recomputeForExperiment(experiment.id, logger);
+          await Container.get(ExperimentPrecomputedSegmentService).recomputeForExperiment(
+            experiment.id,
+            new UpgradeLogger()
+          );
           return findForDeletion.apply(this, args);
         });
 
-      const { body } = await request(app)
-        .post(route('segments'))
-        .send({ ids: [segment.id] })
-        .expect(200);
-      expect(body.results).toEqual([{ id: segment.id, outcome: 'deleted' }]);
+      await request(app).delete(`/api/segments/${segment.id}`).expect(200);
       expect(await db.getRepository(Segment).countBy({ id: segment.id })).toBe(0);
-      expect(await db.getRepository(FeatureFlagPrecomputedSegment).findOneBy({ featureFlagId: flag.id })).toMatchObject(
-        { inclusionIds: ['batch-member'], exclusionIds: [] }
-      );
       expect(
         await db.getRepository(ExperimentPrecomputedSegment).findOneBy({ experimentId: experiment.id })
       ).toMatchObject({ inclusionIds: ['batch-member'], exclusionIds: [] });
@@ -545,75 +574,149 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       }
     );
 
-    test.each(entities)(
-      '%s single-delete route keeps its existing roles, cleanup and success response',
-      async (entity) => {
-        await db.getRepository(User).update(SYSTEM_USER_EMAIL, { role: UserRole.READER });
-        const [row] = await create(entity);
-        const [child] = await create('segments');
-        const list = await ownedList(entity, row.id, child.id);
-        const { body } = await request(app).delete(`/api/${entity}/${row.id}`).expect(200);
-        expect(body).toEqual(
-          entity === 'segments' ? expect.objectContaining({ id: row.id }) : [expect.objectContaining({ id: row.id })]
-        );
-        expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
-        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
-        expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(0);
-        expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
-      }
-    );
+    test.each(entities)('%s single-delete route keeps its existing cleanup and success response', async (entity) => {
+      const [row] = await create(entity);
+      const [child] = await create('segments');
+      const list = await ownedList(entity, row.id, child.id);
+      const { body } = await request(app).delete(`/api/${entity}/${row.id}`).expect(200);
+      expect(body).toEqual(
+        entity === 'segments' ? expect.objectContaining({ id: row.id }) : [expect.objectContaining({ id: row.id })]
+      );
+      expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
+      expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
+      expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(0);
+      expect(await db.getRepository(Segment).countBy({ id: child.id })).toBe(1);
+    });
 
-    test.each(['single', 'batch'])('experiment %s deletion allows every experiment state', async (mode) => {
-      const states = [
-        ...new Set(
-          Object.values(EXPERIMENT_STATE).map((state) => EXPERIMENT_STATE_INTERNAL_NAME_OVERRIDES[state] || state)
-        ),
-      ];
-      const rows = await create('experiments', states.length);
+    test.each(['single', 'batch'])('experiment %s deletion applies the experiment state rules', async (mode) => {
+      const rows = await create('experiments', storedStates.length);
       for (const [index, row] of rows.entries()) {
-        await db.getRepository(Experiment).update(row.id, { state: states[index] });
+        await db.getRepository(Experiment).update(row.id, { state: storedStates[index] });
       }
+      const deletable = rows.filter((_, index) => deletableStates.includes(storedStates[index]));
       if (mode === 'single') {
-        for (const row of rows) await request(app).delete(`/api/experiments/${row.id}`).expect(200);
+        for (const [index, row] of rows.entries()) {
+          await request(app)
+            .delete(`/api/experiments/${row.id}`)
+            .expect(deletableStates.includes(storedStates[index]) ? 200 : 409);
+        }
       } else {
         const { body } = await request(app)
           .post(route('experiments'))
           .send({ ids: rows.map(({ id }) => id) })
           .expect(200);
-        expect(body.results).toEqual(rows.map(({ id }) => ({ id, outcome: 'deleted' })));
+        expect(body.results).toEqual(
+          rows.map(({ id }, index) =>
+            deletableStates.includes(storedStates[index])
+              ? { id, outcome: 'deleted' }
+              : { id, outcome: 'refused', reasonCode: DeletionReasonCode.STATE_NOT_DELETABLE }
+          )
+        );
       }
-      expect(await db.getRepository(Experiment).countBy({ id: In(rows.map(({ id }) => id)) })).toBe(0);
+      const remaining = await db.getRepository(Experiment).findBy({ id: In(rows.map(({ id }) => id)) });
+      expect(remaining.map(({ state }) => state).sort()).toEqual(
+        storedStates.filter((state) => !deletableStates.includes(state)).sort()
+      );
       expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.EXPERIMENT_DELETED })).toBe(
-        rows.length
+        deletable.length
       );
     });
 
-    test.each(['single', 'batch'])('%s deletion allows Enabled flags and Used segments', async (mode) => {
+    test.each(['single', 'batch'])('%s deletion refuses Enabled flags and Used segments unchanged', async (mode) => {
       for (const entity of ['flags', 'segments'] as const) {
         const [row] = await create(entity);
         const list = await ownedList(entity, row.id);
-        let ownerId: string;
+        let reasonCode = DeletionReasonCode.STATE_NOT_DELETABLE;
         if (entity === 'flags') {
           await db.getRepository(FeatureFlag).update(row.id, { status: FEATURE_FLAG_STATUS.ENABLED });
         } else {
+          reasonCode = DeletionReasonCode.SEGMENT_IN_USE;
           const [owner] = await create('flags');
-          ownerId = owner.id;
           await ownedList('flags', owner.id, row.id);
         }
+        const reset = jest.spyOn(Container.get(CacheService), 'resetPrefixCache');
         if (mode === 'single') {
-          await request(app).delete(`/api/${entity}/${row.id}`).expect(200);
+          await request(app).delete(`/api/${entity}/${row.id}`).expect(409);
         } else {
           const { body } = await request(app)
             .post(route(entity))
             .send({ ids: [row.id] })
             .expect(200);
-          expect(body.results).toEqual([{ id: row.id, outcome: 'deleted' }]);
+          expect(body.results).toEqual([{ id: row.id, outcome: 'refused', reasonCode }]);
         }
-        expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(0);
-        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(0);
-        expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(0);
-        if (ownerId) expect(await db.getRepository(FeatureFlag).countBy({ id: ownerId })).toBe(1);
+        expect(reset).not.toHaveBeenCalled();
+        expect(await db.getRepository(model[entity]).countBy({ id: row.id })).toBe(1);
+        expect(await db.getRepository(Segment).countBy({ id: list.id })).toBe(1);
+        expect(await db.getRepository(IndividualForSegment).countBy({ segmentId: list.id })).toBe(1);
+        jest.restoreAllMocks();
       }
+      expect(await db.getRepository(ExperimentAuditLog).countBy({ type: LOG_TYPE.FEATURE_FLAG_DELETED })).toBe(0);
+    });
+
+    test('segment usage follows the Used status: nested lists and active owners refuse, archived owners allow', async () => {
+      const [parent, nested, viaExperiment, viaArchived] = await create('segments', 4);
+      // A member of another segment's list is Used.
+      await ownedList('segments', parent.id, nested.id);
+      const [active, archived] = await create('experiments', 2);
+      await db.getRepository(Experiment).update(archived.id, { state: EXPERIMENT_STATE.ARCHIVED });
+      await ownedList('experiments', active.id, viaExperiment.id);
+      await ownedList('experiments', archived.id, viaArchived.id);
+      const ids = [nested.id, viaExperiment.id, viaArchived.id, parent.id];
+      const { body } = await request(app).post(route('segments')).send({ ids }).expect(200);
+      expect(body.results).toEqual([
+        { id: nested.id, outcome: 'refused', reasonCode: DeletionReasonCode.SEGMENT_IN_USE },
+        { id: viaExperiment.id, outcome: 'refused', reasonCode: DeletionReasonCode.SEGMENT_IN_USE },
+        { id: viaArchived.id, outcome: 'deleted' },
+        // Owning a list does not make the owner itself Used.
+        { id: parent.id, outcome: 'deleted' },
+      ]);
+    });
+
+    test('isSegmentInUse agrees with the Used status shown by getSegmentStatus', async () => {
+      // The deletion policy evaluates one locked segment; the segment list labels every segment at once.
+      // They are separate implementations of one rule, so pin them to each other across every kind of usage.
+      const [unused, viaActive, viaArchived, viaFlag, owner, member, nestedMember, direct, viaGlobalExclude] =
+        await create('segments', 9);
+      const [active, archived] = await create('experiments', 2);
+      await db.getRepository(Experiment).update(archived.id, { state: EXPERIMENT_STATE.ARCHIVED });
+      const [flag] = await create('flags');
+      await ownedList('experiments', active.id, viaActive.id);
+      await ownedList('experiments', archived.id, viaArchived.id);
+      await ownedList('flags', flag.id, viaFlag.id);
+      await ownedList('segments', owner.id, member.id);
+      await ownedList('segments', member.id, nestedMember.id);
+      // A public segment attached directly to an experiment, without a private list in between.
+      await db.getRepository(ExperimentSegmentInclusion).insert({ experimentId: active.id, segmentId: direct.id });
+      const globalExclude = await db.getRepository(Segment).findOneBy({ type: SEGMENT_TYPE.GLOBAL_EXCLUDE });
+      await ownedList('segments', globalExclude.id, viaGlobalExclude.id);
+
+      const { segmentsData } = await Container.get(SegmentService).getAllSegmentWithStatus(new UpgradeLogger());
+      const repository = new DeletionRepository(DeletionRepository, db.manager);
+      const fixtures = [unused, viaActive, viaArchived, viaFlag, owner, member, nestedMember, direct, viaGlobalExclude];
+      const statusUsed = fixtures.map(
+        ({ id }) =>
+          (segmentsData as SegmentWithStatus[]).find((segment) => segment.id === id)?.status === SEGMENT_STATUS.USED
+      );
+      const inUse = await Promise.all(fixtures.map(({ id }) => repository.isSegmentInUse(id, db.manager)));
+      expect(inUse).toEqual(statusUsed);
+      expect(statusUsed).toEqual([false, true, false, true, false, true, true, true, true]);
+    });
+
+    test('reports each item of a mixed batch truthfully and continues past refusals', async () => {
+      const [deletable, running, last] = await create('experiments', 3);
+      await db.getRepository(Experiment).update(running.id, { state: EXPERIMENT_STATE.ENROLLING });
+      const missing = randomUUID();
+      const ids = [deletable.id, running.id, missing, last.id];
+      const { body } = await request(app).post(route('experiments')).send({ ids }).expect(200);
+      expect(body.results).toEqual([
+        { id: deletable.id, outcome: 'deleted' },
+        { id: running.id, outcome: 'refused', reasonCode: DeletionReasonCode.STATE_NOT_DELETABLE },
+        { id: missing, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND },
+        { id: last.id, outcome: 'deleted' },
+      ]);
+      expect(await db.getRepository(Experiment).findOneBy({ id: running.id })).toMatchObject({
+        state: EXPERIMENT_STATE.ENROLLING,
+      });
     });
 
     test.each(entities)('%s single-delete preserves its original missing-target response', async (entity) => {
@@ -623,22 +726,32 @@ export function registerBatchDeleteTests(connections: () => [DataSource, DataSou
       if (entity === 'experiments') expect(body.message).toBe('Experiment not found.');
     });
 
-    test.each(['single', 'batch'])('%s deletion allows private and global-exclude segments', async (mode) => {
-      for (const type of [SEGMENT_TYPE.PRIVATE, SEGMENT_TYPE.GLOBAL_EXCLUDE]) {
-        const [row] = await create('segments');
-        await db.getRepository(Segment).update(row.id, { type });
-        if (mode === 'single') {
-          await request(app).delete(`/api/segments/${row.id}`).expect(200);
-        } else {
-          const { body } = await request(app)
-            .post(route('segments'))
-            .send({ ids: [row.id] })
-            .expect(200);
-          expect(body.results).toEqual([{ id: row.id, outcome: 'deleted' }]);
+    test.each(['single', 'batch'])(
+      '%s deletion allows unused private segments and refuses global-exclude',
+      async (mode) => {
+        for (const type of [SEGMENT_TYPE.PRIVATE, SEGMENT_TYPE.GLOBAL_EXCLUDE]) {
+          const [row] = await create('segments');
+          await db.getRepository(Segment).update(row.id, { type });
+          const refused = type === SEGMENT_TYPE.GLOBAL_EXCLUDE;
+          if (mode === 'single') {
+            await request(app)
+              .delete(`/api/segments/${row.id}`)
+              .expect(refused ? 409 : 200);
+          } else {
+            const { body } = await request(app)
+              .post(route('segments'))
+              .send({ ids: [row.id] })
+              .expect(200);
+            expect(body.results).toEqual([
+              refused
+                ? { id: row.id, outcome: 'refused', reasonCode: DeletionReasonCode.GLOBAL_EXCLUDE_PROTECTED }
+                : { id: row.id, outcome: 'deleted' },
+            ]);
+          }
+          expect(await db.getRepository(Segment).countBy({ id: row.id })).toBe(refused ? 1 : 0);
         }
-        expect(await db.getRepository(Segment).countBy({ id: row.id })).toBe(0);
       }
-    });
+    );
 
     test.each(entities)(
       '%s private-list endpoint still deletes lists and preserves their public children',

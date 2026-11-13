@@ -8,6 +8,7 @@ import { UserDTO } from '../DTO/UserDTO';
 import { ExperimentService } from './ExperimentService';
 import { FeatureFlagService } from './FeatureFlagService';
 import { SegmentService } from './SegmentService';
+import { DeletionPolicyService } from './DeletionPolicyService';
 import { DeletionRepository } from '../repositories/DeletionRepository';
 
 class BatchDeleteSkippedError extends Error {
@@ -23,7 +24,8 @@ export class BatchDeleteService {
     @Inject(() => ExperimentService) private experiments: ExperimentService,
     @Inject(() => FeatureFlagService) private flags: FeatureFlagService,
     @Inject(() => SegmentService) private segments: SegmentService,
-    @InjectRepository() private deletionRepository: DeletionRepository
+    @InjectRepository() private deletionRepository: DeletionRepository,
+    @Inject(() => DeletionPolicyService) private deletionPolicy: DeletionPolicyService
   ) {}
 
   public async delete(
@@ -32,12 +34,14 @@ export class BatchDeleteService {
     user: UserDTO,
     logger: UpgradeLogger
   ): Promise<BatchDeleteResult> {
+    // The role applies to the whole request: refuse it before locking or reading any target.
+    this.deletionPolicy.assertRoleCanDelete(entity, user);
     const results: BatchDeleteItemResult[] = [];
     for (const id of ids) {
       const result = await this.deleteOne(entity, id, user, logger);
       results.push(result);
-      // An already absent target does not prevent independent items from being deleted.
-      if (result.outcome === 'not_found') continue;
+      // An already absent or policy-refused target does not prevent independent items from being deleted.
+      if (result.outcome === 'not_found' || result.outcome === 'refused') continue;
       // A committed item with a post-delete failure must not be retried, but still stops this batch.
       if (result.outcome !== 'deleted' || result.reasonCode) {
         for (let index = results.length; index < ids.length; index++) {
@@ -73,6 +77,9 @@ export class BatchDeleteService {
         if (!target) {
           throw new BatchDeleteSkippedError({ id, outcome: 'not_found', reasonCode: DeletionReasonCode.NOT_FOUND });
         }
+        // Evaluate the policy on the state read under this lock, before any mutation or side effect.
+        const reasonCode = await this.deletionPolicy.getRefusalReason(entity, target, runner.manager);
+        if (reasonCode) throw new BatchDeleteSkippedError({ id, outcome: 'refused', reasonCode });
         mutationStarted = true;
         response = await work(runner.manager);
         // Legacy experiment/flag repositories return arrays despite their declared return types.
