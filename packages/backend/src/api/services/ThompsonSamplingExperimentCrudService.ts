@@ -189,7 +189,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
       >
     > = {};
     if (params.scalingFactor !== undefined) {
-      fieldsToUpdate.scalingFactor = params.scalingFactor;
+      fieldsToUpdate.scalingFactor = params.scalingFactor ?? DEFAULT_SCALING_FACTOR;
     }
     if (params.warmupThreshold !== undefined) {
       fieldsToUpdate.warmupThreshold = params.warmupThreshold;
