@@ -848,6 +848,7 @@ describe('Experiments Selectors', () => {
         totalRewardCount: 30,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       const state = {
@@ -893,6 +894,7 @@ describe('Experiments Selectors', () => {
         totalRewardCount: 0,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       const selectedExperiment = state.experiments.find((exp) => exp.id === '1f12cd8f-7ff9-4731-a4eb-7104918ed252');
@@ -912,6 +914,7 @@ describe('Experiments Selectors', () => {
             totalRewardCount: 0,
             warmupThreshold: 0,
             batchSize: 1,
+            scalingFactor: 1,
           },
         },
       };
@@ -926,6 +929,7 @@ describe('Experiments Selectors', () => {
         totalRewardCount: 0,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       });
     });
   });

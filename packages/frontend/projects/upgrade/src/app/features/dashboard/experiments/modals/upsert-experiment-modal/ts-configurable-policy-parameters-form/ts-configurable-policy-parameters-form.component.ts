@@ -19,11 +19,12 @@ import {
   ThompsonSamplingHelperService,
 } from '../../../../../../core/experiments/thompson-sampling-helper.service';
 import isEqual from 'lodash.isequal';
+import { CommonLearnMoreLinkComponent } from '@shared-component-lib';
 
 @Component({
   selector: 'app-ts-configurable-policy-parameters-form',
   standalone: true,
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslateModule],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, TranslateModule, CommonLearnMoreLinkComponent],
   templateUrl: './ts-configurable-policy-parameters-form.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './ts-configurable-policy-parameters-form.component.scss',
@@ -71,9 +72,10 @@ export class TsConfigurablePolicyParametersFormComponent implements OnInit, OnDe
     const validators = this.thompsonSamplingHelperService.getFieldValidators();
 
     this.policyForm = this.formBuilder.group({
-      batchSize: [params.batchSize, validators.batchSize],
+      scalingFactor: [params.scalingFactor, validators.scalingFactor],
       warmupThreshold: [params.warmupThreshold, validators.warmupThreshold],
       minimumDrawDifference: [params.minimumDrawDifference, validators.minimumDrawDifference],
+      batchSize: [params.batchSize, validators.batchSize],
     });
   }
 

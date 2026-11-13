@@ -3,7 +3,7 @@ import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
 import { ConditionPosteriorStateRepository } from '../repositories/ConditionPosteriorStateRepository';
 import { ThompsonSamplingExperimentConfig } from '../models/ThompsonSamplingExperimentConfig';
-import { ThompsonSamplingService } from './ThompsonSamplingService';
+import { DEFAULT_SCALING_FACTOR, ThompsonSamplingService } from './ThompsonSamplingService';
 import { CacheService } from './CacheService';
 import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX, ExperimentRewardsSummary } from 'upgrade_types';
 import { ExperimentDTO } from '../DTO/ExperimentDTO';
@@ -12,6 +12,7 @@ import { AdaptiveExperimentConfigService } from './AdaptiveExperimentConfigServi
 type ConditionRef = { id: string };
 
 export interface ThompsonSamplingConfigParams {
+  scalingFactor?: number;
   warmupThreshold?: number;
   minimumDrawDifference?: number;
   batchSize?: number;
@@ -35,8 +36,8 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   /**
    * Single gate for "does this experiment need a Thompson Sampling config", so every experiment
    * creation path (single create, bulk import, batch create) gets config/posterior rows the same
-   * way instead of each caller re-checking assignmentAlgorithm itself. Only `priors`/`warmupThreshold`/
-   * `batchSize`/`minimumDrawDifference` from `experiment.thompsonSamplingConfig` are ever read here —
+   * way instead of each caller re-checking assignmentAlgorithm itself. Only `priors`/`scalingFactor`/
+   * `warmupThreshold`/`batchSize`/`minimumDrawDifference` from `experiment.thompsonSamplingConfig` are ever read here —
    * there is no field for success/failure counts, so posterior state always starts at zero regardless
    * of what the caller's source experiment (e.g. an imported/exported one) previously accumulated.
    *
@@ -139,6 +140,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
       return experiment;
     }
     experiment.thompsonSamplingConfig = {
+      scalingFactor: config.scalingFactor,
       warmupThreshold: config.warmupThreshold,
       minimumDrawDifference: config.minimumDrawDifference,
       batchSize: config.batchSize,
@@ -154,6 +156,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   ): Promise<ThompsonSamplingExperimentConfig> {
     const config = await this.configRepository.save({
       experimentId,
+      scalingFactor: params.scalingFactor ?? DEFAULT_SCALING_FACTOR,
       warmupThreshold: params.warmupThreshold ?? 0,
       minimumDrawDifference: params.minimumDrawDifference ?? 0,
       batchSize: params.batchSize ?? 1,
@@ -180,8 +183,14 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     // Only touch fields the caller actually provided -- `params.field ?? null` would otherwise
     // silently clear any field a partial payload omits, since each is independently optional.
     const fieldsToUpdate: Partial<
-      Pick<ThompsonSamplingExperimentConfig, 'warmupThreshold' | 'minimumDrawDifference' | 'batchSize'>
+      Pick<
+        ThompsonSamplingExperimentConfig,
+        'scalingFactor' | 'warmupThreshold' | 'minimumDrawDifference' | 'batchSize'
+      >
     > = {};
+    if (params.scalingFactor !== undefined) {
+      fieldsToUpdate.scalingFactor = params.scalingFactor;
+    }
     if (params.warmupThreshold !== undefined) {
       fieldsToUpdate.warmupThreshold = params.warmupThreshold;
     }
@@ -229,7 +238,14 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     const config = await this.configRepository.findByExperimentIdWithConditions(experimentId);
 
     if (!config) {
-      return { conditions: [], pendingRewardsCount: 0, totalRewardCount: 0, warmupThreshold: 0, batchSize: 1 };
+      return {
+        conditions: [],
+        pendingRewardsCount: 0,
+        totalRewardCount: 0,
+        warmupThreshold: 0,
+        batchSize: 1,
+        scalingFactor: DEFAULT_SCALING_FACTOR,
+      };
     }
 
     // A reward is only ever buffered (pendingTotalCount > 0) when batchSize > 1 -- unset/<=1 applies
@@ -251,7 +267,8 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
         state.priorSuccess,
         state.priorFailure,
         state.successCount,
-        state.failureCount
+        state.failureCount,
+        config.scalingFactor
       );
       return {
         conditionId: state.conditionId,
@@ -264,6 +281,8 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
         order: state.condition?.order ?? 0,
         priorSuccess: state.priorSuccess,
         priorFailure: state.priorFailure,
+        successPosterior: alpha,
+        failurePosterior: beta,
       };
     });
 
@@ -271,11 +290,11 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
     // ExperimentCondition.twoCharacterId is unique), so two conditions sharing a code would
     // otherwise collide in the weight map and silently swap estimatedWeight values.
     const weightMap = this.thompsonSamplingService.estimateConditionWeights(
-      rows.map((r) => ({ code: r.conditionId, alpha: r.alpha, beta: r.beta }))
+      rows.map((r) => ({ code: r.conditionId, alpha: r.successPosterior, beta: r.failurePosterior }))
     );
 
     const conditions = rows
-      .map(({ conditionId, alpha: _alpha, beta: _beta, ...rest }) => ({
+      .map(({ conditionId, ...rest }) => ({
         ...rest,
         estimatedWeight: weightMap[conditionId],
       }))
@@ -287,6 +306,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
       totalRewardCount,
       warmupThreshold: config.warmupThreshold,
       batchSize: config.batchSize,
+      scalingFactor: config.scalingFactor,
     };
   }
 

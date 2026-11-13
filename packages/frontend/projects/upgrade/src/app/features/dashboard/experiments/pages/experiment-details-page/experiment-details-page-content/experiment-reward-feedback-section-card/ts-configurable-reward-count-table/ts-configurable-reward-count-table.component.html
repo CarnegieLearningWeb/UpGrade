@@ -35,8 +35,20 @@
       <th mat-header-cell *matHeaderCellDef class="successes-column data-column ft-14-600">
         {{ 'experiments.details.posteriors.count.text' | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="successes-column data-column ft-14-400">
+      <td
+        mat-cell
+        *matCellDef="let row"
+        class="successes-column data-column ft-14-400"
+        [matTooltip]="'experiments.details.posteriors.scaled-count-tooltip.text' | translate"
+        [matTooltipDisabled]="!isScaled"
+        matTooltipPosition="above"
+      >
         {{ row.successes }}
+        @if (isScaled) {
+        <span class="scaled-count"
+          >({{ scaledValues(row.priorSuccess, row.successes, row.successPosterior).scaledCount }})</span
+        >
+        }
       </td>
     </ng-container>
 
@@ -46,7 +58,7 @@
         {{ 'experiments.details.posteriors.prior.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="successes-prior-column data-column ft-14-400">
-        ({{ row.priorSuccess ?? 1 }})
+        {{ row.priorSuccess ?? 1 }}
       </td>
     </ng-container>
 
@@ -55,8 +67,15 @@
       <th mat-header-cell *matHeaderCellDef class="successes-posterior-column data-column ft-14-700">
         {{ 'experiments.details.posteriors.posterior.text' | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="successes-posterior-column data-column ft-14-700">
-        {{ row.successes + (row.priorSuccess ?? 1) }}
+      <td
+        mat-cell
+        *matCellDef="let row"
+        class="successes-posterior-column data-column ft-14-700"
+        [matTooltip]="'experiments.details.posteriors.posterior-formula-tooltip.text' | translate"
+        [matTooltipDisabled]="!isScaled"
+        matTooltipPosition="above"
+      >
+        {{ scaledValues(row.priorSuccess, row.successes, row.successPosterior).posterior }}
       </td>
     </ng-container>
 
@@ -96,8 +115,20 @@
       <th mat-header-cell *matHeaderCellDef class="failures-column data-column ft-14-600">
         {{ 'experiments.details.posteriors.count.text' | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="failures-column data-column ft-14-400">
+      <td
+        mat-cell
+        *matCellDef="let row"
+        class="failures-column data-column ft-14-400"
+        [matTooltip]="'experiments.details.posteriors.scaled-count-tooltip.text' | translate"
+        [matTooltipDisabled]="!isScaled"
+        matTooltipPosition="above"
+      >
         {{ row.failures }}
+        @if (isScaled) {
+        <span class="scaled-count"
+          >({{ scaledValues(row.priorFailure, row.failures, row.failurePosterior).scaledCount }})</span
+        >
+        }
       </td>
     </ng-container>
 
@@ -107,7 +138,7 @@
         {{ 'experiments.details.posteriors.prior.text' | translate }}
       </th>
       <td mat-cell *matCellDef="let row" class="failures-prior-column data-column ft-14-400">
-        ({{ row.priorFailure ?? 1 }})
+        {{ row.priorFailure ?? 1 }}
       </td>
     </ng-container>
 
@@ -116,8 +147,15 @@
       <th mat-header-cell *matHeaderCellDef class="failures-posterior-column data-column ft-14-700">
         {{ 'experiments.details.posteriors.posterior.text' | translate }}
       </th>
-      <td mat-cell *matCellDef="let row" class="failures-posterior-column data-column ft-14-700">
-        {{ row.failures + (row.priorFailure ?? 1) }}
+      <td
+        mat-cell
+        *matCellDef="let row"
+        class="failures-posterior-column data-column ft-14-700"
+        [matTooltip]="'experiments.details.posteriors.posterior-formula-tooltip.text' | translate"
+        [matTooltipDisabled]="!isScaled"
+        matTooltipPosition="above"
+      >
+        {{ scaledValues(row.priorFailure, row.failures, row.failurePosterior).posterior }}
       </td>
     </ng-container>
 

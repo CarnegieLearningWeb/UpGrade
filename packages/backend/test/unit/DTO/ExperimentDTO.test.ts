@@ -43,4 +43,35 @@ describe('ExperimentDTO', () => {
       expect(errors.some((e) => e.property === 'assignmentAlgorithm')).toBe(false);
     });
   });
+
+  describe('thompsonSamplingConfig.scalingFactor', () => {
+    async function scalingFactorErrors(scalingFactor: unknown): Promise<string[]> {
+      const dto = plainToInstance(ExperimentDTO, { thompsonSamplingConfig: { scalingFactor } });
+      const errors = await validate(dto, { skipMissingProperties: true });
+      const configErrors = errors.find((e) => e.property === 'thompsonSamplingConfig')?.children ?? [];
+      return configErrors.filter((e) => e.property === 'scalingFactor').flatMap((e) => Object.keys(e.constraints));
+    }
+
+    it.each([0.01, 0.2, 1, 2.5, 10000, 1000000])('accepts %p', async (value) => {
+      expect(await scalingFactorErrors(value)).toEqual([]);
+    });
+
+    it('rejects zero and negative values', async () => {
+      expect(await scalingFactorErrors(0)).toContain('min');
+      expect(await scalingFactorErrors(-1)).toContain('min');
+    });
+
+    // Same shared MAX_NUMBER_INPUT (1,000,000) cap as the other Thompson Sampling fields, and as the form.
+    it('rejects values above 1,000,000', async () => {
+      expect(await scalingFactorErrors(1000000.01)).toContain('max');
+    });
+
+    it('rejects more than two decimal places', async () => {
+      expect(await scalingFactorErrors(0.125)).toContain('isNumber');
+    });
+
+    it('rejects NaN', async () => {
+      expect(await scalingFactorErrors(NaN)).toContain('isNumber');
+    });
+  });
 });

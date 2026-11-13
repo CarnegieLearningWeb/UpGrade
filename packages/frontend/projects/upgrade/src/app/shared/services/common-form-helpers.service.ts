@@ -75,4 +75,22 @@ export class CommonFormHelpersService {
       return null;
     };
   }
+
+  /**
+   * Custom validator to ensure a number has at most `maxDecimalPlaces` digits after the decimal
+   * point. Counts digits in the number's string form, the same way the backend's class-validator
+   * `@IsNumber({ maxDecimalPlaces })` does, so the two agree on what's accepted.
+   */
+  public static maxDecimalPlacesValidator(maxDecimalPlaces: number): ValidatorFn {
+    return (control) => {
+      if (control.value === null || control.value === undefined || control.value === '') {
+        return null; // Don't validate empty values, this clobbers the 'required' validator
+      }
+      const decimals = String(control.value).split('.')[1] ?? '';
+      if (decimals.length > maxDecimalPlaces) {
+        return { maxDecimalPlaces: { max: maxDecimalPlaces, value: control.value } };
+      }
+      return null;
+    };
+  }
 }

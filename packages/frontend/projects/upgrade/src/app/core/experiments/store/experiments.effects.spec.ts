@@ -1604,6 +1604,7 @@ describe('ExperimentEffects', () => {
         totalRewardCount: 30,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));

@@ -10,11 +10,14 @@ import { BullettedListKeyValueFormat } from '@shared-component-lib/common-sectio
 import { CommonFormHelpersService } from '../../shared/services/common-form-helpers.service';
 
 const DEFAULT_MAX_NUMBER_INPUT = 1000000;
+const MIN_SCALING_FACTOR = 0.01;
+const SCALING_FACTOR_DECIMAL_PLACES = 2;
 
 export interface EditableThompsonSamplingConfig {
-  batchSize: number;
+  scalingFactor: number;
   warmupThreshold: number;
   minimumDrawDifference: number;
+  batchSize: number;
 }
 
 export function isThompsonSamplingExperiment(experiment: ExperimentVM): boolean {
@@ -30,12 +33,13 @@ export function formatThompsonSamplingConfigDetails(
 
   const config = experiment.thompsonSamplingConfig;
   return [
-    { labelKey: THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS.BATCH_SIZE, value: config?.batchSize },
+    { labelKey: THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS.SCALING_FACTOR, value: config?.scalingFactor ?? 1 },
     { labelKey: THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS.WARMUP_THRESHOLD, value: config?.warmupThreshold },
     {
       labelKey: THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS.MINIMUM_DRAW_DIFFERENCE,
       value: config?.minimumDrawDifference?.toFixed(1),
     },
+    { labelKey: THOMPSON_SAMPLING_OVERVIEW_PARAM_LABELS.BATCH_SIZE, value: config?.batchSize },
   ];
 }
 
@@ -52,28 +56,36 @@ export class ThompsonSamplingHelperService {
   }
 
   getDefaults(): EditableThompsonSamplingConfig {
-    return { batchSize: 1, warmupThreshold: 0, minimumDrawDifference: 0 };
+    return { scalingFactor: 1, warmupThreshold: 0, minimumDrawDifference: 0, batchSize: 1 };
   }
 
   deriveEditableParameters(existing?: ThompsonSamplingConfigDTO): EditableThompsonSamplingConfig {
     const defaults = this.getDefaults();
     return {
-      batchSize: existing?.batchSize ?? defaults.batchSize,
+      scalingFactor: existing?.scalingFactor ?? defaults.scalingFactor,
       warmupThreshold: existing?.warmupThreshold ?? defaults.warmupThreshold,
       minimumDrawDifference: existing?.minimumDrawDifference ?? defaults.minimumDrawDifference,
+      batchSize: existing?.batchSize ?? defaults.batchSize,
     };
   }
 
   buildConfig(editableParams: EditableThompsonSamplingConfig): ThompsonSamplingConfigDTO {
     return {
-      batchSize: editableParams.batchSize,
+      scalingFactor: editableParams.scalingFactor,
       warmupThreshold: editableParams.warmupThreshold,
       minimumDrawDifference: editableParams.minimumDrawDifference,
+      batchSize: editableParams.batchSize,
     };
   }
 
   getFieldValidators(): Record<string, ValidatorFn[]> {
     return {
+      scalingFactor: [
+        Validators.required,
+        Validators.min(MIN_SCALING_FACTOR),
+        Validators.max(DEFAULT_MAX_NUMBER_INPUT),
+        CommonFormHelpersService.maxDecimalPlacesValidator(SCALING_FACTOR_DECIMAL_PLACES),
+      ],
       batchSize: [
         Validators.required,
         Validators.min(1),
