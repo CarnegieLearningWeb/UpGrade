@@ -39,7 +39,7 @@ Get all the experiment assignments for the initialized user
 > getAllExperimentCondition(callback)
 
 ## getExperimentCondition
-Returns the `Assignment` for a decision point, from the assignments fetched by `getAllExperimentConditions`. `site` and `target` are matched exactly (case-sensitive), as the server matches them.
+Returns the `Assignment` for a decision point. It's answered from the cache if `getAllExperimentConditions` already fetched the full context, or if an earlier call fetched this decision point. Otherwise it asks `/assign` for just this decision point, so the server doesn't evaluate the rest of the context, and caches the answer. A decision point with no assignment isn't cached, so looking it up again asks the server again. If you'll look up many decision points, call `getAllExperimentConditions` first, so one request answers them all. `site` and `target` are matched exactly (case-sensitive), as the server matches them.
 
 > getExperimentCondition(String site, callback)
 
@@ -113,7 +113,7 @@ Use these functions to evaluate feature flags against session-scoped groups. Whe
 > clearFeatureFlagUserGroupsForSession()
 
 ## Caching
-Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since what a user is assigned can depend on their identity and groups. The session-group setters also clear the flag cache.
+Assignments and feature flags are cached for the client's lifetime, with no expiry. The assignment cache may hold only the decision points `getExperimentCondition` fetched one at a time; `getAllExperimentConditions` then fetches the full context instead of returning them. Both caches are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since what a user is assigned can depend on their identity and groups. The session-group setters also clear the flag cache.
 
 This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Wait for these calls' callbacks before reading assignments or flags, or pass `ignoreCache = true` to the `getAllExperimentConditions(boolean, callback)` / `getAllFeatureFlags(boolean, callback)` overloads when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
 

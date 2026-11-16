@@ -610,6 +610,95 @@ public class ExperimentClientTest {
 		assertEquals(body.path("context").asText(), "test-app");
 	}
 
+	private Assignment lookup(String site, String target) throws Exception {
+		CompletableFuture<Assignment> assignment = new CompletableFuture<>();
+		client.getExperimentCondition(site, target, into(assignment));
+		return assignment.get(5, TimeUnit.SECONDS);
+	}
+
+	@Test
+	public void getExperimentConditionAsksAssignForJustThatDecisionPoint() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		assertEquals(lookup("home", "banner").getCondition(), "control");
+
+		JsonNode body = lastBody("/api/v6/assign");
+		assertEquals(fieldNames(body), java.util.Set.of("context", "decisionPoint"));
+		assertEquals(body.path("context").asText(), "test-app");
+		assertEquals(body.path("decisionPoint").path("site").asText(), "home");
+		assertEquals(body.path("decisionPoint").path("target").asText(), "banner");
+	}
+
+	@Test
+	public void getExperimentConditionSendsANullTargetAsEmpty() throws Exception {
+		responses.put("/api/v6/assign", "[]");
+		lookup("home", null);
+
+		JsonNode target = lastBody("/api/v6/assign").path("decisionPoint").path("target");
+		assertTrue(target.isTextual());
+		assertEquals(target.asText(), "");
+	}
+
+	@Test
+	public void getExperimentConditionCachesTheDecisionPointItFetched() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		lookup("home", "banner");
+		assertEquals(lookup("home", "banner").getCondition(), "control");
+
+		assertEquals(requestCount("/api/v6/assign"), 1);
+	}
+
+	@Test
+	public void getExperimentConditionAsksAgainWhenThereWasNoAssignment() throws Exception {
+		// an empty response adds nothing to the cache, so the next lookup can't tell it already asked
+		responses.put("/api/v6/assign", "[]");
+		assertNull(lookup("home", "banner").getCondition());
+		assertNull(lookup("home", "banner").getCondition());
+
+		assertEquals(requestCount("/api/v6/assign"), 2);
+	}
+
+	@Test
+	public void getExperimentConditionUsesAFullContextCacheWithoutAsking() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		fetchAssignments();
+
+		assertEquals(lookup("home", "banner").getCondition(), "control");
+		// the full context also answers for a decision point with no assignment
+		assertNull(lookup("quiz", "hint").getCondition());
+		assertEquals(requestCount("/api/v6/assign"), 1);
+	}
+
+	@Test
+	public void getAllExperimentConditionsIgnoresACacheOfSingleDecisionPoints() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		lookup("home", "banner");
+		fetchAssignments();
+
+		assertEquals(requestCount("/api/v6/assign"), 2);
+		assertFalse(lastBody("/api/v6/assign").has("decisionPoint"));
+
+		// once the full context is cached, neither call asks again
+		fetchAssignments();
+		lookup("quiz", "hint");
+		assertEquals(requestCount("/api/v6/assign"), 2);
+	}
+
+	@Test
+	public void clearingCachesForgetsTheFullContext() throws Exception {
+		responses.put("/api/v6/assign", SIMPLE_ASSIGNMENT);
+		responses.put("/api/v6/init", USER);
+		fetchAssignments();
+		CompletableFuture<org.upgradeplatform.responsebeans.InitializeUserResponse> done = new CompletableFuture<>();
+		client.init(into(done));
+		done.get(5, TimeUnit.SECONDS);
+
+		// with the full context gone, a lookup asks /assign for just its decision point again, and caches the answer
+		lookup("home", "banner");
+		lookup("home", "banner");
+		assertEquals(requestCount("/api/v6/assign"), 2);
+		assertTrue(lastBody("/api/v6/assign").has("decisionPoint"));
+	}
+
 	@Test
 	public void logPostsValueWithMetricsAndGroupedMetrics() throws Exception {
 		responses.put("/api/v6/log", "[{\"id\":\"log-1\",\"uniquifier\":null}]");
