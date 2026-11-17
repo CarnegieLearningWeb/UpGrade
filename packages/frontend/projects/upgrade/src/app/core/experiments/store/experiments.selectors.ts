@@ -384,7 +384,7 @@ export const selectRewardsDataForSelectedExperiment = createSelector(
           conditionCode: condition.conditionCode,
           successes: 0,
           failures: 0,
-          total: 0,
+          totalRewardCount: 0,
           successRate: 'n/a',
           order: condition.order,
         })),

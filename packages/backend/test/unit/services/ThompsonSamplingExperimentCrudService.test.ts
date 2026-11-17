@@ -430,6 +430,42 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       expect(result.totalRewardCount).toBe(3);
     });
 
+    it('reports per-condition totalRewardCount as flushed + pending, summing to the summary total', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        warmupThreshold: 0,
+        batchSize: 5,
+        conditionPosteriorStates: [
+          {
+            conditionId: 'condition-1',
+            priorSuccess: 1,
+            priorFailure: 1,
+            successCount: 4,
+            failureCount: 2,
+            totalCount: 6,
+            pendingTotalCount: 2,
+            condition: { conditionCode: 'A', order: 0 },
+          },
+          {
+            conditionId: 'condition-2',
+            priorSuccess: 1,
+            priorFailure: 1,
+            successCount: 1,
+            failureCount: 3,
+            totalCount: 4,
+            pendingTotalCount: 1,
+            condition: { conditionCode: 'B', order: 1 },
+          },
+        ],
+      });
+
+      const result = await service.getRewardsSummary('experiment-1');
+
+      // A pending batch hasn't reached successes/failures yet, so totalRewardCount runs ahead of them.
+      expect(result.conditions.map((c) => c.totalRewardCount)).toEqual([8, 5]);
+      expect(result.conditions[0].successes + result.conditions[0].failures).toBe(6);
+      expect(result.totalRewardCount).toBe(13);
+    });
+
     it('always reports 0 pending rewards when batchSize is 1, even if a row has a stale pendingTotalCount', async () => {
       configRepository.findByExperimentIdWithConditions.mockResolvedValue({
         warmupThreshold: 0,

@@ -780,7 +780,7 @@ describe('ExperimentsReducer', () => {
             conditionCode: 'Control',
             successes: 10,
             failures: 5,
-            total: 15,
+            totalRewardCount: 15,
             successRate: '66.7%',
             order: 0,
           },
@@ -788,7 +788,7 @@ describe('ExperimentsReducer', () => {
             conditionCode: 'Treatment',
             successes: 8,
             failures: 7,
-            total: 15,
+            totalRewardCount: 15,
             successRate: '53.3%',
             order: 1,
           },
@@ -818,7 +818,7 @@ describe('ExperimentsReducer', () => {
             conditionCode: 'Control',
             successes: 5,
             failures: 5,
-            total: 10,
+            totalRewardCount: 10,
             successRate: '50.0%',
             order: 0,
           },
@@ -840,7 +840,7 @@ describe('ExperimentsReducer', () => {
             conditionCode: 'Control',
             successes: 10,
             failures: 5,
-            total: 15,
+            totalRewardCount: 15,
             successRate: '66.7%',
             order: 0,
           },
@@ -864,14 +864,18 @@ describe('ExperimentsReducer', () => {
 
     it('action "actionFetchRewardsDataForExperimentSuccess" should preserve other experiment summaries', () => {
       const summary1 = {
-        conditions: [{ conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 }],
+        conditions: [
+          { conditionCode: 'A', successes: 1, failures: 0, totalRewardCount: 1, successRate: '100%', order: 0 },
+        ],
         pendingRewardsCount: 0,
         totalRewardCount: 1,
         warmupThreshold: 0,
         batchSize: 1,
       };
       const summary2 = {
-        conditions: [{ conditionCode: 'B', successes: 2, failures: 0, total: 2, successRate: '100%', order: 0 }],
+        conditions: [
+          { conditionCode: 'B', successes: 2, failures: 0, totalRewardCount: 2, successRate: '100%', order: 0 },
+        ],
         pendingRewardsCount: 0,
         totalRewardCount: 2,
         warmupThreshold: 0,
@@ -910,7 +914,9 @@ describe('ExperimentsReducer', () => {
 
     it('action "actionFetchRewardsDataForExperimentFailure" should not modify rewardsSummaries', () => {
       const existingSummary = {
-        conditions: [{ conditionCode: 'A', successes: 1, failures: 0, total: 1, successRate: '100%', order: 0 }],
+        conditions: [
+          { conditionCode: 'A', successes: 1, failures: 0, totalRewardCount: 1, successRate: '100%', order: 0 },
+        ],
         pendingRewardsCount: 0,
         totalRewardCount: 1,
         warmupThreshold: 0,
