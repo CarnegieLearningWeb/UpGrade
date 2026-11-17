@@ -1,6 +1,15 @@
 import { randomUUID } from 'crypto';
 import { DataSource, EntityManager, QueryRunner } from 'typeorm';
-import { BatchDeleteEntity, CACHE_PREFIX, DeletionReasonCode, UserRole } from 'upgrade_types';
+import { ForbiddenError } from 'routing-controllers';
+import {
+  BatchDeleteEntity,
+  CACHE_PREFIX,
+  DeletionReasonCode,
+  EXPERIMENT_STATE,
+  FEATURE_FLAG_STATUS,
+  SEGMENT_TYPE,
+  UserRole,
+} from 'upgrade_types';
 import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { FeatureFlagService } from '../../../src/api/services/FeatureFlagService';
@@ -9,6 +18,8 @@ import { FeatureFlagPrecomputedSegmentService } from '../../../src/api/services/
 import { ExperimentPrecomputedSegmentService } from '../../../src/api/services/ExperimentPrecomputedSegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { DeletionRepository } from '../../../src/api/repositories/DeletionRepository';
+import { DeletionPolicyService } from '../../../src/api/services/DeletionPolicyService';
+import { PermissionService } from '../../../src/api/services/PermissionService';
 
 describe('BatchDeleteService transaction outcomes', () => {
   const entities: BatchDeleteEntity[] = ['experiments', 'flags', 'segments'];
@@ -24,6 +35,13 @@ describe('BatchDeleteService transaction outcomes', () => {
   let createQueryRunner: jest.Mock;
   let work: jest.Mock;
   let configureRunner: (runner: QueryRunner, index: number) => void;
+  let deletionRepository: DeletionRepository;
+  // One locked projection that every entity's policy allows: Inactive, Disabled, an unused public segment.
+  const deletable = {
+    state: EXPERIMENT_STATE.INACTIVE,
+    status: FEATURE_FLAG_STATUS.DISABLED,
+    type: SEGMENT_TYPE.PUBLIC,
+  };
 
   beforeEach(() => {
     (logger.error as jest.Mock).mockClear();
@@ -39,7 +57,7 @@ describe('BatchDeleteService transaction outcomes', () => {
         },
         manager: {
           getRepository: jest.fn(() => ({
-            findOne: jest.fn(async ({ where }) => ({ id: where.id })),
+            findOne: jest.fn(async ({ where }) => ({ id: where.id, ...deletable })),
           })),
         },
         connect: jest.fn().mockResolvedValue(undefined),
@@ -72,12 +90,15 @@ describe('BatchDeleteService transaction outcomes', () => {
         })
       ),
     };
+    deletionRepository = new DeletionRepository(DeletionRepository, {} as EntityManager);
+    jest.spyOn(deletionRepository, 'isSegmentInUse').mockResolvedValue(false);
     service = new BatchDeleteService(
       { createQueryRunner } as unknown as DataSource,
       experiments as unknown as ExperimentService,
       flags as unknown as FeatureFlagService,
       segments as unknown as SegmentService,
-      new DeletionRepository(DeletionRepository, {} as EntityManager)
+      deletionRepository,
+      new DeletionPolicyService({} as DataSource, deletionRepository, new PermissionService())
     );
   });
   afterEach(() => {
@@ -245,6 +266,60 @@ describe('BatchDeleteService transaction outcomes', () => {
     expect(result.results.slice(1).map((item) => item.outcome)).toEqual(['deleted', 'deleted']);
     expect(mutations).toEqual(ids.slice(1));
   });
+
+  const refusals: [BatchDeleteEntity, object, DeletionReasonCode][] = [
+    ['experiments', { state: EXPERIMENT_STATE.ENROLLING }, DeletionReasonCode.STATE_NOT_DELETABLE],
+    ['flags', { status: FEATURE_FLAG_STATUS.ENABLED }, DeletionReasonCode.STATE_NOT_DELETABLE],
+    ['segments', { type: SEGMENT_TYPE.GLOBAL_EXCLUDE }, DeletionReasonCode.GLOBAL_EXCLUDE_PROTECTED],
+  ];
+  test.each(refusals)(
+    '%s refuses an ineligible locked target without mutation and continues',
+    async (entity, fields, reasonCode) => {
+      configureRunner = (runner, index) => {
+        if (index !== 1) return;
+        (runner.manager.getRepository as jest.Mock).mockReturnValue({
+          findOne: jest.fn(async ({ where }) => ({ id: where.id, ...deletable, ...fields })),
+        });
+      };
+      const result = await service.delete(entity, ids, user, logger);
+      expect(result.results).toEqual([
+        { id: ids[0], outcome: 'deleted' },
+        { id: ids[1], outcome: 'refused', reasonCode },
+        { id: ids[2], outcome: 'deleted' },
+      ]);
+      expect(mutations).toEqual([ids[0], ids[2]]);
+      expect(runners[1].rollbackTransaction).toHaveBeenCalledTimes(1);
+      expect(runners[1].commitTransaction).not.toHaveBeenCalled();
+      expect(logger.error).not.toHaveBeenCalled();
+    }
+  );
+
+  test('refuses a Used segment using the usage read inside the locked transaction', async () => {
+    (deletionRepository.isSegmentInUse as jest.Mock).mockImplementation(async (id) => id === ids[0]);
+    const result = await service.delete('segments', ids, user, logger);
+    expect(result.results[0]).toEqual({
+      id: ids[0],
+      outcome: 'refused',
+      reasonCode: DeletionReasonCode.SEGMENT_IN_USE,
+    });
+    expect(result.results.slice(1).map((item) => item.outcome)).toEqual(['deleted', 'deleted']);
+    expect(deletionRepository.isSegmentInUse).toHaveBeenCalledWith(ids[0], runners[0].manager);
+  });
+
+  test.each([
+    [UserRole.READER, 'experiments'],
+    [UserRole.READER, 'flags'],
+    [UserRole.READER, 'segments'],
+    [UserRole.USER_MANAGER, 'experiments'],
+    [UserRole.USER_MANAGER, 'flags'],
+  ] as [UserRole, BatchDeleteEntity][])(
+    'rejects a %s deleting %s before opening any transaction',
+    async (role, entity) => {
+      await expect(service.delete(entity, ids, { ...user, role }, logger)).rejects.toBeInstanceOf(ForbiddenError);
+      expect(createQueryRunner).not.toHaveBeenCalled();
+      expect(mutations).toEqual([]);
+    }
+  );
 
   test('reports a lock timeout only after a confirmed rollback', async () => {
     work.mockRejectedValue(Object.assign(new Error('lock wait'), { code: '55P03' }));

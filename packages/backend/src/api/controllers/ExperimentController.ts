@@ -1,6 +1,7 @@
 import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/BatchDeleteService';
+import { DeletionPolicyService } from '../services/DeletionPolicyService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import {
   Body,
@@ -669,7 +670,8 @@ export class ExperimentController {
     public cacheService: CacheService,
     public thompsonSamplingCrudService: ThompsonSamplingExperimentCrudService,
     public adaptiveExperimentConfigDispatcher: AdaptiveExperimentConfigDispatcherService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    @Inject(() => DeletionPolicyService) private deletionPolicyService: DeletionPolicyService
   ) {}
 
   /**
@@ -677,7 +679,7 @@ export class ExperimentController {
    * /experiments/batch-delete:
    *   post:
    *     summary: Delete the selected experiments
-   *     description: Deletes selected experiments sequentially regardless of state, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
+   *     description: Deletes selected experiments sequentially. Requires the Admin or Creator role. Missing items are skipped; experiments that are not Draft, Inactive, Completed or Archived are refused and skipped. Execution failures stop the remaining items. Returns one result per ID.
    *     tags:
    *       - Experiments
    *     parameters:
@@ -695,6 +697,8 @@ export class ExperimentController {
    *         description: Expected a nonempty array of unique UUIDs.
    *       '401':
    *         description: AuthorizationRequiredError
+   *       '403':
+   *         description: The current user's role cannot delete experiments. Nothing is deleted.
    */
   @Post('/batch-delete')
   public batchDelete(
@@ -1182,8 +1186,12 @@ export class ExperimentController {
    *            description: ExperimentId should be a valid UUID.
    *          '401':
    *            description: AuthorizationRequiredError
+   *          '403':
+   *            description: The current user's role cannot delete experiments
    *          '404':
    *            description: Not found error
+   *          '409':
+   *            description: The experiment is Running, Paused, Preview or Scheduled and was not deleted
    *          '500':
    *            description: id should be of type UUID
    */
@@ -1196,7 +1204,11 @@ export class ExperimentController {
   ): Promise<Experiment | undefined> {
     request.logger.child({ user: currentUser });
 
-    const experiment = await this.experimentService.delete(id, currentUser, { logger: request.logger });
+    this.deletionPolicyService.assertRoleCanDelete('experiments', currentUser);
+    const experiment = await this.experimentService.delete(id, currentUser, {
+      logger: request.logger,
+      executeTransaction: this.deletionPolicyService.singleDeletionTransaction('experiments', id),
+    });
 
     if (!experiment) {
       throw new NotFoundException('Experiment not found.');

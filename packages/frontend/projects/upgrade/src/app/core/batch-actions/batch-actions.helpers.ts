@@ -1,9 +1,9 @@
 import {
   BatchDeleteEntity,
   BatchDeleteResult,
+  DELETABLE_EXPERIMENT_STATES,
   DeletionReasonCode,
   EXPERIMENT_STATE,
-  EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES,
   FEATURE_FLAG_STATUS,
   SEGMENT_STATUS,
 } from 'upgrade_types';
@@ -23,16 +23,9 @@ export function selectionItem(row: {
   return { id: row.id, name: row.name, stateOrStatus: row.state || row.status };
 }
 
+/** Mirrors the backend deletion policy, which uses the same shared state list. */
 export function getExperimentDeletionReason(state?: EXPERIMENT_STATE): DeletionEligibilityReasonCode | undefined {
-  const displayState = EXPERIMENT_STATE_DISPLAY_NAME_OVERRIDES[state] || state;
-  return [
-    EXPERIMENT_STATE.DRAFT,
-    EXPERIMENT_STATE.INACTIVE,
-    EXPERIMENT_STATE.COMPLETED,
-    EXPERIMENT_STATE.ARCHIVED,
-  ].includes(displayState)
-    ? undefined
-    : DeletionEligibilityReasonCode.EXPERIMENT_ACTIVE;
+  return DELETABLE_EXPERIMENT_STATES.includes(state) ? undefined : DeletionEligibilityReasonCode.EXPERIMENT_ACTIVE;
 }
 
 export function localDeletionReason(
@@ -69,7 +62,7 @@ export const confirmedRemovedIds = (result?: BatchDeleteResult) =>
   [];
 
 export function validateBatchDeleteResponse(result: BatchDeleteResult, ids: string[]): BatchDeleteResult {
-  const outcomes = ['deleted', 'not_found', 'failed', 'unknown', 'not_attempted'];
+  const outcomes = ['deleted', 'not_found', 'refused', 'failed', 'unknown', 'not_attempted'];
   if (!result || !Array.isArray(result.results) || result.results.length !== ids.length) {
     throw new Error('Incomplete batch deletion response');
   }
@@ -89,6 +82,8 @@ export function batchDeleteResultCounts(state: RootBatchDeleteState) {
   return {
     deleted: results.filter((item) => item.outcome === 'deleted').length,
     absent: results.filter((item) => item.outcome === 'not_found').length,
+    // The server refused an item the list showed as deletable, e.g. it started running after the list loaded.
+    refused: results.filter((item) => item.outcome === 'refused').length,
     uncertain: results.some((item) => item.outcome === 'unknown'),
     failed: results.filter((item) => item.outcome === 'failed').length,
     notAttempted: results.filter((item) => item.outcome === 'not_attempted').length,
@@ -111,6 +106,10 @@ export function batchDeleteResultMessage(
   if (counts.absent)
     parts.push(
       translate(`batch-delete.result.absent.${counts.absent === 1 ? 'one' : 'other'}`, { count: counts.absent })
+    );
+  if (counts.refused)
+    parts.push(
+      translate(`batch-delete.result.refused.${counts.refused === 1 ? 'one' : 'other'}`, { count: counts.refused })
     );
   if (counts.failed) parts.push(translate('batch-delete.result.failed'));
   if (counts.notAttempted)

@@ -1,6 +1,7 @@
 import { BatchDeleteResult } from 'upgrade_types';
 import { Inject } from 'typedi';
 import { BatchDeleteService } from '../services/BatchDeleteService';
+import { DeletionPolicyService } from '../services/DeletionPolicyService';
 import { BatchEntityIdsValidator } from './validators/BatchEntityIdsValidator';
 import {
   JsonController,
@@ -161,7 +162,8 @@ export class FeatureFlagsController {
   constructor(
     public featureFlagService: FeatureFlagService,
     public experimentUserService: ExperimentUserService,
-    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService
+    @Inject(() => BatchDeleteService) private batchDeleteService: BatchDeleteService,
+    @Inject(() => DeletionPolicyService) private deletionPolicyService: DeletionPolicyService
   ) {}
 
   /**
@@ -169,7 +171,7 @@ export class FeatureFlagsController {
    * /flags/batch-delete:
    *   post:
    *     summary: Delete the selected flags
-   *     description: Deletes selected feature flags sequentially regardless of status, skipping missing items. Execution failures stop the remaining items. Returns one result per ID.
+   *     description: Deletes selected feature flags sequentially. Requires the Admin or Creator role. Missing items are skipped; Enabled flags are refused and skipped. Execution failures stop the remaining items. Returns one result per ID.
    *     tags:
    *       - Feature Flags
    *     parameters:
@@ -187,6 +189,8 @@ export class FeatureFlagsController {
    *         description: Expected a nonempty array of unique UUIDs.
    *       '401':
    *         description: AuthorizationRequiredError
+   *       '403':
+   *         description: The current user's role cannot delete feature flags. Nothing is deleted.
    */
   @Post('/batch-delete')
   public batchDelete(
@@ -464,8 +468,12 @@ export class FeatureFlagsController {
    *       responses:
    *          '200':
    *            description: Delete Feature flag By Id
+   *          '403':
+   *            description: The current user's role cannot delete feature flags
    *          '404':
    *            description: Feature flag not found
+   *          '409':
+   *            description: The feature flag is Enabled and was not deleted
    */
 
   @Delete('/:id')
@@ -474,7 +482,13 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: UserDTO,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    const featureFlag = await this.featureFlagService.delete(id, currentUser, request.logger);
+    this.deletionPolicyService.assertRoleCanDelete('flags', currentUser);
+    const featureFlag = await this.featureFlagService.delete(
+      id,
+      currentUser,
+      request.logger,
+      this.deletionPolicyService.singleDeletionTransaction('flags', id)
+    );
 
     if (!featureFlag) {
       throw new NotFoundException('Feature flag not found.');

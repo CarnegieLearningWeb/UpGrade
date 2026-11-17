@@ -79,6 +79,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.EMAIL_SEND_ERROR;
         message = errorMessage;
         break;
+      case SERVER_ERROR.DELETION_NOT_ALLOWED:
+        type = SERVER_ERROR.DELETION_NOT_ALLOWED;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:

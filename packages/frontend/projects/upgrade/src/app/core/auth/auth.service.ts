@@ -13,6 +13,7 @@ import {
 } from './store/auth.selectors';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject, filter, take } from 'rxjs';
+import { ROLE_PERMISSIONS } from 'upgrade_types';
 import { AUTH_CONSTANTS, GoogleAuthJWTPayload, User, UserRole } from '../users/store/users.model';
 import { ENV, Environment } from '../../../environments/environment-types';
 import jwt_decode from 'jwt-decode';
@@ -176,56 +177,8 @@ export class AuthService {
   }
 
   setUserPermissions(role: UserRole): void {
-    switch (role) {
-      // Permissions for managing queries will be same as experiments
-      case UserRole.ADMIN:
-        this.userPermissions$.next({
-          experiments: { create: true, read: true, update: true, delete: true },
-          stratifications: { create: true, read: true, update: true, delete: true },
-          users: { create: true, read: true, update: true, delete: true },
-          logs: { create: true, read: true, update: true, delete: true },
-          manageRoles: { create: true, read: true, update: true, delete: true },
-          featureFlags: { create: true, read: true, update: true, delete: true },
-          metrics: { create: true, read: true, update: true, delete: true },
-          segments: { create: true, read: true, update: true, delete: true },
-        });
-        break;
-      case UserRole.CREATOR:
-        this.userPermissions$.next({
-          experiments: { create: true, read: true, update: true, delete: true },
-          stratifications: { create: true, read: true, update: true, delete: true },
-          users: { create: true, read: true, update: true, delete: true },
-          logs: { create: false, read: true, update: false, delete: false },
-          manageRoles: { create: false, read: true, update: false, delete: false },
-          featureFlags: { create: true, read: true, update: true, delete: true },
-          metrics: { create: true, read: true, update: true, delete: true },
-          segments: { create: true, read: true, update: true, delete: true },
-        });
-        break;
-      case UserRole.USER_MANAGER:
-        this.userPermissions$.next({
-          experiments: { create: false, read: true, update: false, delete: false },
-          stratifications: { create: false, read: true, update: false, delete: false },
-          users: { create: true, read: true, update: true, delete: true },
-          logs: { create: false, read: true, update: false, delete: false },
-          manageRoles: { create: false, read: true, update: false, delete: false },
-          featureFlags: { create: false, read: true, update: false, delete: false },
-          metrics: { create: false, read: true, update: false, delete: false },
-          segments: { create: false, read: true, update: true, delete: true },
-        });
-        break;
-      case UserRole.READER:
-        this.userPermissions$.next({
-          experiments: { create: false, read: true, update: false, delete: false },
-          stratifications: { create: false, read: true, update: false, delete: false },
-          users: { create: false, read: true, update: false, delete: false },
-          logs: { create: false, read: true, update: false, delete: false },
-          manageRoles: { create: false, read: true, update: false, delete: false },
-          featureFlags: { create: false, read: true, update: false, delete: false },
-          metrics: { create: false, read: true, update: false, delete: false },
-          segments: { create: false, read: true, update: false, delete: false },
-        });
-        break;
-    }
+    // The backend enforces the same shared table.
+    const permissions = ROLE_PERMISSIONS[role];
+    if (permissions) this.userPermissions$.next(permissions);
   }
 }

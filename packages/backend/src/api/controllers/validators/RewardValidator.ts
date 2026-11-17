@@ -1,4 +1,4 @@
-import { Transform, plainToInstance } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsIn,
@@ -10,15 +10,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { BinaryRewardAllowedValue } from 'upgrade_types';
-
-class DecisionPointValidator {
-  @IsString()
-  @IsNotEmpty()
-  public site: string;
-
-  @IsString()
-  public target: string;
-}
+import { DecisionPointValidator } from './DecisionPointValidator';
 
 // Custom validator specific to RewardValidator
 function RequireDecisionPointOrExperimentId(validationOptions?: ValidationOptions) {
@@ -56,8 +48,6 @@ export class RewardValidator {
 
   @IsOptional()
   @ValidateNested()
-  @Transform(({ value }) =>
-    value ? plainToInstance(DecisionPointValidator, { ...value, target: value.target ?? '' }) : value
-  )
+  @Type(() => DecisionPointValidator)
   public decisionPoint: DecisionPointValidator;
 }

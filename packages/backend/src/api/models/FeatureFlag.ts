@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany, Unique, VirtualColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, Unique } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { BaseModel } from './base/BaseModel';
 import { Type } from 'class-transformer';
@@ -61,6 +61,6 @@ export class FeatureFlag extends BaseModel {
   @OneToMany(() => FeatureFlagExposure, (featureFlagExposure) => featureFlagExposure.featureFlag)
   public featureFlagExposures: FeatureFlagExposure[];
 
-  @VirtualColumn({ query: () => `NULL` })
+  // Not a column: FeatureFlagService.findPaginated() fills it from feature_flag_exposure_count.
   exposureCount?: number;
 }

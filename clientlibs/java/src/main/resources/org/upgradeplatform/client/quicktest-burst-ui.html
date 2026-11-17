@@ -244,6 +244,20 @@
     </fieldset>
 
     <fieldset>
+      <legend>Assign requests</legend>
+      <div class="grid">
+        <label class="wide">Each alias’s /assign asks for <span class="flag">--singleDecisionPoint</span>
+          <select name="assignMode">
+            <option value="context">The whole context (getAllExperimentConditions)</option>
+            <option value="single">Only the decision point it marks (getExperimentCondition)</option>
+          </select>
+        </label>
+        <p class="wide flag" data-show="assignMode:single">Run once each way with the same seed to compare. Needs a
+          backend whose /assign takes decisionPoint; an older one returns the whole context anyway.</p>
+      </div>
+    </fieldset>
+
+    <fieldset>
       <legend>Other</legend>
       <div class="grid">
         <label>Seed <span class="flag">--seed</span>
@@ -320,6 +334,7 @@
     }
     add('--seed', 'seed');
     add('--percentEnroll', 'percentEnroll');
+    if (v.assignMode === 'single') args.push('--singleDecisionPoint');
     if (v.host === 'url') {
       add('--url', 'url');
     } else if (v.host === 'local') {

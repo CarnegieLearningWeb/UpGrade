@@ -380,6 +380,27 @@ describe.each(fixtures)('$entity batch store/effects integration', (config) => {
     expect(batch().confirmation).toBeNull();
   });
 
+  it('deletes past a server-refused item, keeps it selected and warns that it was skipped', () => {
+    selectRows();
+    const snapshot = prepare();
+    store.dispatch(actions.batchDeleteRequested({ snapshot }));
+    response.next({
+      results: [
+        { id: rows[0].id, outcome: 'deleted' },
+        { id: rows[1].id, outcome: 'refused', reasonCode: 'state_not_deletable' },
+        { id: rows[2].id, outcome: 'deleted' },
+      ],
+    });
+    expect(Object.keys(batch().selectedById)).toEqual([rows[1].id]);
+    expect(batchDeleteResultCounts(batch())).toMatchObject({ deleted: 2, refused: 1, failed: 0, notAttempted: 0 });
+    const noun = { experiments: 'experiments', flags: 'feature flags', segments: 'segments' }[config.entity];
+    expect(notifications.showWarning).toHaveBeenCalledWith(
+      `2 ${noun} deleted. 1 item is no longer eligible for deletion and was skipped.`
+    );
+    expect(notifications.showSuccess).not.toHaveBeenCalled();
+    expect(notifications.showError).not.toHaveBeenCalled();
+  });
+
   it.each([0, 1])('reports success when %i of two items are deleted and the rest were already absent', (deleted) => {
     selectRows(2);
     const snapshot = prepare();

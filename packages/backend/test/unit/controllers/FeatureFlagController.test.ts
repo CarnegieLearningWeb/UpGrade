@@ -1,4 +1,5 @@
 import { BatchDeleteService } from '../../../src/api/services/BatchDeleteService';
+import { DeletionPolicyService } from '../../../src/api/services/DeletionPolicyService';
 import app from '../../utils/expressApp';
 import request from 'supertest';
 import { configureLogger } from '../../utils/logger';
@@ -20,6 +21,10 @@ describe('Feature Flag Controller Testing', () => {
     routingUseContainer(Container);
     classValidatorUseContainer(Container);
     Container.set(BatchDeleteService, {} as BatchDeleteService);
+    Container.set(DeletionPolicyService, {
+      assertRoleCanDelete: jest.fn(),
+      singleDeletionTransaction: jest.fn(),
+    } as unknown as DeletionPolicyService);
 
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());
     Container.set(ExperimentUserService, new ExperimentUserServiceMock());
