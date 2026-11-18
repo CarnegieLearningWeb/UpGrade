@@ -963,8 +963,18 @@ describe('Experiments Selectors', () => {
   describe('#selectRewardsReplayForSelectedExperiment', () => {
     const experimentId = '1f12cd8f-7ff9-4731-a4eb-7104918ed252';
     const rewardsReplay = {
-      conditions: [{ conditionId: 'c1', conditionCode: 'A', order: 1, priorSuccess: 1, priorFailure: 1 }],
+      conditions: [
+        {
+          conditionId: 'c1',
+          conditionCode: 'A',
+          order: 1,
+          priorSuccess: 1,
+          priorFailure: 1,
+          earlierRewards: { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 },
+        },
+      ],
       rewards: [],
+      earlierRewardCount: 0,
       batchSize: 1,
       warmupThreshold: 0,
       minimumDrawDifference: 0,

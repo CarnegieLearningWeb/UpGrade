@@ -44,6 +44,7 @@ export class ReplayStepperComponent {
   @Input() conditions: ReplayConditionDisplay[] = [];
   @Input() selectedIndex = 0;
   @Input() scalingFactor = 1;
+  @Input() earlierRewardCount = 0;
   @Output() selectedIndexChange = new EventEmitter<number>();
 
   get rewardAmount(): string {
@@ -52,6 +53,14 @@ export class ReplayStepperComponent {
 
   get lastIndex(): number {
     return this.steps.length - 1;
+  }
+
+  get rewardNumber(): number {
+    return this.earlierRewardCount + this.selectedIndex;
+  }
+
+  get totalRewardCount(): number {
+    return this.earlierRewardCount + this.lastIndex;
   }
 
   get step(): ReplayStep {

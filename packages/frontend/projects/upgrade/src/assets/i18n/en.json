@@ -649,6 +649,7 @@
   "experiments.details.reward-replay.stepper.previous.text": "Previous reward",
   "experiments.details.reward-replay.stepper.next.text": "Next reward",
   "experiments.details.reward-replay.stepper.slider.text": "Reward step",
+  "experiments.details.reward-replay.stepper.window-note.text": "Showing the last {{shown}} of {{total}} rewards. Older rewards are already counted in the first step.",
   "experiments.details.reward-replay.stepper.position.text": "Reward {{index}} of {{total}}",
   "experiments.details.reward-replay.stepper.position-prior.text": "Prior · 0 of {{total}}",
   "experiments.details.reward-replay.stepper.success.text": "success +{{amount}}",

@@ -388,6 +388,17 @@ export interface ExperimentRewardsReplayCondition {
   order: number;
   priorSuccess: number;
   priorFailure: number;
+  /**
+   * Raw counts from the rewards before the replayed ones (see ExperimentRewardsReplay.earlierRewardCount):
+   * successes/failures had already reached the posterior when the replay starts; pendingSuccesses/
+   * pendingFailures were still buffered in an open batch. All zero when every reward is replayed.
+   */
+  earlierRewards: {
+    successes: number;
+    failures: number;
+    pendingSuccesses: number;
+    pendingFailures: number;
+  };
 }
 
 /**
@@ -403,12 +414,18 @@ export interface ExperimentRewardsReplayReward {
 
 /**
  * Everything needed to replay an adaptive experiment's posteriors reward by reward: its conditions
- * (sorted by display order), every recorded reward oldest first, and the experiment's current
+ * (sorted by display order), its most recent rewards oldest first, and the experiment's current
  * algorithm config. The replay itself runs on the client.
  */
 export interface ExperimentRewardsReplay {
   conditions: ExperimentRewardsReplayCondition[];
+  /** The most recent rewards (at most the server's replay limit), oldest first. */
   rewards: ExperimentRewardsReplayReward[];
+  /**
+   * How many older rewards came before `rewards[0]`. They aren't replayed one by one; their counts
+   * are in each condition's earlierRewards, so the replay starts from the posterior they produced.
+   */
+  earlierRewardCount: number;
   batchSize: number;
   warmupThreshold: number;
   minimumDrawDifference: number;

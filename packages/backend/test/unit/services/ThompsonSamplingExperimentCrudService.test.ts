@@ -23,6 +23,8 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       remove: jest.fn().mockResolvedValue(undefined),
     };
     rewardRepository = {
+      countByConditionIds: jest.fn().mockResolvedValue(0),
+      countOutcomesByConditionInArrivalRange: jest.fn().mockResolvedValue([]),
       findByConditionIdsInArrivalOrder: jest.fn().mockResolvedValue([]),
     };
     cacheService = { resetPrefixCache: jest.fn().mockResolvedValue(undefined) };
@@ -55,6 +57,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       expect(replay).toEqual({
         conditions: [],
         rewards: [],
+        earlierRewardCount: 0,
         batchSize: 1,
         warmupThreshold: 0,
         minimumDrawDifference: 0,
@@ -74,6 +77,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
           { conditionId: 'condition-a', priorSuccess: 3, priorFailure: 2, condition: { conditionCode: 'A', order: 1 } },
         ],
       });
+      rewardRepository.countByConditionIds.mockResolvedValue(2);
       rewardRepository.findByConditionIdsInArrivalOrder.mockResolvedValue([
         { id: 'reward-1', conditionId: 'condition-a', success: true, createdAt: new Date('2026-10-27T12:03:19.222Z') },
         { id: 'reward-2', conditionId: 'condition-b', success: false, createdAt: new Date('2026-10-27T12:05:00.772Z') },
@@ -81,16 +85,32 @@ describe('ThompsonSamplingExperimentCrudService', () => {
 
       const replay = await service.getRewardsReplay('experiment-1');
 
-      expect(rewardRepository.findByConditionIdsInArrivalOrder).toHaveBeenCalledWith(['condition-a', 'condition-b']);
+      expect(rewardRepository.findByConditionIdsInArrivalOrder).toHaveBeenCalledWith(['condition-a', 'condition-b'], 0);
+      const noEarlierRewards = { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 };
       expect(replay).toEqual({
         conditions: [
-          { conditionId: 'condition-a', conditionCode: 'A', order: 1, priorSuccess: 3, priorFailure: 2 },
-          { conditionId: 'condition-b', conditionCode: 'B', order: 2, priorSuccess: 1, priorFailure: 1 },
+          {
+            conditionId: 'condition-a',
+            conditionCode: 'A',
+            order: 1,
+            priorSuccess: 3,
+            priorFailure: 2,
+            earlierRewards: noEarlierRewards,
+          },
+          {
+            conditionId: 'condition-b',
+            conditionCode: 'B',
+            order: 2,
+            priorSuccess: 1,
+            priorFailure: 1,
+            earlierRewards: noEarlierRewards,
+          },
         ],
         rewards: [
           { conditionId: 'condition-a', success: true, createdAt: '2026-10-27T12:03:19.222Z' },
           { conditionId: 'condition-b', success: false, createdAt: '2026-10-27T12:05:00.772Z' },
         ],
+        earlierRewardCount: 0,
         batchSize: 5,
         warmupThreshold: 10,
         minimumDrawDifference: 0.05,
@@ -141,6 +161,42 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       const replay = await service.getRewardsReplay('experiment-1');
 
       expect(replay.conditions[0].conditionCode).toBe('condition-a');
+    });
+
+    it('replays only the most recent 1,000 rewards and counts older ones, splitting off an open batch', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 2,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        scalingFactor: 1,
+        conditionPosteriorStates: [
+          { conditionId: 'condition-a', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'A', order: 1 } },
+          { conditionId: 'condition-b', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'B', order: 2 } },
+        ],
+      });
+      // 1,003 rewards: the oldest 3 aren't replayed. With batchSize 2, the first 2 of those were one
+      // applied batch and the 3rd was still buffered when the replayed rewards begin.
+      rewardRepository.countByConditionIds.mockResolvedValue(1003);
+      rewardRepository.countOutcomesByConditionInArrivalRange.mockImplementation(async (_ids, first) =>
+        first === 1
+          ? [
+              { conditionId: 'condition-a', successes: 1, failures: 0 },
+              { conditionId: 'condition-b', successes: 0, failures: 1 },
+            ]
+          : [{ conditionId: 'condition-b', successes: 1, failures: 0 }]
+      );
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      const ids = ['condition-a', 'condition-b'];
+      expect(rewardRepository.countOutcomesByConditionInArrivalRange).toHaveBeenCalledWith(ids, 1, 2);
+      expect(rewardRepository.countOutcomesByConditionInArrivalRange).toHaveBeenCalledWith(ids, 3, 3);
+      expect(rewardRepository.findByConditionIdsInArrivalOrder).toHaveBeenCalledWith(ids, 3);
+      expect(replay.earlierRewardCount).toBe(3);
+      expect(replay.conditions.map((condition) => condition.earlierRewards)).toEqual([
+        { successes: 1, failures: 0, pendingSuccesses: 0, pendingFailures: 0 },
+        { successes: 0, failures: 1, pendingSuccesses: 1, pendingFailures: 0 },
+      ]);
     });
   });
 

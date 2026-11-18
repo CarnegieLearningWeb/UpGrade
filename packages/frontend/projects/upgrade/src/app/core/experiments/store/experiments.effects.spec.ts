@@ -1728,8 +1728,18 @@ describe('ExperimentEffects', () => {
     it('should dispatch actionFetchRewardsReplayForExperimentSuccess with the fetched replay', fakeAsync(() => {
       const experimentId = 'test-experiment-123';
       const rewardsReplay = {
-        conditions: [{ conditionId: 'c1', conditionCode: 'Control', order: 1, priorSuccess: 1, priorFailure: 1 }],
+        conditions: [
+          {
+            conditionId: 'c1',
+            conditionCode: 'Control',
+            order: 1,
+            priorSuccess: 1,
+            priorFailure: 1,
+            earlierRewards: { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 },
+          },
+        ],
         rewards: [{ conditionId: 'c1', success: true, createdAt: '2026-10-27T12:03:19.222Z' }],
+        earlierRewardCount: 0,
         batchSize: 1,
         warmupThreshold: 0,
         minimumDrawDifference: 0,

@@ -1,5 +1,13 @@
 <div class="replay-stepper">
   <h6 class="ft-16-700 heading">{{ 'experiments.details.reward-replay.stepper.title.text' | translate }}</h6>
+  @if (earlierRewardCount > 0) {
+  <span class="ft-12-400 window-note">
+    {{
+      'experiments.details.reward-replay.stepper.window-note.text'
+        | translate : { shown: lastIndex | number, total: totalRewardCount | number }
+    }}
+  </span>
+  }
 
   <div class="controls">
     <button
@@ -29,12 +37,12 @@
       <mat-icon>chevron_right</mat-icon>
     </button>
     <span class="ft-14-600 position">
-      @if (selectedIndex === 0) {
-      {{ 'experiments.details.reward-replay.stepper.position-prior.text' | translate : { total: lastIndex } }}
+      @if (rewardNumber === 0) {
+      {{ 'experiments.details.reward-replay.stepper.position-prior.text' | translate : { total: totalRewardCount } }}
       } @else {
       {{
         'experiments.details.reward-replay.stepper.position.text'
-          | translate : { index: selectedIndex, total: lastIndex }
+          | translate : { index: rewardNumber, total: totalRewardCount }
       }}
       }
     </span>

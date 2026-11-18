@@ -37,12 +37,20 @@ const reward = (conditionId: string, success: boolean, minute: number) => ({
   createdAt: new Date(Date.UTC(2026, 9, 27, 12, minute)).toISOString(),
 });
 
+const NO_EARLIER_REWARDS = { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 };
+
+const condition = (
+  conditionId: string,
+  order: number,
+  priorSuccess = 1,
+  priorFailure = 1,
+  earlierRewards = NO_EARLIER_REWARDS
+) => ({ conditionId, conditionCode: conditionId.toUpperCase(), order, priorSuccess, priorFailure, earlierRewards });
+
 const baseReplay = (overrides: Partial<ExperimentRewardsReplay> = {}): ExperimentRewardsReplay => ({
-  conditions: [
-    { conditionId: 'a', conditionCode: 'A', order: 1, priorSuccess: 1, priorFailure: 1 },
-    { conditionId: 'b', conditionCode: 'B', order: 2, priorSuccess: 1, priorFailure: 1 },
-  ],
+  conditions: [condition('a', 1), condition('b', 2)],
   rewards: [],
+  earlierRewardCount: 0,
   batchSize: 1,
   warmupThreshold: 0,
   minimumDrawDifference: 0,
@@ -52,11 +60,7 @@ const baseReplay = (overrides: Partial<ExperimentRewardsReplay> = {}): Experimen
 
 describe('replayPosteriors', () => {
   it('starts with a prior-only step', () => {
-    const steps = replayPosteriors(
-      baseReplay({
-        conditions: [{ conditionId: 'a', conditionCode: 'A', order: 1, priorSuccess: 3, priorFailure: 2 }],
-      })
-    );
+    const steps = replayPosteriors(baseReplay({ conditions: [condition('a', 1, 3, 2)] }));
 
     expect(steps).toHaveLength(1);
     expect(steps[0]).toMatchObject({ index: 0, reward: null, batch: null });
@@ -92,7 +96,7 @@ describe('replayPosteriors', () => {
   it('adds scalingFactor, not 1, per reward and leaves the priors unscaled', () => {
     const steps = replayPosteriors(
       baseReplay({
-        conditions: [{ conditionId: 'a', conditionCode: 'A', order: 1, priorSuccess: 3, priorFailure: 2 }],
+        conditions: [condition('a', 1, 3, 2)],
         scalingFactor: 0.25,
         rewards: [reward('a', true, 1), reward('a', true, 2), reward('a', false, 3)],
       })
@@ -147,5 +151,31 @@ describe('replayPosteriors', () => {
     const steps = replayPosteriors(baseReplay({ rewards: [reward('a', true, 1), reward('gone', true, 2)] }));
 
     expect(steps).toHaveLength(2);
+  });
+
+  it("starts from the earlier rewards' posterior, finishing their open batch with the first replayed reward", () => {
+    // Before the replayed rewards: A had 5 successes and 2 failures applied, and B had 1 success
+    // buffered in an unfinished batch of 2.
+    const steps = replayPosteriors(
+      baseReplay({
+        batchSize: 2,
+        earlierRewardCount: 8,
+        conditions: [
+          condition('a', 1, 1, 1, { successes: 5, failures: 2, pendingSuccesses: 0, pendingFailures: 0 }),
+          condition('b', 2, 1, 1, { successes: 0, failures: 0, pendingSuccesses: 1, pendingFailures: 0 }),
+        ],
+        rewards: [reward('a', false, 1)],
+      })
+    );
+
+    expect(steps[0].conditions.map((c) => [c.alpha, c.beta])).toEqual([
+      [6, 3],
+      [1, 1],
+    ]);
+    expect(steps[1].batch).toEqual({ kind: 'flushed', pending: 2, batchSize: 2 });
+    expect(steps[1].conditions.map((c) => [c.alpha, c.beta])).toEqual([
+      [6, 4],
+      [2, 1],
+    ]);
   });
 });

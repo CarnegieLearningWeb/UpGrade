@@ -27,6 +27,8 @@ export interface RewardReplayView {
   conditions: ReplayConditionDisplay[];
   /** α: how much one reward adds to its condition's posterior. */
   scalingFactor: number;
+  /** Older rewards before the first replayed one; step i is the state after reward earlierRewardCount + i. */
+  earlierRewardCount: number;
 }
 
 export function buildRewardReplayView(replay: ExperimentRewardsReplay): RewardReplayView {
@@ -41,7 +43,12 @@ export function buildRewardReplayView(replay: ExperimentRewardsReplay): RewardRe
     .sort((a, b) => a.conditionCode.localeCompare(b.conditionCode))
     .map((condition, i) => ({ ...condition, color: CONDITION_CHART_COLORS[i % CONDITION_CHART_COLORS.length] }));
 
-  return { steps: replayPosteriors(replay), conditions, scalingFactor: replay.scalingFactor };
+  return {
+    steps: replayPosteriors(replay),
+    conditions,
+    scalingFactor: replay.scalingFactor,
+    earlierRewardCount: replay.earlierRewardCount,
+  };
 }
 
 export function clampStepIndex(index: number, stepCount: number): number {

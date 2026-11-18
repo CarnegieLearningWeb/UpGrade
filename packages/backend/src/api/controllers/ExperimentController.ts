@@ -980,8 +980,9 @@ export class ExperimentController {
    *    get:
    *       description: >-
    *         Get the inputs for replaying a Thompson Sampling experiment's posteriors reward by reward:
-   *         its conditions with codes and priors, every recorded reward oldest first, and its current
-   *         algorithm config. Returns empty lists for an experiment with no Thompson Sampling config.
+   *         its conditions with codes and priors, its most recent rewards oldest first (at most 1,000),
+   *         per-condition counts for any older rewards, and its current algorithm config. Returns
+   *         empty lists for an experiment with no Thompson Sampling config.
    *       parameters:
    *         - in: path
    *           name: id
@@ -995,7 +996,7 @@ export class ExperimentController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Conditions, rewards in arrival order, and config for the replay
+   *            description: Conditions, recent rewards in arrival order, earlier reward counts, and config for the replay
    *          '400':
    *            description: ExperimentId should be a valid UUID.
    *          '401':

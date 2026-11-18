@@ -9,15 +9,17 @@ import {
 } from './thompson-sampling-replay-chart.util';
 
 // Two conditions listed B-first so the alphabetical sort is observable; A gets one success, then B one failure.
+const earlierRewards = { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 };
 const view = buildRewardReplayView({
   conditions: [
-    { conditionId: 'id-b', conditionCode: 'B', order: 1, priorSuccess: 1, priorFailure: 1 },
-    { conditionId: 'id-a', conditionCode: 'A', order: 2, priorSuccess: 1, priorFailure: 1 },
+    { conditionId: 'id-b', conditionCode: 'B', order: 1, priorSuccess: 1, priorFailure: 1, earlierRewards },
+    { conditionId: 'id-a', conditionCode: 'A', order: 2, priorSuccess: 1, priorFailure: 1, earlierRewards },
   ],
   rewards: [
     { conditionId: 'id-a', success: true, createdAt: '2026-10-27T12:03:00.000Z' },
     { conditionId: 'id-b', success: false, createdAt: '2026-10-27T12:05:00.000Z' },
   ],
+  earlierRewardCount: 0,
   batchSize: 1,
   warmupThreshold: 0,
   minimumDrawDifference: 0,

@@ -11,6 +11,9 @@ import { ExperimentRewardsReplay, ExperimentRewardsReplayReward } from 'upgrade_
  *
  * It uses the experiment's current priors, batchSize and scalingFactor, so it won't match history if
  * any was edited mid-experiment.
+ *
+ * The server sends only the most recent rewards. Older ones arrive as per-condition counts
+ * (earlierRewards), so the first step is the posterior they produced, not necessarily the prior.
  */
 
 export interface ReplayConditionState {
@@ -35,7 +38,10 @@ export type ReplayBatchStatus =
   | { kind: 'flushed'; pending: number; batchSize: number };
 
 export interface ReplayStep {
-  /** 0 is the prior, before any reward; n is the state after the nth reward. */
+  /**
+   * 0 is the starting state, before the first replayed reward: the prior, or the posterior after the
+   * earlier rewards that aren't replayed. n is the state after the nth replayed reward.
+   */
   index: number;
   reward: ExperimentRewardsReplayReward | null;
   batch: ReplayBatchStatus | null;
@@ -111,8 +117,16 @@ export function betaDensityCurve(alpha: number, beta: number): DensityPoint[] {
 
 export function replayPosteriors(replay: ExperimentRewardsReplay): ReplayStep[] {
   const conditionIndex = new Map(replay.conditions.map((condition, i) => [condition.conditionId, i]));
-  const counts = replay.conditions.map(() => ({ successes: 0, failures: 0 }));
-  const pending = replay.conditions.map(() => ({ successes: 0, failures: 0 }));
+  // Start from the rewards before the replayed ones: those already in the posterior, and those still
+  // buffered in an open batch (which the first replayed rewards may complete).
+  const counts = replay.conditions.map(({ earlierRewards }) => ({
+    successes: earlierRewards.successes,
+    failures: earlierRewards.failures,
+  }));
+  const pending = replay.conditions.map(({ earlierRewards }) => ({
+    successes: earlierRewards.pendingSuccesses,
+    failures: earlierRewards.pendingFailures,
+  }));
   const batchSize = replay.batchSize > 1 ? replay.batchSize : 1;
   const { scalingFactor } = replay;
 
