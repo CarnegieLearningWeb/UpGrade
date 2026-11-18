@@ -2317,6 +2317,25 @@ describe('Experiment Assignment Service Test', () => {
         .sort()
     ).toEqual(['log-32', 'log-44']);
     expect(logRepositoryMock.save.callCount).toBe(0);
+
+    logRepositoryMock.getMetricUniquifierData.resetHistory();
+    logRepositoryMock.updateLog.resetHistory();
+
+    await testedModule.dataLog(
+      { id: userId },
+      [{ timestamp, metrics: { groupedMetrics: jsonLog.flatMap((log) => log.metrics.groupedMetrics) } }],
+      loggerMock
+    );
+
+    expect(logRepositoryMock.getMetricUniquifierData.callCount).toBe(1);
+    expect(logRepositoryMock.updateLog.callCount).toBe(2);
+    expect(logRepositoryMock.updateLog.getCalls().map((call) => call.args)).toEqual(
+      expect.arrayContaining([
+        ['log-32', { masteryWorkspace: { calculating_area_various_figures: { timeSeconds: 100 } } }, timestamp],
+        ['log-44', { masteryWorkspace: { calculating_area_various_figures: { timeSeconds: 200 } } }, timestamp],
+      ])
+    );
+    expect(logRepositoryMock.save.callCount).toBe(0);
   });
 
   it('should not insert duplicate metric records when repeated identities appear in one request', async () => {
