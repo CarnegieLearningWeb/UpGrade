@@ -311,7 +311,8 @@ export default class UpgradeClient {
    * For Between subjects experiment both stack will return array containing single condition.
    * @param options.ignoreCache If true, it will ignore the cached experiment assignments and fetch fresh data from the API.
    *  This is useful when you want to ensure you have the latest assignments.
-   *  If false, it will return the cached assignments if available.
+   *  If false, it will return the cached assignments if an earlier call to this method cached them. Decision points
+   *  cached one at a time by `getDecisionPointAssignment()` aren't the full context, so this fetches it instead.
    * @example
    * ```typescript
    * const userId = "User1"
@@ -323,7 +324,7 @@ export default class UpgradeClient {
   async getAllExperimentConditions(options = { ignoreCache: false }): Promise<IExperimentAssignment[]> {
     let response: IExperimentAssignment[] = options.ignoreCache
       ? null
-      : await this.dataService.getExperimentAssignmentData();
+      : this.dataService.getFullContextAssignmentData();
     if (response == null) {
       response = await this.apiService.getAllExperimentConditions();
       if (Array.isArray(response)) {
@@ -334,9 +335,22 @@ export default class UpgradeClient {
   }
 
   /**
-   * Given a site and optional target, return the Assignment this decision point
-   * NOTE: If getAllExperimentConditions() has not been called, this will call it first.
-   * NOTE ALSO: If getAllExperimentConditions() has been called, this will return the cached result and not make a network call.
+   * Given a site and optional target, return the Assignment for this decision point.
+   *
+   * It's answered from the cache, without a network call, if `getAllExperimentConditions()` already fetched the full
+   * context, or if an earlier call fetched this decision point. Otherwise it asks the server for just this decision
+   * point, so the server doesn't evaluate the rest of the context, and caches the answer. A decision point with no
+   * assignment isn't cached, so looking it up again asks the server again. If you'll look up many decision points,
+   * call `getAllExperimentConditions()` first, so one request answers them all.
+   *
+   * `site` and `target` are matched exactly (case-sensitive), as the server matches them. A missing target is the
+   * targetless decision point (`''`).
+   *
+   * Resolves to `null` if the server's response isn't a list of assignments. With no experiment assigned here, it
+   * resolves to an Assignment whose condition and payload are null.
+   *
+   * NOTE: An older server that doesn't support asking for one decision point returns the full context instead. That
+   * still answers this lookup, but isn't treated as the full context, so `getAllExperimentConditions()` still fetches it.
    *
    * @example
    * ```typescript
@@ -345,18 +359,19 @@ export default class UpgradeClient {
    * ```
    */
 
-  async getDecisionPointAssignment(site: string, target = ''): Promise<Assignment | null> {
-    await this.getAllExperimentConditions();
+  async getDecisionPointAssignment(site: string, target?: string): Promise<Assignment | null> {
+    const normalizedTarget = target ?? '';
 
-    if (this.dataService.getExperimentAssignmentData()) {
-      const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, target);
-
-      const assignment = new Assignment(experimentAssignment, this.apiService);
-
-      return assignment;
-    } else {
-      return null;
+    if (!this.dataService.hasDecisionPointAssignment(site, normalizedTarget)) {
+      const response = await this.apiService.getAllExperimentConditions({ site, target: normalizedTarget });
+      if (!Array.isArray(response)) {
+        return null;
+      }
+      this.dataService.addDecisionPointAssignmentData(response);
     }
+
+    const experimentAssignment = this.dataService.findExperimentAssignmentBySiteAndTarget(site, normalizedTarget);
+    return new Assignment(experimentAssignment, this.apiService);
   }
 
   /**
@@ -365,6 +380,9 @@ export default class UpgradeClient {
    * NOTE: This method may be deprecated in favor of Assignment.markDecisionPoint() in a future release.
    *
    * Marking the decision point will record the user's condition assignment, regardless of whether the user is enrolled in an experiment.
+   *
+   * The mark carries the experiment and condition ids of this decision point's cached assignment, so the server marks
+   * the experiment the user was actually assigned.
    *
    * Can be called with positional arguments (original form) or a single options object:
    *
@@ -445,9 +463,6 @@ export default class UpgradeClient {
       resolvedClientError = clientError;
     }
 
-    if (this.dataService.getExperimentAssignmentData() == null) {
-      await this.getAllExperimentConditions();
-    }
     return await this.apiService.markDecisionPoint({
       site: resolvedSite,
       target: resolvedTarget,

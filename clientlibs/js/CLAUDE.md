@@ -55,9 +55,9 @@ Manual, push-button trigger only — `.github/workflows/clientlibs-js-publish.ym
 Main class exported as default. Key methods:
 
 - `init(group?, workingGroup?)` — initialize user session
-- `getAllExperimentConditions(options?)` — fetch all experiment assignments (cached)
-- `getDecisionPointAssignment(site, target?)` — get assignment for a specific decision point
-- `markDecisionPoint(site, target, condition?, status, ...)` — record that a user saw a condition
+- `getAllExperimentConditions(options?)` — fetch all experiment assignments (cached). Only a full-context cache answers it; a cache holding just the decision points `getDecisionPointAssignment` fetched is ignored and the full context fetched
+- `getDecisionPointAssignment(site, target?)` — get assignment for a specific decision point; site/target matched exactly (case-sensitive), a missing target equals ''. Served from the cache if it holds the full context or already holds this decision point; otherwise sends `/assign` with `decisionPoint` so the server only evaluates that decision point, and adds the response to the cache, skipping decision points already cached (an empty response adds nothing, so a later lookup asks again)
+- `markDecisionPoint(site, target, condition?, status, ...)` — record that a user saw a condition. Sends the cached assignment's experiment/condition ids but never fetches assignments itself, so a decision point that was never looked up is marked without them (same as Java)
 - `getAllFeatureFlags(options?)` — fetch feature flags for user (cached)
 - `hasFeatureFlag(key)` — check if a feature flag is enabled
 - `log(value)` — report outcome metrics

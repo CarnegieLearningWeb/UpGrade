@@ -8,6 +8,7 @@ export class DataService {
   private group: UpGradeClientInterfaces.IExperimentUserGroup = null;
   private workingGroup: UpGradeClientInterfaces.IExperimentUserWorkingGroup = null;
   private experimentAssignmentData: IExperimentAssignment[] = null;
+  private fullContextCached = false;
   private featureFlags: string[] = null;
 
   getGroup(): UpGradeClientInterfaces.IExperimentUserGroup {
@@ -30,12 +31,48 @@ export class DataService {
     return this.experimentAssignmentData;
   }
 
+  getFullContextAssignmentData(): IExperimentAssignment[] {
+    return this.fullContextCached ? this.experimentAssignmentData : null;
+  }
+
   setExperimentAssignmentData(experimentAssignmentData: IExperimentAssignment[]) {
     this.experimentAssignmentData = experimentAssignmentData;
+    this.fullContextCached = true;
+  }
+
+  /**
+   * Adds a single decision point's /assign response to the cache, unless a full-context response already filled it.
+   * Entries for decision points the cache already holds are skipped
+   */
+  addDecisionPointAssignmentData(experimentAssignmentData: IExperimentAssignment[]) {
+    if (this.fullContextCached) {
+      return;
+    }
+    const cached = this.experimentAssignmentData ?? [];
+    const added = experimentAssignmentData.filter(
+      (assignment) => !cached.some((c) => DataService.isAtDecisionPoint(c, assignment.site, assignment.target))
+    );
+    this.experimentAssignmentData = [...cached, ...added];
+  }
+
+  /**
+   * Whether the cache can answer a lookup of this decision point without asking the server. A full-context cache
+   * answers any decision point, even one with no assignment. A cache of single decision points answers only one it
+   * holds.
+   */
+  hasDecisionPointAssignment(site: string, target?: string): boolean {
+    if (!this.experimentAssignmentData) {
+      return false;
+    }
+    return (
+      this.fullContextCached ||
+      this.experimentAssignmentData.some((assignment) => DataService.isAtDecisionPoint(assignment, site, target))
+    );
   }
 
   clearExperimentAssignmentData() {
     this.experimentAssignmentData = null;
+    this.fullContextCached = false;
   }
 
   /**
@@ -86,8 +123,8 @@ export class DataService {
   public findExperimentAssignmentBySiteAndTarget(site: string, target?: string): IExperimentAssignment {
     const normalizedTarget = target ?? '';
     // experimentAssignmentData stays null if the preceding /assign call failed or returned a non-array
-    const assignment = this.experimentAssignmentData?.find(
-      (assignment) => assignment.site === site && assignment.target === normalizedTarget
+    const assignment = this.experimentAssignmentData?.find((assignment) =>
+      DataService.isAtDecisionPoint(assignment, site, normalizedTarget)
     );
 
     const emptyAssignment: IExperimentAssignment = {
@@ -104,6 +141,11 @@ export class DataService {
     };
 
     return assignment || emptyAssignment;
+  }
+
+  /** Site and target match exactly (case-sensitive), as the server matches them; a missing target equals ''. */
+  private static isAtDecisionPoint(assignment: IExperimentAssignment, site: string, target?: string): boolean {
+    return assignment.site === site && assignment.target === (target ?? '');
   }
 
   public hasFeatureFlag(key: string): boolean {

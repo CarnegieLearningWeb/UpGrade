@@ -100,6 +100,103 @@ describe('DataService', () => {
     });
   });
 
+  describe('single decision point caching', () => {
+    const assignmentAt = (site: string, target: string, conditionCode = 'control'): IExperimentAssignment => ({
+      site,
+      target,
+      assignedCondition: [{ conditionCode, payload: null, experimentId: 'exp1', id: 'c1' }],
+      experimentType: EXPERIMENT_TYPE.SIMPLE,
+    });
+
+    describe('#getFullContextAssignmentData', () => {
+      it('should return a full-context response once one is cached', () => {
+        const data = [assignmentAt('home', 'banner')];
+        dataService.setExperimentAssignmentData(data);
+
+        expect(dataService.getFullContextAssignmentData()).toBe(data);
+      });
+
+      it('should return null while the cache holds only single decision points', () => {
+        dataService.addDecisionPointAssignmentData([assignmentAt('home', 'banner')]);
+
+        expect(dataService.getFullContextAssignmentData()).toBeNull();
+        expect(dataService.getExperimentAssignmentData()).toHaveLength(1);
+      });
+
+      it('should return null after the cache is cleared', () => {
+        dataService.setExperimentAssignmentData([assignmentAt('home', 'banner')]);
+        dataService.clearUserDependentData();
+
+        // a single decision point cached afterwards isn't mistaken for the full context
+        dataService.addDecisionPointAssignmentData([assignmentAt('home', 'banner')]);
+        expect(dataService.getFullContextAssignmentData()).toBeNull();
+      });
+    });
+
+    describe('#addDecisionPointAssignmentData', () => {
+      it('should add decision points to the cache', () => {
+        dataService.addDecisionPointAssignmentData([assignmentAt('home', 'banner')]);
+        dataService.addDecisionPointAssignmentData([assignmentAt('quiz', '')]);
+
+        expect(dataService.getExperimentAssignmentData()).toEqual([
+          assignmentAt('home', 'banner'),
+          assignmentAt('quiz', ''),
+        ]);
+      });
+
+      it('should leave an empty but non-null cache after an empty response', () => {
+        dataService.addDecisionPointAssignmentData([]);
+
+        expect(dataService.getExperimentAssignmentData()).toEqual([]);
+      });
+
+      it('should skip decision points the cache already holds, keeping the cached entry', () => {
+        const cached = assignmentAt('home', 'banner', 'rotated');
+        dataService.addDecisionPointAssignmentData([cached]);
+
+        // e.g. an older server that ignores the decision point and returns the full context
+        dataService.addDecisionPointAssignmentData([assignmentAt('home', 'banner'), assignmentAt('quiz', 'hint')]);
+
+        const data = dataService.getExperimentAssignmentData();
+        expect(data).toHaveLength(2);
+        expect(data[0]).toBe(cached);
+        expect(data[1]).toEqual(assignmentAt('quiz', 'hint'));
+      });
+
+      it('should not add to a full-context cache', () => {
+        const full = [assignmentAt('home', 'banner')];
+        dataService.setExperimentAssignmentData(full);
+
+        dataService.addDecisionPointAssignmentData([assignmentAt('quiz', 'hint')]);
+
+        expect(dataService.getExperimentAssignmentData()).toBe(full);
+      });
+    });
+
+    describe('#hasDecisionPointAssignment', () => {
+      it('should be false when nothing is cached', () => {
+        expect(dataService.hasDecisionPointAssignment('home', 'banner')).toBe(false);
+      });
+
+      it('should be true for any decision point once the full context is cached', () => {
+        dataService.setExperimentAssignmentData([assignmentAt('home', 'banner')]);
+
+        expect(dataService.hasDecisionPointAssignment('home', 'banner')).toBe(true);
+        expect(dataService.hasDecisionPointAssignment('quiz', 'hint')).toBe(true);
+      });
+
+      it('should be true only for cached decision points while the cache holds single decision points', () => {
+        dataService.addDecisionPointAssignmentData([assignmentAt('home', 'banner'), assignmentAt('quiz', '')]);
+
+        expect(dataService.hasDecisionPointAssignment('home', 'banner')).toBe(true);
+        expect(dataService.hasDecisionPointAssignment('quiz', null)).toBe(true);
+        expect(dataService.hasDecisionPointAssignment('quiz')).toBe(true);
+        expect(dataService.hasDecisionPointAssignment('home', 'Banner')).toBe(false);
+        expect(dataService.hasDecisionPointAssignment('home', '')).toBe(false);
+      });
+    });
+  });
+
   describe('#getFeatureFlags', () => {
     it('should return the feature flags', () => {
       const featureFlagsKeys: string[] = ['testFlagKey'];

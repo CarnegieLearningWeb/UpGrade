@@ -221,9 +221,16 @@ export default class ApiService {
     });
   }
 
-  public getAllExperimentConditions(): Promise<IExperimentAssignment[]> {
+  /**
+   * Posts to /assign. With a decision point, the server evaluates only that decision point and responds with just its
+   * assignment (an empty array if it has none). A missing target is sent as '', the targetless decision point.
+   */
+  public getAllExperimentConditions(
+    decisionPoint?: UpGradeClientInterfaces.IDecisionPoint
+  ): Promise<IExperimentAssignment[]> {
     const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
       context: this.context,
+      ...(decisionPoint ? { decisionPoint: { site: decisionPoint.site, target: decisionPoint.target ?? '' } } : {}),
     };
 
     return this.sendRequest<IExperimentAssignment[], UpGradeClientRequests.IGetAllExperimentConditionsRequestBody>({
