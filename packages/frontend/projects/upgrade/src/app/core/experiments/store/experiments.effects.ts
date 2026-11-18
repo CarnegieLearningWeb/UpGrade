@@ -807,6 +807,15 @@ export class ExperimentEffects {
     )
   );
 
+  refetchRewardsReplayAfterExperimentUpdate$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpsertExperimentSuccess, experimentAction.actionUpdateExperimentConditionsSuccess),
+      withLatestFrom(this.store$.pipe(select(selectExperimentState))),
+      filter(([{ experiment }, state]) => !!state.rewardsReplays[experiment.id]),
+      map(([{ experiment }]) => experimentAction.actionFetchRewardsReplayForExperiment({ experimentId: experiment.id }))
+    )
+  );
+
   fetchRewardsReplayForExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionFetchRewardsReplayForExperiment),
