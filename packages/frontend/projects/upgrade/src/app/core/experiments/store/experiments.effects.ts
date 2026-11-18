@@ -798,6 +798,15 @@ export class ExperimentEffects {
     )
   );
 
+  refetchRewardsDataAfterExperimentUpdate$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpsertExperimentSuccess, experimentAction.actionUpdateExperimentConditionsSuccess),
+      withLatestFrom(this.store$.pipe(select(selectExperimentState))),
+      filter(([{ experiment }, state]) => !!state.rewardsSummaries[experiment.id]),
+      map(([{ experiment }]) => experimentAction.actionFetchRewardsDataForExperiment({ experimentId: experiment.id }))
+    )
+  );
+
   private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
     isZip

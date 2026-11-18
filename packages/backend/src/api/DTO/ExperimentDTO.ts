@@ -531,6 +531,7 @@ function IsAssignmentAlgorithmCompatibleWithUnit(validationOptions?: ValidationO
 
 const MAX_NUMBER_INPUT = 1_000_000;
 const MIN_PRIOR_VALUE = 1;
+const MIN_SCALING_FACTOR = 0.01;
 
 function IsThompsonSamplingPriorsRecord(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
@@ -574,6 +575,12 @@ function IsThompsonSamplingPriorsRecord(validationOptions?: ValidationOptions) {
 }
 
 class ThompsonSamplingConfigValidator {
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(MIN_SCALING_FACTOR)
+  @Max(MAX_NUMBER_INPUT)
+  public scalingFactor?: number;
+
   @IsOptional()
   @IsInt()
   @Min(0)

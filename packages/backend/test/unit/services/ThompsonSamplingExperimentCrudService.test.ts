@@ -35,6 +35,14 @@ describe('ThompsonSamplingExperimentCrudService', () => {
     );
   });
 
+  describe('createConfig', () => {
+    it('defaults scalingFactor to 1 (no scaling) when the caller does not provide one', async () => {
+      await service.createConfig('experiment-1', [{ id: 'condition-1' }]);
+
+      expect(configRepository.save).toHaveBeenCalledWith(expect.objectContaining({ scalingFactor: 1 }));
+    });
+  });
+
   describe('config cache invalidation', () => {
     it('resets the Thompson Sampling config cache prefix after creating a config', async () => {
       await service.createConfig('experiment-1', [{ id: 'condition-1' }]);
@@ -71,6 +79,13 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       expect(configRepository.update).toHaveBeenCalledWith({ experimentId: 'experiment-1' }, { batchSize: 5 });
     });
 
+    it('writes scalingFactor when provided, so it can be edited on a running experiment', async () => {
+      await service.updateConfig('experiment-1', { scalingFactor: 0.25 });
+
+      expect(configRepository.update).toHaveBeenCalledWith({ experimentId: 'experiment-1' }, { scalingFactor: 0.25 });
+      expect(cacheService.resetPrefixCache).toHaveBeenCalledWith(CACHE_PREFIX.THOMPSON_SAMPLING_CONFIG_KEY_PREFIX);
+    });
+
     it('does not issue an update call at all when no threshold/batchSize fields are provided', async () => {
       await service.updateConfig('experiment-1', { priors: { 'condition-1': { success: 1, failure: 1 } } });
 
@@ -96,6 +111,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       const experiment = {
         assignmentAlgorithm: ASSIGNMENT_ALGORITHM.THOMPSON_SAMPLING,
         thompsonSamplingConfig: {
+          scalingFactor: 0.5,
           warmupThreshold: 10,
           batchSize: 5,
           priors: { 'condition-1': { success: 7, failure: 4 } },
@@ -113,7 +129,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       } as any);
 
       expect(configRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ experimentId: 'experiment-1', warmupThreshold: 10, batchSize: 5 })
+        expect.objectContaining({ experimentId: 'experiment-1', scalingFactor: 0.5, warmupThreshold: 10, batchSize: 5 })
       );
       expect(posteriorStateRepository.save).toHaveBeenCalledWith({
         conditionId: 'condition-1',
@@ -277,6 +293,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
 
     it('attaches only priors (never accumulated reward counts) for a Thompson Sampling experiment', async () => {
       configRepository.findByExperimentId.mockResolvedValue({
+        scalingFactor: 0.2,
         warmupThreshold: 10,
         minimumDrawDifference: 0.05,
         batchSize: 5,
@@ -290,6 +307,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       const result = await service.attachConfigToExperiment(experiment);
 
       expect(result.thompsonSamplingConfig).toEqual({
+        scalingFactor: 0.2,
         warmupThreshold: 10,
         minimumDrawDifference: 0.05,
         batchSize: 5,
@@ -308,6 +326,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         totalRewardCount: 0,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       });
       expect(configRepository.findByExperimentIdWithConditions).toHaveBeenCalledWith('experiment-1');
     });
@@ -351,10 +370,55 @@ describe('ThompsonSamplingExperimentCrudService', () => {
         successRate: '80.0%',
         priorSuccess: 2,
         priorFailure: 3,
+        successPosterior: 10,
+        failurePosterior: 5,
       });
       expect(result.totalRewardCount).toBe(20);
       expect(result.warmupThreshold).toBe(100);
       expect(result.batchSize).toBe(1);
+    });
+
+    it('scales counts (not priors or raw counts) by scalingFactor in the posteriors and estimated weights', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        warmupThreshold: 0,
+        batchSize: 1,
+        scalingFactor: 0.2,
+        conditionPosteriorStates: [
+          {
+            conditionId: 'condition-1',
+            priorSuccess: 1,
+            priorFailure: 1,
+            successCount: 100,
+            failureCount: 0,
+            totalCount: 100,
+            pendingTotalCount: 0,
+            condition: { conditionCode: 'A', order: 0 },
+          },
+          {
+            conditionId: 'condition-2',
+            priorSuccess: 1,
+            priorFailure: 1,
+            successCount: 0,
+            failureCount: 0,
+            totalCount: 0,
+            pendingTotalCount: 0,
+            condition: { conditionCode: 'B', order: 1 },
+          },
+        ],
+      });
+
+      const result = await service.getRewardsSummary('experiment-1');
+
+      expect(result.scalingFactor).toBe(0.2);
+      expect(result.conditions[0]).toMatchObject({
+        successes: 100,
+        failures: 0,
+        successPosterior: 21,
+        failurePosterior: 1,
+      });
+      expect(result.conditions[1]).toMatchObject({ successPosterior: 1, failurePosterior: 1 });
+      // Beta(21, 1) vs Beta(1, 1): A wins a draw ~95% of the time, so it still dominates.
+      expect(result.conditions[0].estimatedWeight).toBeGreaterThan(85);
     });
 
     it('keys weight estimation by conditionId, not conditionCode, so two conditions sharing a code do not collide', async () => {

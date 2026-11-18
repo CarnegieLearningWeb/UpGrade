@@ -17,6 +17,11 @@ import { ExperimentRewardsByCondition } from 'upgrade_types';
 export class TSConfigurableRewardCountTableComponent {
   @Input() dataSource: ExperimentRewardsByCondition[] = [];
   @Input() isLoading = false;
+  @Input() scalingFactor = 1;
+
+  get isScaled(): boolean {
+    return this.scalingFactor !== 1;
+  }
 
   groupHeaderColumns = [
     'conditionGroup',
@@ -63,6 +68,24 @@ export class TSConfigurableRewardCountTableComponent {
     'estimatedWeight',
   ];
 
+  /**
+   * Display values for one Successes or Failures group: Count shows `count (scaledCount)` when α
+   * isn't 1 (scaledCount = count × α), and Posterior shows `prior + scaledCount`. `posterior` is the
+   * backend's value (what the algorithm actually draws from); it's only recomputed here for the
+   * placeholder rows shown before a rewards summary has loaded.
+   */
+  scaledValues(
+    prior: number | undefined,
+    count: number,
+    posterior: number | undefined
+  ): { scaledCount: string; posterior: string } {
+    const scaledCount = this.scalingFactor * count;
+    return {
+      scaledCount: toHundredths(scaledCount),
+      posterior: toHundredths(posterior ?? (prior ?? 1) + scaledCount),
+    };
+  }
+
   // estimatedWeight is a 10,000-draw simulation rounded to an integer, so 0 or 100 only means
   // "under 1%" / "over 99%", never certainty -- except for a lone condition, which the backend pins
   // at exactly 100 because it genuinely wins every draw.
@@ -74,4 +97,8 @@ export class TSConfigurableRewardCountTableComponent {
     }
     return `≈${estimatedWeight}%`;
   }
+}
+
+function toHundredths(value: number): string {
+  return String(Math.round(value * 100) / 100);
 }

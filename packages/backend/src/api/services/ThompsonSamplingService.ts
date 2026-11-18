@@ -19,9 +19,12 @@ export interface ThompsonSamplingConfig {
   warmupThreshold?: number;
   /** Fall back to uniform when the top two sampled draws differ by less than this value. */
   minimumDrawDifference?: number;
+  /** Multiplier (α) on reward counts before they're added to the prior. See computePosterior(). */
+  scalingFactor?: number;
 }
 
 export const DEFAULT_PRIOR: ConditionPrior = { success: 1, failure: 1 };
+export const DEFAULT_SCALING_FACTOR = 1;
 
 @Service()
 export class ThompsonSamplingService {
@@ -138,7 +141,8 @@ export class ThompsonSamplingService {
         prior.success,
         prior.failure,
         summary?.successCount ?? 0,
-        summary?.failureCount ?? 0
+        summary?.failureCount ?? 0,
+        config.scalingFactor
       );
       return { conditionId, draw: this.sampleBeta(alpha, beta) };
     });
@@ -162,14 +166,26 @@ export class ThompsonSamplingService {
    * its accumulated success/failure counts. Shared by selectCondition() (which condition to draw)
    * and ThompsonSamplingExperimentCrudService.getRewardsSummary() (the same math, for display) so
    * a future correction to this formula can't be applied to one and missed in the other.
+   *
+   * `scalingFactor` (α) multiplies the counts only, not the prior: Beta(a + α·s, b + α·f). This is
+   * the Beta-Bernoulli form of a tempered or "α-posterior", where the likelihood is raised to the
+   * power α (Bhattacharya, Pati & Yang 2019, "Bayesian fractional posteriors"; used for Thompson
+   * Sampling as "α-TS" in Jaiswal, Pati, Bhattacharya & Mallick 2023). An α below 1 makes each
+   * reward count for less (slower, more exploratory learning, with the prior weighing relatively
+   * more); an α above 1 makes each reward count for more. Not to be confused with scaling the prior
+   * and counts together, which would also change the prior's weight before any reward arrives.
    */
   computePosterior(
     priorSuccess: number,
     priorFailure: number,
     successCount: number,
-    failureCount: number
+    failureCount: number,
+    scalingFactor = DEFAULT_SCALING_FACTOR
   ): { alpha: number; beta: number } {
-    return { alpha: priorSuccess + successCount, beta: priorFailure + failureCount };
+    return {
+      alpha: priorSuccess + scalingFactor * successCount,
+      beta: priorFailure + scalingFactor * failureCount,
+    };
   }
 
   /**

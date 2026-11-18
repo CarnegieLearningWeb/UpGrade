@@ -56,6 +56,7 @@ import {
   actionUpdateExperimentMetrics,
   actionUpdateExperimentMetricsSuccess,
   actionUpdateExperimentMetricsFailure,
+  actionUpdateExperimentConditionsSuccess,
   actionAddExperimentInclusionList,
   actionAddExperimentInclusionListSuccess,
   actionAddExperimentExclusionList,
@@ -1604,6 +1605,7 @@ describe('ExperimentEffects', () => {
         totalRewardCount: 30,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       experimentDataService.fetchRewardsDataForExperiment = jest.fn().mockReturnValue(of(mockRewardsSummary));
@@ -1652,6 +1654,70 @@ describe('ExperimentEffects', () => {
       actions$.next(actionFetchRewardsDataForExperiment({ experimentId }));
 
       tick(0);
+    }));
+  });
+
+  describe('refetchRewardsDataAfterExperimentUpdate$', () => {
+    const experiment = { id: 'test-experiment-123' } as any;
+    const loadedRewardsSummary = {
+      conditions: [],
+      pendingRewardsCount: 0,
+      totalRewardCount: 0,
+      warmupThreshold: 0,
+      batchSize: 1,
+      scalingFactor: 1,
+    };
+
+    afterEach(() => {
+      Selectors.selectExperimentState.clearResult();
+    });
+
+    it('should refetch a loaded rewards summary after the experiment is upserted', fakeAsync(() => {
+      Selectors.selectExperimentState.setResult({
+        ...initialExperimentState,
+        rewardsSummaries: { [experiment.id]: loadedRewardsSummary },
+      });
+      const emitted = [];
+
+      service.refetchRewardsDataAfterExperimentUpdate$.subscribe((action) => emitted.push(action));
+
+      actions$.next(actionUpsertExperimentSuccess({ experiment }));
+
+      tick(0);
+
+      expect(emitted).toEqual([actionFetchRewardsDataForExperiment({ experimentId: experiment.id })]);
+    }));
+
+    it('should refetch a loaded rewards summary after the conditions are updated', fakeAsync(() => {
+      Selectors.selectExperimentState.setResult({
+        ...initialExperimentState,
+        rewardsSummaries: { [experiment.id]: loadedRewardsSummary },
+      });
+      const emitted = [];
+
+      service.refetchRewardsDataAfterExperimentUpdate$.subscribe((action) => emitted.push(action));
+
+      actions$.next(actionUpdateExperimentConditionsSuccess({ experiment }));
+
+      tick(0);
+
+      expect(emitted).toEqual([actionFetchRewardsDataForExperiment({ experimentId: experiment.id })]);
+    }));
+
+    it('should not fetch when no rewards summary has been loaded for the experiment', fakeAsync(() => {
+      Selectors.selectExperimentState.setResult({
+        ...initialExperimentState,
+        rewardsSummaries: { 'other-experiment': loadedRewardsSummary },
+      });
+      const emitted = [];
+
+      service.refetchRewardsDataAfterExperimentUpdate$.subscribe((action) => emitted.push(action));
+
+      actions$.next(actionUpsertExperimentSuccess({ experiment }));
+
+      tick(0);
+
+      expect(emitted).toEqual([]);
     }));
   });
 });

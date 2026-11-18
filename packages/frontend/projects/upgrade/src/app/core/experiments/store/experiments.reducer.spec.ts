@@ -797,6 +797,7 @@ describe('ExperimentsReducer', () => {
         totalRewardCount: 30,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       const testAction: Action = actionFetchRewardsDataForExperimentSuccess({
@@ -827,6 +828,7 @@ describe('ExperimentsReducer', () => {
         totalRewardCount: 10,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       const previousState = { ...initialState };
@@ -849,6 +851,7 @@ describe('ExperimentsReducer', () => {
         totalRewardCount: 15,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       const testAction: Action = actionFetchRewardsDataForExperimentSuccess({
@@ -871,6 +874,7 @@ describe('ExperimentsReducer', () => {
         totalRewardCount: 1,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
       const summary2 = {
         conditions: [
@@ -880,6 +884,7 @@ describe('ExperimentsReducer', () => {
         totalRewardCount: 2,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       const previousState = { ...initialState };
@@ -921,6 +926,7 @@ describe('ExperimentsReducer', () => {
         totalRewardCount: 1,
         warmupThreshold: 0,
         batchSize: 1,
+        scalingFactor: 1,
       };
 
       const previousState = { ...initialState };

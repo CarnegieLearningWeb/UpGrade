@@ -370,6 +370,7 @@ export const selectRewardsDataForSelectedExperiment = createSelector(
       totalRewardCount: 0,
       warmupThreshold: 0,
       batchSize: 1,
+      scalingFactor: 1,
     };
 
     if (!experiment || !experiment.id) {
@@ -390,6 +391,7 @@ export const selectRewardsDataForSelectedExperiment = createSelector(
         })),
         warmupThreshold: experiment.thompsonSamplingConfig?.warmupThreshold ?? 0,
         batchSize: experiment.thompsonSamplingConfig?.batchSize ?? 1,
+        scalingFactor: experiment.thompsonSamplingConfig?.scalingFactor ?? 1,
       };
     }
 

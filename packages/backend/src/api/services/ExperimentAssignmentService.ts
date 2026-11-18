@@ -2185,6 +2185,7 @@ export class ExperimentAssignmentService {
         priors,
         warmupThreshold: config.warmupThreshold,
         minimumDrawDifference: config.minimumDrawDifference,
+        scalingFactor: config.scalingFactor,
       };
 
       const selectedConditionId = this.thompsonSamplingService.selectCondition(

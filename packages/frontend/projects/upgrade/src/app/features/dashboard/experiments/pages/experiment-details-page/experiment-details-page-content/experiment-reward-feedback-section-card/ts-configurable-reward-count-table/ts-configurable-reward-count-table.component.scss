@@ -117,6 +117,15 @@
       width: 10%;
     }
 
+    .successes-column,
+    .failures-column {
+      white-space: nowrap;
+    }
+
+    .scaled-count {
+      margin-left: 4px;
+    }
+
     .data-column {
       text-align: center;
     }

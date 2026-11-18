@@ -20,18 +20,15 @@
     @let isBatchingActive = summary.batchSize > 1; @let isWarmupConfigured = summary.warmupThreshold > 0; @let
     isWarmupActive = isWarmupConfigured && summary.totalRewardCount <= summary.warmupThreshold;
     <div class="reward-status-section">
-      @if (isBatchingActive) {
       <div
         class="item-key-value"
-        [matTooltip]="
-          'experiments.details.posteriors.pending-rewards-tooltip.text' | translate : { batchSize: summary.batchSize }
-        "
+        [matTooltip]="'experiments.details.posteriors.scaling-factor-tooltip.text' | translate"
         matTooltipPosition="left"
       >
-        <span class="ft-14-600">{{ 'experiments.details.posteriors.pending-rewards.text' | translate }}:</span>
-        <span class="ft-14-400 item-value">{{ summary.pendingRewardsCount }}/{{ summary.batchSize }}</span>
+        <span class="ft-14-600">{{ 'experiments.details.posteriors.scaling-factor.text' | translate }}:</span>
+        <span class="ft-14-400 item-value">{{ summary.scalingFactor ?? 1 }}</span>
       </div>
-      } @if (summary.warmupThreshold > 1) {
+      @if (isWarmupConfigured) {
       <div
         class="item-key-value"
         [matTooltip]="
@@ -61,9 +58,22 @@
         <span class="ft-14-600">{{ 'experiments.details.posteriors.total-reward-count.text' | translate }}:</span>
         <span class="ft-14-400 item-value">{{ summary.totalRewardCount }}</span>
       </div>
+      @if (isBatchingActive) {
+      <div
+        class="item-key-value"
+        [matTooltip]="
+          'experiments.details.posteriors.pending-rewards-tooltip.text' | translate : { batchSize: summary.batchSize }
+        "
+        matTooltipPosition="left"
+      >
+        <span class="ft-14-600">{{ 'experiments.details.posteriors.pending-rewards.text' | translate }}:</span>
+        <span class="ft-14-400 item-value">{{ summary.pendingRewardsCount }}/{{ summary.batchSize }}</span>
+      </div>
+      }
     </div>
     <app-ts-configurable-reward-count-table
       [dataSource]="summary.conditions"
+      [scalingFactor]="summary.scalingFactor ?? 1"
       [isLoading]="isLoading$ | async"
     ></app-ts-configurable-reward-count-table>
   </ng-container>

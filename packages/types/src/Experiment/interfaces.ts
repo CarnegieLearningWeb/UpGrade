@@ -360,6 +360,8 @@ export interface ExperimentRewardsByCondition {
   order: number;
   priorSuccess?: number;
   priorFailure?: number;
+  successPosterior?: number;
+  failurePosterior?: number;
   /** Estimated probability of winning a Thompson Sampling draw, as an integer percentage (0–100). */
   estimatedWeight?: number;
 }
@@ -376,4 +378,5 @@ export interface ExperimentRewardsSummary {
   totalRewardCount: number;
   warmupThreshold: number;
   batchSize: number;
+  scalingFactor: number;
 }

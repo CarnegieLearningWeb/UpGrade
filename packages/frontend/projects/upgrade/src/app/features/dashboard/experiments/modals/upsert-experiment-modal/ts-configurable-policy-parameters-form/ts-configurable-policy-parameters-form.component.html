@@ -12,23 +12,31 @@
   <form [formGroup]="policyForm" class="policy-form">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label class="ft-14-400">{{
-        'home.new-experiment.design.ts-configurable-policy.batch-size.label.text' | translate
+        'home.new-experiment.design.ts-configurable-policy.scaling-factor.label.text' | translate
       }}</mat-label>
-      <input matInput type="number" formControlName="batchSize" class="ft-14-400" min="1" step="1" />
-      <mat-hint class="form-hint ft-12-400">{{
-        'home.new-experiment.design.ts-configurable-policy.batch-size.hint.text' | translate
-      }}</mat-hint>
-      @if (policyForm.get('batchSize')?.hasError('min')) {
-      <mat-error>{{
-        'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
-      }}</mat-error>
-      } @if (policyForm.get('batchSize')?.hasError('max')) {
+      <input
+        matInput
+        type="number"
+        formControlName="scalingFactor"
+        class="ft-14-400"
+        min="0.01"
+        max="1000000"
+        step="0.01"
+      />
+      <mat-hint class="form-hint ft-12-400">
+        {{ 'home.new-experiment.design.ts-configurable-policy.scaling-factor.hint.text' | translate }}
+      </mat-hint>
+      @if (policyForm.get('scalingFactor')?.hasError('min')) {
       <mat-error>
-        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+        {{ 'home.new-experiment.design.ts-configurable-policy.scaling-factor.min-error.text' | translate }}
       </mat-error>
-      } @if (policyForm.get('batchSize')?.hasError('integer')) {
+      } @if (policyForm.get('scalingFactor')?.hasError('max')) {
       <mat-error>
-        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
+        {{ 'home.new-experiment.design.ts-configurable-policy.scaling-factor.max-error.text' | translate }}
+      </mat-error>
+      } @if (policyForm.get('scalingFactor')?.hasError('maxDecimalPlaces')) {
+      <mat-error>
+        {{ 'home.new-experiment.design.ts-configurable-policy.scaling-factor.decimal-places-error.text' | translate }}
       </mat-error>
       }
     </mat-form-field>
@@ -79,6 +87,29 @@
       } @if (policyForm.get('minimumDrawDifference')?.hasError('max')) {
       <mat-error>
         {{ 'home.new-experiment.design.ts-configurable-policy.tspostdiff-thresh.max-error.text' | translate }}
+      </mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label class="ft-14-400">{{
+        'home.new-experiment.design.ts-configurable-policy.batch-size.label.text' | translate
+      }}</mat-label>
+      <input matInput type="number" formControlName="batchSize" class="ft-14-400" min="1" step="1" />
+      <mat-hint class="form-hint ft-12-400">{{
+        'home.new-experiment.design.ts-configurable-policy.batch-size.hint.text' | translate
+      }}</mat-hint>
+      @if (policyForm.get('batchSize')?.hasError('min')) {
+      <mat-error>{{
+        'home.new-experiment.design.ts-configurable-policy.batch-size.min-error.text' | translate
+      }}</mat-error>
+      } @if (policyForm.get('batchSize')?.hasError('max')) {
+      <mat-error>
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.max-error.text' | translate }}
+      </mat-error>
+      } @if (policyForm.get('batchSize')?.hasError('integer')) {
+      <mat-error>
+        {{ 'home.new-experiment.design.ts-configurable-policy.general.integer-error.text' | translate }}
       </mat-error>
       }
     </mat-form-field>
