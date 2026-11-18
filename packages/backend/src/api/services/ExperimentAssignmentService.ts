@@ -1309,14 +1309,12 @@ export class ExperimentAssignmentService {
 
     const userId = userDoc.id;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
-    const keyUniqueArray: { key: string; uniquifier: string }[] = [];
 
-    // extract the array value
-    const promise = jsonLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
-    });
+    const logsToReturn: Log[][] = [];
+    for (const individualMetrics of jsonLog) {
+      logsToReturn.push(await this.createLog(individualMetrics, userDoc, logger));
+    }
 
-    const logsToReturn = await Promise.all(promise);
     return flatten(logsToReturn);
   }
 
@@ -1419,12 +1417,8 @@ export class ExperimentAssignmentService {
     });
   }
 
-  private async createLog(
-    log: ILogInput,
-    keyUniqueArray: { key: string; uniquifier: string }[],
-    userDoc: ExperimentUser,
-    logger: UpgradeLogger
-  ): Promise<Log[]> {
+  private async createLog(log: ILogInput, userDoc: ExperimentUser, logger: UpgradeLogger): Promise<Log[]> {
+    const keyUniqueArray: { key: string; uniquifier: string }[] = [];
     const userId = userDoc.id;
     const {
       timestamp,
@@ -1505,7 +1499,7 @@ export class ExperimentAssignmentService {
         const metricArray = metric.key.split(METRICS_JOIN_TEXT);
         const lastKey = metricArray.pop();
         const logGroupSelected = toUpdateLogGroup.find((logGroupIndividual) => {
-          return logGroupIndividual.key.includes(metric.key);
+          return logGroupIndividual.key.includes(metric.key) && logGroupIndividual.uniquifier === uniquifier;
         });
 
         if (logGroupSelected && uniquifier === logGroupSelected.uniquifier) {
@@ -1522,7 +1516,7 @@ export class ExperimentAssignmentService {
         } else {
           // add log group to toUpdateLogGroup Array
           const toMergeElement = mergedLogGroup.find((mergedLogGroupElement) => {
-            return mergedLogGroupElement.key.includes(metric.key);
+            return mergedLogGroupElement.key.includes(metric.key) && mergedLogGroupElement.uniquifier === uniquifier;
           });
 
           if (toMergeElement && uniquifier === toMergeElement.uniquifier) {
