@@ -2255,6 +2255,176 @@ describe('Experiment Assignment Service Test', () => {
     expect(result).toMatchObject(mergedLog);
   });
 
+  it('should update same-key grouped metrics with different uniquifiers in one request', async () => {
+    const userId = 'testUser';
+    const metricKey = 'masteryWorkspace@__@calculating_area_various_figures@__@timeSeconds';
+    const existingLogs = [
+      {
+        data: { masteryWorkspace: { calculating_area_various_figures: { timeSeconds: 81 } } },
+        uniquifier: '32',
+        timeStamp: '2026-03-21T10:29:00Z',
+        id: 'log-32',
+        key: metricKey,
+      },
+      {
+        data: { masteryWorkspace: { calculating_area_various_figures: { timeSeconds: 92 } } },
+        uniquifier: '44',
+        timeStamp: '2026-03-21T10:29:00Z',
+        id: 'log-44',
+        key: metricKey,
+      },
+    ];
+    const logRepositoryMock = {
+      getMetricUniquifierData: sandbox
+        .stub()
+        .callsFake(async (pairs) =>
+          existingLogs.filter((log) => pairs.some((pair) => pair.key === log.key && pair.uniquifier === log.uniquifier))
+        ),
+      updateLog: sandbox.stub().callsFake(async (id, data, timeStamp) => ({ id, data, timeStamp })),
+      save: sandbox.stub().callsFake((logs) => logs),
+    };
+    const metricRepositoryMock = {
+      findMetricsWithQueries: sandbox.stub().resolves([{ key: metricKey, type: 'continuous' }]),
+    };
+    const timestamp = '2026-03-21T10:30:00Z';
+    const jsonLog = ['32', '44'].map((groupUniquifier, index) => ({
+      timestamp,
+      metrics: {
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_various_figures',
+            groupUniquifier,
+            attributes: { timeSeconds: index === 0 ? 100 : 200 },
+          },
+        ],
+      },
+    }));
+
+    testedModule.logRepository = logRepositoryMock;
+    testedModule.metricRepository = metricRepositoryMock;
+
+    await testedModule.dataLog({ id: userId }, jsonLog, loggerMock);
+
+    expect(logRepositoryMock.getMetricUniquifierData.callCount).toBe(2);
+    expect(logRepositoryMock.getMetricUniquifierData.getCalls().map((call) => call.args[0])).toEqual(
+      expect.arrayContaining([[{ key: metricKey, uniquifier: '32' }], [{ key: metricKey, uniquifier: '44' }]])
+    );
+    expect(
+      logRepositoryMock.updateLog
+        .getCalls()
+        .map((call) => call.args[0])
+        .sort()
+    ).toEqual(['log-32', 'log-44']);
+    expect(logRepositoryMock.save.callCount).toBe(0);
+
+    logRepositoryMock.getMetricUniquifierData.resetHistory();
+    logRepositoryMock.updateLog.resetHistory();
+
+    await testedModule.dataLog(
+      { id: userId },
+      [{ timestamp, metrics: { groupedMetrics: jsonLog.flatMap((log) => log.metrics.groupedMetrics) } }],
+      loggerMock
+    );
+
+    expect(logRepositoryMock.getMetricUniquifierData.callCount).toBe(1);
+    expect(logRepositoryMock.updateLog.callCount).toBe(2);
+    expect(logRepositoryMock.updateLog.getCalls().map((call) => call.args)).toEqual(
+      expect.arrayContaining([
+        ['log-32', { masteryWorkspace: { calculating_area_various_figures: { timeSeconds: 100 } } }, timestamp],
+        ['log-44', { masteryWorkspace: { calculating_area_various_figures: { timeSeconds: 200 } } }, timestamp],
+      ])
+    );
+    expect(logRepositoryMock.save.callCount).toBe(0);
+  });
+
+  it('should not insert duplicate metric records when repeated identities appear in one request', async () => {
+    const userId = 'testUser';
+    const metricRows: any[] = [];
+    let nextId = 1;
+    const logRepositoryMock = {
+      getMetricUniquifierData: sandbox
+        .stub()
+        .callsFake(async (pairs) =>
+          metricRows.flatMap((row) =>
+            row.metrics
+              .filter((metric) => pairs.some((pair) => pair.key === metric.key && pair.uniquifier === row.uniquifier))
+              .map((metric) => ({ ...row, key: metric.key }))
+          )
+        ),
+      updateLog: sandbox.stub().callsFake(async (id, data, timeStamp) => {
+        const row = metricRows.find((candidate) => candidate.id === id);
+        Object.assign(row, { data, timeStamp });
+        return row;
+      }),
+      save: sandbox.stub().callsFake(async (logs) => {
+        const savedLogs = logs.map((log) => ({ ...log, id: `log-${nextId++}` }));
+        metricRows.push(...savedLogs);
+        return savedLogs;
+      }),
+    };
+    const totalTimeKey = 'totalTimeSeconds';
+    const areaTimeKey = 'masteryWorkspace@__@calculating_area_various_figures@__@timeSeconds';
+    const compareTimeKey = 'masteryWorkspace@__@Compare_functions_diff_reps_quadratic@__@timeSeconds';
+    const metricRepositoryMock = {
+      findMetricsWithQueries: sandbox
+        .stub()
+        .callsFake(async (keys) => keys.map((key) => ({ key, type: 'continuous' }))),
+    };
+    const timestamp = '2026-03-21T10:30:00Z';
+    const jsonLog = [
+      {
+        timestamp,
+        metrics: {
+          attributes: { totalTimeSeconds: 665 },
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_various_figures',
+              groupUniquifier: '179',
+              attributes: { timeSeconds: 84 },
+            },
+          ],
+        },
+      },
+      {
+        timestamp,
+        metrics: {
+          attributes: { totalTimeSeconds: 882 },
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'Compare_functions_diff_reps_quadratic',
+              groupUniquifier: '179',
+              attributes: { timeSeconds: 91 },
+            },
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_various_figures',
+              groupUniquifier: '179',
+              attributes: { timeSeconds: 92 },
+            },
+          ],
+        },
+      },
+    ];
+
+    testedModule.logRepository = logRepositoryMock;
+    testedModule.metricRepository = metricRepositoryMock;
+
+    await testedModule.dataLog({ id: userId }, jsonLog, loggerMock);
+
+    expect(metricRows).toHaveLength(3);
+    expect(metricRows.map((row) => row.metrics[0].key).sort()).toEqual(
+      [totalTimeKey, areaTimeKey, compareTimeKey].sort()
+    );
+    expect(metricRows.find((row) => row.metrics[0].key === totalTimeKey).data.totalTimeSeconds).toBe(882);
+    expect(
+      metricRows.find((row) => row.metrics[0].key === areaTimeKey).data.masteryWorkspace
+        .calculating_area_various_figures.timeSeconds
+    ).toBe(92);
+  });
+
   it('[saveGroupExclusionDoc] should not be called if [experimentLevelExclusionInclusion] call returns empty exclusions', async () => {
     const userId = 'user123';
     const userDoc = { id: userId, group: { schoolId: ['school1'] }, workingGroup: {} };
