@@ -36,6 +36,9 @@ import {
   actionFetchRewardsDataForExperiment,
   actionFetchRewardsDataForExperimentSuccess,
   actionFetchRewardsDataForExperimentFailure,
+  actionFetchRewardsReplayForExperiment,
+  actionFetchRewardsReplayForExperimentSuccess,
+  actionFetchRewardsReplayForExperimentFailure,
 } from './experiments.actions';
 import {
   DATE_RANGE,
@@ -941,6 +944,68 @@ describe('ExperimentsReducer', () => {
       const newState = experimentsReducer(previousState, testAction);
 
       expect(newState.rewardsSummaries).toEqual(previousState.rewardsSummaries);
+    });
+  });
+
+  describe('Rewards Replay Actions', () => {
+    const rewardsReplay = {
+      conditions: [
+        {
+          conditionId: 'c1',
+          conditionCode: 'A',
+          order: 1,
+          priorSuccess: 1,
+          priorFailure: 1,
+          earlierRewards: { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 },
+        },
+      ],
+      rewards: [{ conditionId: 'c1', success: true, createdAt: '2026-10-27T12:03:19.222Z' }],
+      earlierRewardCount: 0,
+      batchSize: 1,
+      warmupThreshold: 0,
+      minimumDrawDifference: 0,
+      scalingFactor: 1,
+    };
+
+    it('action "actionFetchRewardsReplayForExperiment" should set isLoadingRewardsReplay to true', () => {
+      const newState = experimentsReducer(
+        { ...initialState },
+        actionFetchRewardsReplayForExperiment({ experimentId: 'exp-1' })
+      );
+
+      expect(newState.isLoadingRewardsReplay).toBe(true);
+    });
+
+    it('action "actionFetchRewardsReplayForExperimentSuccess" should store the replay by experiment id', () => {
+      const previousState = {
+        ...initialState,
+        isLoadingRewardsReplay: true,
+        rewardsReplays: { 'exp-2': rewardsReplay },
+      };
+
+      const newState = experimentsReducer(
+        previousState,
+        actionFetchRewardsReplayForExperimentSuccess({ experimentId: 'exp-1', rewardsReplay })
+      );
+
+      expect(newState.isLoadingRewardsReplay).toBe(false);
+      expect(newState.rewardsReplays).toEqual({ 'exp-1': rewardsReplay, 'exp-2': rewardsReplay });
+    });
+
+    it('action "actionFetchRewardsReplayForExperimentFailure" should stop loading and keep stored replays', () => {
+      const previousState = {
+        ...initialState,
+        isLoadingRewardsReplay: true,
+        rewardsReplays: { 'exp-1': rewardsReplay },
+      };
+
+      const newState = experimentsReducer(
+        previousState,
+        actionFetchRewardsReplayForExperimentFailure({ error: new Error('API error') })
+      );
+
+      expect(newState.isLoadingRewardsReplay).toBe(false);
+      expect(newState.rewardsReplays).toEqual(previousState.rewardsReplays);
     });
   });
 });

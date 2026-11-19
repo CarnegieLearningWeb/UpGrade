@@ -48,9 +48,9 @@ const includeStoredUserGroups = true; // true to merge with stored user groups, 
 const alias = 'alias' + userId;
 // UPGRADE_QUICKTEST_URL overrides this for one run, e.g. `UPGRADE_QUICKTEST_URL=$UPGRADE_QA_URL yarn quicktest`
 const hostUrl = process.env.UPGRADE_QUICKTEST_URL || URL.LOCAL;
-const context = 'assign-prog';
-const site = 'fakesite';
-const target = 'faketarget';
+const context = 'upgrade-internal';
+const site = 'hallo';
+const target = '';
 const status = MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED;
 const featureFlagKey = 'TEST_FEATURE_FLAG';
 

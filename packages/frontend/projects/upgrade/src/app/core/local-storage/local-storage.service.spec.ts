@@ -48,6 +48,8 @@ describe('LocalStorageService', () => {
       isLoadingImportExperiment: false,
       rewardsSummaries: {},
       isLoadingRewardsSummary: false,
+      rewardsReplays: {},
+      isLoadingRewardsReplay: false,
       hasInitialExperimentsDataLoaded: false,
       detailsPageError: null,
     };
@@ -78,6 +80,8 @@ describe('LocalStorageService', () => {
       isLoadingImportExperiment: false,
       rewardsSummaries: {},
       isLoadingRewardsSummary: false,
+      rewardsReplays: {},
+      isLoadingRewardsReplay: false,
       hasInitialExperimentsDataLoaded: false,
       detailsPageError: null,
     };

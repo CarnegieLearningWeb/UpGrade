@@ -91,7 +91,7 @@ function removeConfirmedData<S>(state: S, removedIds: string[], rowsKey: string)
   prune('allExperimentNames');
   prune('listSegmentOptions');
   if (removed.has(result['selectedFlag']?.id)) result = { ...result, selectedFlag: null };
-  for (const key of ['stats', 'rewardsSummaries']) {
+  for (const key of ['stats', 'rewardsSummaries', 'rewardsReplays']) {
     if (result[key] && Object.keys(result[key]).some((id) => removed.has(id))) {
       result = {
         ...result,

@@ -807,6 +807,29 @@ export class ExperimentEffects {
     )
   );
 
+  refetchRewardsReplayAfterExperimentUpdate$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpsertExperimentSuccess, experimentAction.actionUpdateExperimentConditionsSuccess),
+      withLatestFrom(this.store$.pipe(select(selectExperimentState))),
+      filter(([{ experiment }, state]) => !!state.rewardsReplays[experiment.id]),
+      map(([{ experiment }]) => experimentAction.actionFetchRewardsReplayForExperiment({ experimentId: experiment.id }))
+    )
+  );
+
+  fetchRewardsReplayForExperiment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchRewardsReplayForExperiment),
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.fetchRewardsReplayForExperiment(experimentId).pipe(
+          map((rewardsReplay) =>
+            experimentAction.actionFetchRewardsReplayForExperimentSuccess({ experimentId, rewardsReplay })
+          ),
+          catchError((error) => of(experimentAction.actionFetchRewardsReplayForExperimentFailure({ error })))
+        )
+      )
+    )
+  );
+
   private download(filename, text, isZip: boolean) {
     const element = document.createElement('a');
     isZip

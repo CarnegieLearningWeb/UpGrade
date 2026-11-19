@@ -18,6 +18,27 @@ export const DATE_FILTER_OPTIONS: DateFilterOption[] = [
 
 export const SINCE_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
 
+/**
+ * Per-condition series colors for the experiment data charts. Each chart assigns them in
+ * alphabetical conditionCode order, so a condition gets the same color in every chart.
+ */
+export const CONDITION_CHART_COLORS = [
+  '#31e8dd',
+  '#7dc7fb',
+  '#fedb64',
+  '#51ed8f',
+  '#ddaaf8',
+  '#fd9099',
+  '#14c9be',
+  '#57ff6d',
+  '#3dffec',
+  '#fedb64',
+  '#0a6de6',
+  '#da0766',
+  '#cd8014',
+  '#fa59a1',
+];
+
 @Injectable({
   providedIn: 'root',
 })

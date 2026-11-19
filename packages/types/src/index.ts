@@ -117,4 +117,7 @@ export {
   BinaryRewardValueMap,
   ExperimentRewardsByCondition,
   ExperimentRewardsSummary,
+  ExperimentRewardsReplay,
+  ExperimentRewardsReplayCondition,
+  ExperimentRewardsReplayReward,
 } from './Experiment/interfaces';

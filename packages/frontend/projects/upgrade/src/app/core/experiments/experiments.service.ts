@@ -59,6 +59,8 @@ import {
   selectSectionCardRestriction,
   selectRewardsDataForSelectedExperiment,
   selectIsLoadingRewardsSummary,
+  selectRewardsReplayForSelectedExperiment,
+  selectIsLoadingRewardsReplay,
 } from './store/experiments.selectors';
 import * as experimentAction from './store/experiments.actions';
 import { AppState } from '../core.state';
@@ -114,6 +116,7 @@ export class ExperimentService {
   experimentMenuItems$ = this.store$.pipe(select(selectExperimentMenuItems));
   disabledExperimentFields$ = this.store$.pipe(select(selectDisabledExperimentFields));
   isLoadingRewardsSummary$ = this.store$.pipe(select(selectIsLoadingRewardsSummary));
+  isLoadingRewardsReplay$ = this.store$.pipe(select(selectIsLoadingRewardsReplay));
 
   sectionCardRestriction$ = (cardType: EXPERIMENT_SECTION_CARD_TYPE) =>
     this.store$.pipe(select(selectSectionCardRestriction(cardType)));
@@ -342,5 +345,17 @@ export class ExperimentService {
 
   getRewardsSummaryForSelectedExperiment() {
     return this.store$.pipe(select(selectRewardsDataForSelectedExperiment));
+  }
+
+  fetchRewardsReplayForExperiment() {
+    this.selectedExperiment$.pipe(take(1)).subscribe((experiment) => {
+      if (experiment) {
+        this.store$.dispatch(experimentAction.actionFetchRewardsReplayForExperiment({ experimentId: experiment.id }));
+      }
+    });
+  }
+
+  getRewardsReplayForSelectedExperiment() {
+    return this.store$.pipe(select(selectRewardsReplayForSelectedExperiment));
   }
 }

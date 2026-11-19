@@ -22,6 +22,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import {
   CommonChartHelpersService,
+  CONDITION_CHART_COLORS,
   DateFilterOption,
   SINCE_DATE_FORMATTER,
 } from '../../../../../../../../shared/services/common-chart-helpers.service';
@@ -71,22 +72,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   showLabelOfxAxis = true;
   graphColorIndicators: ExperimentCondition[] = [];
 
-  colors = [
-    '#31e8dd',
-    '#7dc7fb',
-    '#fedb64',
-    '#51ed8f',
-    '#ddaaf8',
-    '#fd9099',
-    '#14c9be',
-    '#57ff6d',
-    '#3dffec',
-    '#fedb64',
-    '#0a6de6',
-    '#da0766',
-    '#cd8014',
-    '#fa59a1',
-  ];
+  colors = CONDITION_CHART_COLORS;
   colorScheme = {
     domain: this.colors,
   };

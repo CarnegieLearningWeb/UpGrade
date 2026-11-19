@@ -33,6 +33,8 @@ export const initialState: ExperimentState = {
   isLoadingImportExperiment: false,
   isLoadingRewardsSummary: false,
   rewardsSummaries: {},
+  isLoadingRewardsReplay: false,
+  rewardsReplays: {},
   isLoadingUpsertPrivateSegmentList: false,
   detailsPageError: null,
 };
@@ -527,6 +529,25 @@ const reducer = createReducer(
   on(experimentsAction.actionFetchRewardsDataForExperimentFailure, (state) => ({
     ...state,
     isLoadingRewardsSummary: false,
+  })),
+  on(experimentsAction.actionFetchRewardsReplayForExperiment, (state) => ({
+    ...state,
+    isLoadingRewardsReplay: true,
+  })),
+  on(
+    experimentsAction.actionFetchRewardsReplayForExperimentSuccess,
+    (state, { experimentId, rewardsReplay }): ExperimentState => ({
+      ...state,
+      isLoadingRewardsReplay: false,
+      rewardsReplays: {
+        ...state.rewardsReplays,
+        [experimentId]: rewardsReplay,
+      },
+    })
+  ),
+  on(experimentsAction.actionFetchRewardsReplayForExperimentFailure, (state) => ({
+    ...state,
+    isLoadingRewardsReplay: false,
   }))
 );
 

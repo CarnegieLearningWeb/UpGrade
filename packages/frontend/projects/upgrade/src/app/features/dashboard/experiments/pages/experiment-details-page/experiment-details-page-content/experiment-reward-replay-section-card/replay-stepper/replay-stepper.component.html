@@ -1,0 +1,119 @@
+<div class="replay-stepper">
+  <h6 class="ft-16-700 heading">{{ 'experiments.details.reward-replay.stepper.title.text' | translate }}</h6>
+  @if (earlierRewardCount > 0) {
+  <span class="ft-12-400 window-note">
+    {{
+      'experiments.details.reward-replay.stepper.window-note.text'
+        | translate : { shown: lastIndex | number, total: totalRewardCount | number }
+    }}
+  </span>
+  }
+
+  <div class="controls">
+    <button
+      mat-icon-button
+      type="button"
+      [disabled]="selectedIndex === 0"
+      [attr.aria-label]="'experiments.details.reward-replay.stepper.previous.text' | translate"
+      (click)="select(selectedIndex - 1)"
+    >
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <mat-slider class="slider" [min]="0" [max]="lastIndex" [step]="1">
+      <input
+        matSliderThumb
+        [value]="selectedIndex"
+        [attr.aria-label]="'experiments.details.reward-replay.stepper.slider.text' | translate"
+        (valueChange)="select($event)"
+      />
+    </mat-slider>
+    <button
+      mat-icon-button
+      type="button"
+      [disabled]="selectedIndex === lastIndex"
+      [attr.aria-label]="'experiments.details.reward-replay.stepper.next.text' | translate"
+      (click)="select(selectedIndex + 1)"
+    >
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+    <span class="ft-14-600 position">
+      @if (rewardNumber === 0) {
+      {{ 'experiments.details.reward-replay.stepper.position-prior.text' | translate : { total: totalRewardCount } }}
+      } @else {
+      {{
+        'experiments.details.reward-replay.stepper.position.text'
+          | translate : { index: rewardNumber, total: totalRewardCount }
+      }}
+      }
+    </span>
+  </div>
+
+  @let successLabel = 'experiments.details.reward-replay.stepper.success.text' | translate : { amount: rewardAmount };
+  @let failureLabel = 'experiments.details.reward-replay.stepper.failure.text' | translate : { amount: rewardAmount };
+  <div class="condition-rows">
+    @for (condition of conditions; track condition.conditionId) { @let current = step.conditions[condition.stateIndex];
+    @let reward = rewardFor(condition);
+    <div class="ft-14-400 condition-row">
+      <span class="condition-label">
+        <span class="color-box" [style.background-color]="condition.color"></span>
+        <span
+          class="condition-name reserve-bold"
+          [class.ft-14-400]="!reward"
+          [class.ft-14-600]="!!reward"
+          [class.rewarded]="!!reward"
+          [attr.data-text]="condition.conditionCode"
+          >{{ condition.conditionCode }}</span
+        >
+      </span>
+      <span
+        class="ft-14-600 outcome"
+        [class.success]="reward?.success === true"
+        [class.failure]="reward?.success === false"
+        [attr.data-success]="successLabel"
+        [attr.data-failure]="failureLabel"
+      >
+        @if (reward) {
+        {{ reward.success ? successLabel : failureLabel }}
+        }
+      </span>
+      <span
+        class="posterior"
+        [matTooltip]="
+          'experiments.details.reward-replay.stepper.posterior-tooltip.text'
+            | translate
+              : {
+                  successes: current.successes,
+                  failures: current.failures,
+                  priorSuccess: condition.priorSuccess,
+                  priorFailure: condition.priorFailure,
+                  scalingFactor: scalingFactor
+                }
+        "
+        matTooltipClass="multiline-tooltip"
+        matTooltipPosition="above"
+        >{{ posteriorLabel(current) }}</span
+      >
+      <span class="mean">
+        {{
+          'experiments.details.reward-replay.stepper.mean.text' | translate : { mean: current.mean | percent : '1.1-1' }
+        }}
+        @if (reward && step.batch?.kind === 'buffered') {
+        <span class="ft-12-400 batch-tag">
+          {{ 'experiments.details.reward-replay.stepper.buffered.text' | translate : step.batch }}
+        </span>
+        } @else if (reward && step.batch?.kind === 'flushed') {
+        <span class="ft-12-400 batch-tag">
+          {{ 'experiments.details.reward-replay.stepper.flushed.text' | translate : step.batch }}
+        </span>
+        }
+      </span>
+    </div>
+    }
+  </div>
+
+  <app-posterior-distribution-chart
+    [steps]="steps"
+    [conditions]="conditions"
+    [selectedIndex]="selectedIndex"
+  ></app-posterior-distribution-chart>
+</div>

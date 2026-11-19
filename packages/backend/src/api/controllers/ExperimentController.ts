@@ -45,6 +45,7 @@ import {
   LIST_FILTER_MODE,
   SERVER_ERROR,
   ExperimentRewardsSummary,
+  ExperimentRewardsReplay,
 } from 'upgrade_types';
 import { ImportExportService } from '../services/ImportExportService';
 import { getInstanceId } from '../../lib/instanceIdentity';
@@ -971,6 +972,41 @@ export class ExperimentController {
     @Req() request: AppRequest
   ): Promise<ExperimentRewardsSummary> {
     return this.thompsonSamplingCrudService.getRewardsSummary(id);
+  }
+
+  /**
+   * @swagger
+   * /experiments/rewards/{id}/replay:
+   *    get:
+   *       description: >-
+   *         Get the inputs for replaying a Thompson Sampling experiment's posteriors reward by reward:
+   *         its conditions with codes and priors, its most recent rewards oldest first (at most 1,000),
+   *         per-condition counts for any older rewards, and its current algorithm config. Returns
+   *         empty lists for an experiment with no Thompson Sampling config.
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Experiment Id
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Conditions, recent rewards in arrival order, earlier reward counts, and config for the replay
+   *          '400':
+   *            description: ExperimentId should be a valid UUID.
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
+  @Get('/rewards/:id/replay')
+  public async getRewardsReplay(
+    @Params({ validate: true }) { id }: ExperimentIdValidator
+  ): Promise<ExperimentRewardsReplay> {
+    return this.thompsonSamplingCrudService.getRewardsReplay(id);
   }
 
   /**

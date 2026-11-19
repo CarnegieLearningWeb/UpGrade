@@ -5,6 +5,7 @@ import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX } from 'upgrade_types';
 describe('ThompsonSamplingExperimentCrudService', () => {
   let configRepository: any;
   let posteriorStateRepository: any;
+  let rewardRepository: any;
   let cacheService: any;
   let service: ThompsonSamplingExperimentCrudService;
 
@@ -21,6 +22,11 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       update: jest.fn().mockResolvedValue(undefined),
       remove: jest.fn().mockResolvedValue(undefined),
     };
+    rewardRepository = {
+      countByConditionIds: jest.fn().mockResolvedValue(0),
+      countOutcomesByConditionInArrivalRange: jest.fn().mockResolvedValue([]),
+      findByConditionIdsInArrivalOrder: jest.fn().mockResolvedValue([]),
+    };
     cacheService = { resetPrefixCache: jest.fn().mockResolvedValue(undefined) };
 
     // Real ThompsonSamplingService — it's a pure, dependency-free service, so using the genuine
@@ -30,6 +36,7 @@ describe('ThompsonSamplingExperimentCrudService', () => {
     service = new ThompsonSamplingExperimentCrudService(
       configRepository,
       posteriorStateRepository,
+      rewardRepository,
       new ThompsonSamplingService(),
       cacheService
     );
@@ -40,6 +47,156 @@ describe('ThompsonSamplingExperimentCrudService', () => {
       await service.createConfig('experiment-1', [{ id: 'condition-1' }]);
 
       expect(configRepository.save).toHaveBeenCalledWith(expect.objectContaining({ scalingFactor: 1 }));
+    });
+  });
+
+  describe('getRewardsReplay', () => {
+    it('returns empty lists and default config when the experiment has no Thompson Sampling config', async () => {
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(replay).toEqual({
+        conditions: [],
+        rewards: [],
+        earlierRewardCount: 0,
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        scalingFactor: 1,
+      });
+      expect(rewardRepository.findByConditionIdsInArrivalOrder).not.toHaveBeenCalled();
+    });
+
+    it('returns conditions in display order with codes and priors, rewards oldest first, and the config', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 5,
+        warmupThreshold: 10,
+        minimumDrawDifference: 0.05,
+        scalingFactor: 0.25,
+        conditionPosteriorStates: [
+          { conditionId: 'condition-b', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'B', order: 2 } },
+          { conditionId: 'condition-a', priorSuccess: 3, priorFailure: 2, condition: { conditionCode: 'A', order: 1 } },
+        ],
+      });
+      rewardRepository.countByConditionIds.mockResolvedValue(2);
+      rewardRepository.findByConditionIdsInArrivalOrder.mockResolvedValue([
+        { id: 'reward-1', conditionId: 'condition-a', success: true, createdAt: new Date('2026-10-27T12:03:19.222Z') },
+        { id: 'reward-2', conditionId: 'condition-b', success: false, createdAt: new Date('2026-10-27T12:05:00.772Z') },
+      ]);
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(rewardRepository.findByConditionIdsInArrivalOrder).toHaveBeenCalledWith(['condition-a', 'condition-b'], 0);
+      const noEarlierRewards = { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 };
+      expect(replay).toEqual({
+        conditions: [
+          {
+            conditionId: 'condition-a',
+            conditionCode: 'A',
+            order: 1,
+            priorSuccess: 3,
+            priorFailure: 2,
+            earlierRewards: noEarlierRewards,
+          },
+          {
+            conditionId: 'condition-b',
+            conditionCode: 'B',
+            order: 2,
+            priorSuccess: 1,
+            priorFailure: 1,
+            earlierRewards: noEarlierRewards,
+          },
+        ],
+        rewards: [
+          { conditionId: 'condition-a', success: true, createdAt: '2026-10-27T12:03:19.222Z' },
+          { conditionId: 'condition-b', success: false, createdAt: '2026-10-27T12:05:00.772Z' },
+        ],
+        earlierRewardCount: 0,
+        batchSize: 5,
+        warmupThreshold: 10,
+        minimumDrawDifference: 0.05,
+        scalingFactor: 0.25,
+      });
+    });
+
+    it('never passes a user id through to the replay, even if a reward row carries one', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        conditionPosteriorStates: [
+          { conditionId: 'condition-a', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'A', order: 1 } },
+        ],
+      });
+      rewardRepository.findByConditionIdsInArrivalOrder.mockResolvedValue([
+        {
+          id: 'reward-1',
+          conditionId: 'condition-a',
+          userId: 'user-1',
+          success: true,
+          createdAt: new Date('2026-10-27T12:03:19.222Z'),
+        },
+      ]);
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(replay.rewards).toHaveLength(1);
+      expect(replay.rewards[0]).not.toHaveProperty('userId');
+    });
+
+    it('falls back to the condition id when a condition has no code', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        conditionPosteriorStates: [
+          {
+            conditionId: 'condition-a',
+            priorSuccess: 1,
+            priorFailure: 1,
+            condition: { conditionCode: null, order: 1 },
+          },
+        ],
+      });
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      expect(replay.conditions[0].conditionCode).toBe('condition-a');
+    });
+
+    it('replays only the most recent 1,000 rewards and counts older ones, splitting off an open batch', async () => {
+      configRepository.findByExperimentIdWithConditions.mockResolvedValue({
+        batchSize: 2,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        scalingFactor: 1,
+        conditionPosteriorStates: [
+          { conditionId: 'condition-a', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'A', order: 1 } },
+          { conditionId: 'condition-b', priorSuccess: 1, priorFailure: 1, condition: { conditionCode: 'B', order: 2 } },
+        ],
+      });
+      // 1,003 rewards: the oldest 3 aren't replayed. With batchSize 2, the first 2 of those were one
+      // applied batch and the 3rd was still buffered when the replayed rewards begin.
+      rewardRepository.countByConditionIds.mockResolvedValue(1003);
+      rewardRepository.countOutcomesByConditionInArrivalRange.mockImplementation(async (_ids, first) =>
+        first === 1
+          ? [
+              { conditionId: 'condition-a', successes: 1, failures: 0 },
+              { conditionId: 'condition-b', successes: 0, failures: 1 },
+            ]
+          : [{ conditionId: 'condition-b', successes: 1, failures: 0 }]
+      );
+
+      const replay = await service.getRewardsReplay('experiment-1');
+
+      const ids = ['condition-a', 'condition-b'];
+      expect(rewardRepository.countOutcomesByConditionInArrivalRange).toHaveBeenCalledWith(ids, 1, 2);
+      expect(rewardRepository.countOutcomesByConditionInArrivalRange).toHaveBeenCalledWith(ids, 3, 3);
+      expect(rewardRepository.findByConditionIdsInArrivalOrder).toHaveBeenCalledWith(ids, 3);
+      expect(replay.earlierRewardCount).toBe(3);
+      expect(replay.conditions.map((condition) => condition.earlierRewards)).toEqual([
+        { successes: 1, failures: 0, pendingSuccesses: 0, pendingFailures: 0 },
+        { successes: 0, failures: 1, pendingSuccesses: 1, pendingFailures: 0 },
+      ]);
     });
   });
 

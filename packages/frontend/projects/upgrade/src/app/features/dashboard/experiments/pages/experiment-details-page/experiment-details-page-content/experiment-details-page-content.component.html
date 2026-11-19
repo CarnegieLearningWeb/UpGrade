@@ -58,6 +58,11 @@
       [isSectionCardExpanded]="isSectionCardExpanded"
       section-card
     ></app-experiment-reward-feedback-section-card>
+    } @if (activeTabIndex === 1 && (shouldShowRewardFeedback$ | async)) {
+    <app-experiment-reward-replay-section-card
+      [isSectionCardExpanded]="isSectionCardExpanded"
+      section-card
+    ></app-experiment-reward-replay-section-card>
     } @if (activeTabIndex === 1) {
     <app-experiment-metrics-data-section-card
       [isSectionCardExpanded]="isSectionCardExpanded"

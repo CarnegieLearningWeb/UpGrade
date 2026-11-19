@@ -1,0 +1,35 @@
+<app-common-section-card>
+  <app-common-section-card-title-header
+    header-left
+    [title]="'experiments.details.reward-replay.card.title.text' | translate"
+    [subtitle]="'experiments.details.reward-replay.card.subtitle.text' | translate"
+  ></app-common-section-card-title-header>
+
+  <app-common-section-card-action-buttons
+    header-right
+    [showPrimaryButton]="false"
+    [isSectionCardExpanded]="isSectionCardExpanded"
+    (sectionCardExpandChange)="onSectionCardExpandChange($event)"
+  ></app-common-section-card-action-buttons>
+
+  @if (isSectionCardExpanded) {
+  <div content class="reward-replay-content">
+    @if (isLoading$ | async) {
+    <mat-progress-bar class="loading-bar" mode="indeterminate"></mat-progress-bar>
+    } @if (replayView$ | async; as view) {
+    <!-- steps[0] is the prior, so a replay with any rewards has at least two steps -->
+    @if (view.steps.length > 1) { @let selectedIndex = effectiveStepIndex(view);
+    <app-replay-stepper
+      [steps]="view.steps"
+      [conditions]="view.conditions"
+      [selectedIndex]="selectedIndex"
+      [scalingFactor]="view.scalingFactor"
+      [earlierRewardCount]="view.earlierRewardCount"
+      (selectedIndexChange)="onSelectedStepChange($event)"
+    ></app-replay-stepper>
+    } @else {
+    <span class="ft-14-400 no-data">{{ 'experiments.details.posteriors.no-data-row.text' | translate }}</span>
+    } }
+  </div>
+  }
+</app-common-section-card>

@@ -2,14 +2,22 @@ import { Service } from 'typedi';
 import { InjectRepository } from '../../typeorm-typedi-extensions';
 import { ThompsonSamplingExperimentConfigRepository } from '../repositories/ThompsonSamplingExperimentConfigRepository';
 import { ConditionPosteriorStateRepository } from '../repositories/ConditionPosteriorStateRepository';
+import { ThompsonSamplingRewardRepository } from '../repositories/ThompsonSamplingRewardRepository';
 import { ThompsonSamplingExperimentConfig } from '../models/ThompsonSamplingExperimentConfig';
 import { DEFAULT_SCALING_FACTOR, ThompsonSamplingService } from './ThompsonSamplingService';
 import { CacheService } from './CacheService';
-import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX, ExperimentRewardsSummary } from 'upgrade_types';
+import { ASSIGNMENT_ALGORITHM, CACHE_PREFIX, ExperimentRewardsReplay, ExperimentRewardsSummary } from 'upgrade_types';
 import { ExperimentDTO } from '../DTO/ExperimentDTO';
 import { AdaptiveExperimentConfigService } from './AdaptiveExperimentConfigService';
 
 type ConditionRef = { id: string };
+
+/**
+ * The replay returns at most this many of an experiment's most recent rewards. It's a display aid,
+ * so it caps the query, the payload and the client's per-step work rather than replaying a long
+ * experiment's whole history; older rewards are sent as per-condition counts instead.
+ */
+export const REWARDS_REPLAY_MAX_REWARDS = 1000;
 
 export interface ThompsonSamplingConfigParams {
   scalingFactor?: number;
@@ -25,6 +33,7 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
   constructor(
     @InjectRepository() private configRepository: ThompsonSamplingExperimentConfigRepository,
     @InjectRepository() private posteriorStateRepository: ConditionPosteriorStateRepository,
+    @InjectRepository() private rewardRepository: ThompsonSamplingRewardRepository,
     private thompsonSamplingService: ThompsonSamplingService,
     private cacheService: CacheService
   ) {}
@@ -308,6 +317,84 @@ export class ThompsonSamplingExperimentCrudService implements AdaptiveExperiment
       warmupThreshold: config.warmupThreshold,
       batchSize: config.batchSize,
       scalingFactor: config.scalingFactor,
+    };
+  }
+
+  /**
+   * The inputs for replaying an experiment's posteriors reward by reward: its conditions (display
+   * code, order, priors), its most recent rewards oldest first (at most REWARDS_REPLAY_MAX_REWARDS),
+   * per-condition counts for any older rewards, and the current algorithm config. The replay itself
+   * runs on the client. It uses today's priors, batchSize and scalingFactor, so if any was edited
+   * mid-experiment the replay won't match what was applied at the time. (scalingFactor is applied at
+   * draw time to every stored reward, so the replay's final step always matches what the algorithm
+   * draws from now.) Rewards carry no user identifier. Read-only.
+   */
+  public async getRewardsReplay(experimentId: string): Promise<ExperimentRewardsReplay> {
+    const config = await this.configRepository.findByExperimentIdWithConditions(experimentId);
+
+    if (!config) {
+      return {
+        conditions: [],
+        rewards: [],
+        earlierRewardCount: 0,
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        scalingFactor: DEFAULT_SCALING_FACTOR,
+      };
+    }
+
+    const states = [...config.conditionPosteriorStates].sort(
+      (a, b) => (a.condition?.order ?? 0) - (b.condition?.order ?? 0)
+    );
+    const conditionIds = states.map((state) => state.conditionId);
+
+    // Older rewards are summarized, not replayed. The live posterior folds rewards in only in whole
+    // batches of batchSize, so of those older rewards, the ones in completed batches had reached the
+    // posterior when the replay starts and the rest were still buffered.
+    const totalRewardCount = await this.rewardRepository.countByConditionIds(conditionIds);
+    const earlierRewardCount = Math.max(0, totalRewardCount - REWARDS_REPLAY_MAX_REWARDS);
+    const batchSize = config.batchSize > 1 ? config.batchSize : 1;
+    const earlierAppliedCount = earlierRewardCount - (earlierRewardCount % batchSize);
+
+    const [applied, pending, rewards] = await Promise.all([
+      this.rewardRepository.countOutcomesByConditionInArrivalRange(conditionIds, 1, earlierAppliedCount),
+      this.rewardRepository.countOutcomesByConditionInArrivalRange(
+        conditionIds,
+        earlierAppliedCount + 1,
+        earlierRewardCount
+      ),
+      this.rewardRepository.findByConditionIdsInArrivalOrder(conditionIds, earlierRewardCount),
+    ]);
+    const appliedById = new Map(applied.map((counts) => [counts.conditionId, counts]));
+    const pendingById = new Map(pending.map((counts) => [counts.conditionId, counts]));
+
+    const conditions = states.map((state) => ({
+      conditionId: state.conditionId,
+      conditionCode: state.condition?.conditionCode ?? state.conditionId,
+      order: state.condition?.order ?? 0,
+      priorSuccess: state.priorSuccess,
+      priorFailure: state.priorFailure,
+      earlierRewards: {
+        successes: appliedById.get(state.conditionId)?.successes ?? 0,
+        failures: appliedById.get(state.conditionId)?.failures ?? 0,
+        pendingSuccesses: pendingById.get(state.conditionId)?.successes ?? 0,
+        pendingFailures: pendingById.get(state.conditionId)?.failures ?? 0,
+      },
+    }));
+
+    return {
+      conditions,
+      rewards: rewards.map(({ conditionId, success, createdAt }) => ({
+        conditionId,
+        success,
+        createdAt: new Date(createdAt).toISOString(),
+      })),
+      earlierRewardCount,
+      batchSize: config.batchSize,
+      warmupThreshold: config.warmupThreshold,
+      minimumDrawDifference: config.minimumDrawDifference,
+      scalingFactor: config.scalingFactor ?? DEFAULT_SCALING_FACTOR,
     };
   }
 

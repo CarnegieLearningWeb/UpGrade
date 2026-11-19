@@ -53,6 +53,9 @@ import {
   actionFetchRewardsDataForExperiment,
   actionFetchRewardsDataForExperimentSuccess,
   actionFetchRewardsDataForExperimentFailure,
+  actionFetchRewardsReplayForExperiment,
+  actionFetchRewardsReplayForExperimentSuccess,
+  actionFetchRewardsReplayForExperimentFailure,
   actionUpdateExperimentMetrics,
   actionUpdateExperimentMetricsSuccess,
   actionUpdateExperimentMetricsFailure,
@@ -1718,6 +1721,53 @@ describe('ExperimentEffects', () => {
       tick(0);
 
       expect(emitted).toEqual([]);
+    }));
+  });
+
+  describe('fetchRewardsReplayForExperiment$', () => {
+    it('should dispatch actionFetchRewardsReplayForExperimentSuccess with the fetched replay', fakeAsync(() => {
+      const experimentId = 'test-experiment-123';
+      const rewardsReplay = {
+        conditions: [
+          {
+            conditionId: 'c1',
+            conditionCode: 'Control',
+            order: 1,
+            priorSuccess: 1,
+            priorFailure: 1,
+            earlierRewards: { successes: 0, failures: 0, pendingSuccesses: 0, pendingFailures: 0 },
+          },
+        ],
+        rewards: [{ conditionId: 'c1', success: true, createdAt: '2026-10-27T12:03:19.222Z' }],
+        earlierRewardCount: 0,
+        batchSize: 1,
+        warmupThreshold: 0,
+        minimumDrawDifference: 0,
+        scalingFactor: 1,
+      };
+      experimentDataService.fetchRewardsReplayForExperiment = jest.fn().mockReturnValue(of(rewardsReplay));
+
+      service.fetchRewardsReplayForExperiment$.subscribe((resultingAction) => {
+        expect(experimentDataService.fetchRewardsReplayForExperiment).toHaveBeenCalledWith(experimentId);
+        expect(resultingAction).toEqual(actionFetchRewardsReplayForExperimentSuccess({ experimentId, rewardsReplay }));
+      });
+
+      actions$.next(actionFetchRewardsReplayForExperiment({ experimentId }));
+
+      tick(0);
+    }));
+
+    it('should dispatch actionFetchRewardsReplayForExperimentFailure on fetch error', fakeAsync(() => {
+      const error = new Error('API error');
+      experimentDataService.fetchRewardsReplayForExperiment = jest.fn().mockReturnValue(throwError(error));
+
+      service.fetchRewardsReplayForExperiment$.subscribe((resultingAction) => {
+        expect(resultingAction).toEqual(actionFetchRewardsReplayForExperimentFailure({ error }));
+      });
+
+      actions$.next(actionFetchRewardsReplayForExperiment({ experimentId: 'test-experiment-123' }));
+
+      tick(0);
     }));
   });
 });

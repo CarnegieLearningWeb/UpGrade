@@ -20,7 +20,7 @@ import {
   UpdateExperimentConditionsRequest,
 } from './experiments.model';
 import { ExperimentSegmentListRequest } from '../../segments/store/segments.model';
-import { ExperimentRewardsSummary } from 'upgrade_types';
+import { ExperimentRewardsReplay, ExperimentRewardsSummary } from 'upgrade_types';
 
 export const actionGetExperiments = createAction(
   '[Experiment] Get Experiments',
@@ -425,6 +425,21 @@ export const actionFetchRewardsDataForExperimentSuccess = createAction(
 
 export const actionFetchRewardsDataForExperimentFailure = createAction(
   '[Experiment] Fetch Rewards Data For Experiment Failure',
+  props<{ error: any }>()
+);
+
+export const actionFetchRewardsReplayForExperiment = createAction(
+  '[Experiment] Fetch Rewards Replay For Experiment',
+  props<{ experimentId: string }>()
+);
+
+export const actionFetchRewardsReplayForExperimentSuccess = createAction(
+  '[Experiment] Fetch Rewards Replay For Experiment Success',
+  props<{ experimentId: string; rewardsReplay: ExperimentRewardsReplay }>()
+);
+
+export const actionFetchRewardsReplayForExperimentFailure = createAction(
+  '[Experiment] Fetch Rewards Replay For Experiment Failure',
   props<{ error: any }>()
 );
 

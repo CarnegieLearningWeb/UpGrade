@@ -1,0 +1,32 @@
+// Axis type matches the enrollment chart (EnrollmentOverTimeComponent) on the same Data tab.
+.posterior-distribution {
+  display: flex;
+  flex-direction: column;
+  row-gap: 4px;
+
+  .chart-data {
+    position: relative;
+    height: 240px;
+  }
+
+  .caption {
+    margin: 0;
+    // Starts at the chart's left axis, which ngx-charts places 64px in from the left for this chart's
+    // margins and y-axis label. The Replay Stepper's condition rows use the same offset.
+    padding-left: 64px;
+    color: var(--grey-5);
+  }
+
+  ::ng-deep .ngx-charts {
+    ::ng-deep text {
+      font-family: 'Open Sans';
+      font-weight: 400;
+      fill: var(--black-2);
+    }
+
+    // Slightly heavier than ngx-charts' default 1.5px so the overlapping curves stay distinct.
+    ::ng-deep .line {
+      stroke-width: 2px;
+    }
+  }
+}

@@ -24,6 +24,7 @@ import {
   ASSIGNMENT_UNIT_DISPLAY_MAP,
   FILTER_MODE,
   ExperimentRewardsSummary,
+  ExperimentRewardsReplay,
 } from 'upgrade_types';
 import { determineWeightingMethod, isWeightSumValid } from '../condition-helper.service';
 import { formatThompsonSamplingConfigDetails } from '../thompson-sampling-helper.service';
@@ -404,6 +405,19 @@ export const selectIsLoadingRewardsSummary = createSelector(
   (state: ExperimentState): boolean => {
     return state.isLoadingRewardsSummary;
   }
+);
+
+/** The replay inputs for the selected experiment, or null until they've been fetched. */
+export const selectRewardsReplayForSelectedExperiment = createSelector(
+  selectSelectedExperiment,
+  selectExperimentState,
+  (experiment: ExperimentVM, state: ExperimentState): ExperimentRewardsReplay | null =>
+    (experiment?.id && state.rewardsReplays[experiment.id]) || null
+);
+
+export const selectIsLoadingRewardsReplay = createSelector(
+  selectExperimentState,
+  (state: ExperimentState): boolean => state.isLoadingRewardsReplay
 );
 
 // Warning logic for experiments
