@@ -222,6 +222,30 @@ describe('ApiService', () => {
 
       expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
     });
+
+    it('should send a decision point to scope the response to it', async () => {
+      const requestBody: UpGradeClientRequests.IGetAllExperimentConditionsRequestBody = {
+        context: defaultConfig.context,
+        decisionPoint: { site: 'home', target: 'banner' },
+      };
+
+      await apiService.getAllExperimentConditions({ site: 'home', target: 'banner' });
+
+      expect(mockHttpClient.doPost).toHaveBeenCalledWith(expectedUrl, requestBody, expectedOptions);
+    });
+
+    it.each([
+      ['omitted', undefined],
+      ['null', null],
+    ])('should send an %s decision point target as an empty string', async (_name, target) => {
+      await apiService.getAllExperimentConditions({ site: 'home', target });
+
+      expect(mockHttpClient.doPost).toHaveBeenLastCalledWith(
+        expectedUrl,
+        { context: defaultConfig.context, decisionPoint: { site: 'home', target: '' } },
+        expectedOptions
+      );
+    });
   });
 
   describe('#log', () => {

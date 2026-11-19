@@ -212,15 +212,15 @@ describe('UpgradeClient', () => {
   describe('#getAllExperimentConditions', () => {
     it('should call apiService "getAllExperimentConditions" with no options', async () => {
       ApiService.prototype.getAllExperimentConditions = jest.fn();
-      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+      DataService.prototype.getFullContextAssignmentData = jest.fn((): any => {
         return null;
       });
       await upgradeClient.getAllExperimentConditions();
-      expect(ApiService.prototype.getAllExperimentConditions).toHaveBeenCalled();
+      expect(ApiService.prototype.getAllExperimentConditions).toHaveBeenCalledWith();
     });
     it('should not call apiService "getAllExperimentConditions" when there is cached data', async () => {
       ApiService.prototype.getAllExperimentConditions = jest.fn();
-      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+      DataService.prototype.getFullContextAssignmentData = jest.fn((): any => {
         return ['foo'];
       });
       upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
@@ -230,7 +230,7 @@ describe('UpgradeClient', () => {
 
     it('should call apiService "getAllExperimentConditions" when there is cached data if ignoreCache is specified', async () => {
       ApiService.prototype.getAllExperimentConditions = jest.fn();
-      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
+      DataService.prototype.getFullContextAssignmentData = jest.fn((): any => {
         return ['foo'];
       });
       upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
@@ -239,30 +239,37 @@ describe('UpgradeClient', () => {
     });
   });
   describe('#getDecisionPointAssignment', () => {
-    it('should call apiService "getAllExperimentConditions" with no options', async () => {
-      ApiService.prototype.getAllExperimentConditions = jest.fn();
-      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
-        return null;
-      });
+    afterEach(() => jest.restoreAllMocks());
+
+    it('should ask apiService "getAllExperimentConditions" for just that decision point when the cache cannot answer', async () => {
+      ApiService.prototype.getAllExperimentConditions = jest.fn().mockResolvedValue([]);
+      jest.spyOn(DataService.prototype, 'hasDecisionPointAssignment').mockReturnValue(false);
+
       await upgradeClient.getDecisionPointAssignment('testSite');
-      expect(ApiService.prototype.getAllExperimentConditions).toHaveBeenCalled();
+
+      expect(ApiService.prototype.getAllExperimentConditions).toHaveBeenCalledWith({ site: 'testSite', target: '' });
     });
-    it('should not call apiService "getAllExperimentConditions" when there is cached data', async () => {
+    it('should not call apiService "getAllExperimentConditions" when the cache can answer', async () => {
       ApiService.prototype.getAllExperimentConditions = jest.fn();
-      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => {
-        return ['foo'];
-      });
-      DataService.prototype.findExperimentAssignmentBySiteAndTarget = jest.fn((site, target) => {
-        return {
+      jest.spyOn(DataService.prototype, 'hasDecisionPointAssignment').mockReturnValue(true);
+      jest
+        .spyOn(DataService.prototype, 'findExperimentAssignmentBySiteAndTarget')
+        .mockImplementation((site, target) => ({
           site: site,
           target: target,
           assignedCondition: [],
           experimentType: EXPERIMENT_TYPE.SIMPLE,
-        };
-      });
-      upgradeClient = new UpgradeClient('1234', 'test.com', 'testContext', { httpClient: mockHttpClient });
+        }));
+
       await upgradeClient.getDecisionPointAssignment('testSite');
+
       expect(ApiService.prototype.getAllExperimentConditions).not.toHaveBeenCalled();
+    });
+    it('should resolve to null when the response is not a list of assignments', async () => {
+      ApiService.prototype.getAllExperimentConditions = jest.fn().mockResolvedValue({ error: 'oops' });
+      jest.spyOn(DataService.prototype, 'hasDecisionPointAssignment').mockReturnValue(false);
+
+      await expect(upgradeClient.getDecisionPointAssignment('testSite', 'testTarget')).resolves.toBeNull();
     });
   });
 
@@ -298,7 +305,6 @@ describe('UpgradeClient', () => {
   describe('#markDecisionPoint', () => {
     beforeEach(() => {
       ApiService.prototype.markDecisionPoint = jest.fn().mockResolvedValue({});
-      DataService.prototype.getExperimentAssignmentData = jest.fn((): any => ['foo']);
     });
 
     it('should call apiService markDecisionPoint using options object form', async () => {

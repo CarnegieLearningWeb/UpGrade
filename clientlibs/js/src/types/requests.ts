@@ -22,6 +22,7 @@ export namespace UpGradeClientRequests {
 
   export interface IGetAllExperimentConditionsRequestBody {
     context: string;
+    decisionPoint?: { site: string; target: string };
   }
 
   export type IGetAllFeatureFlagsRequestBody =

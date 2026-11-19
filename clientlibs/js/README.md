@@ -43,12 +43,16 @@ await assignment.markDecisionPoint(
 );
 ```
 
-If you mark with `client.markDecisionPoint(site, target, condition, status)` instead, pass the condition **code** (`assignment.getCondition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
+If you mark with `client.markDecisionPoint(site, target, condition, status)` instead, pass the condition **code** (`assignment.getCondition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded. It also sends the experiment and condition ids of that decision point's cached assignment, so the server marks the experiment the user was actually assigned. It never fetches assignments itself, so look the decision point up first (with `getDecisionPointAssignment` or `getAllExperimentConditions`), or the mark goes without those ids.
 
 `client.markDecisionPoint` also accepts an options object (`{ site, target, condition, status, uniquifier, clientError }`), which avoids relying on argument order. The Java and Python libraries order these arguments differently: Java puts `clientError` before `uniquifier`, and Python takes `condition, status` before `site, target`.
 
 ## Caching
-Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since what a user is assigned can depend on their identity and groups. `setFeatureFlagUserGroupsForSession` also clears the flag cache.
+Assignments and feature flags are cached for the client's lifetime, with no expiry.
+
+`getDecisionPointAssignment` is answered from the cache if `getAllExperimentConditions` already fetched the full context, or if an earlier call fetched this decision point. Otherwise it asks the server for just this decision point, so the server doesn't evaluate the rest of the context, and caches the answer. A decision point with no assignment isn't cached, so looking it up again asks the server again. If you'll look up many decision points, call `getAllExperimentConditions` first, so one request answers them all. `getAllExperimentConditions` doesn't return the decision points cached one at a time: it fetches the full context instead.
+
+Both caches are cleared once the server confirms `init`, `setGroupMembership`, `setWorkingGroup` or `setAltUserIds`, since what a user is assigned can depend on their identity and groups. `setFeatureFlagUserGroupsForSession` also clears the flag cache.
 
 This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Await these calls before reading assignments or flags, or pass `{ ignoreCache: true }` to `getAllExperimentConditions` / `getAllFeatureFlags` when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
 
