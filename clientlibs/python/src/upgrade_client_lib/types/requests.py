@@ -25,9 +25,15 @@ class SetWorkingGroupRequest(BaseModel):
     workingGroup: dict[str, str]
 
 
+class DecisionPointRef(BaseModel):
+    site: str
+    target: str
+
+
 class AssignRequest(BaseModel):
     userId: str
     context: str
+    decisionPoint: DecisionPointRef | None = None
 
 
 class MarkDecisionPointCondition(BaseModel):
@@ -91,11 +97,6 @@ class FeatureFlagUserGroupsForSession(BaseModel):
 
     groupsForSession: dict[str, list[str]]
     includeStoredUserGroups: bool
-
-
-class DecisionPointRef(BaseModel):
-    site: str
-    target: str
 
 
 class SendRewardRequest(BaseModel):
