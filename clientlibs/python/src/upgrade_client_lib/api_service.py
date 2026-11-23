@@ -129,9 +129,7 @@ class ApiService:
             async with httpx.AsyncClient(timeout=self._timeout) as client:
                 yield client
 
-    async def _post_async(
-        self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None
-    ) -> Any:
+    async def _post_async(self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None) -> Any:
         async with self._async_client_for_request() as client:
             response = await client.post(self._url(path), json=body, headers=self._headers(), params=params)
         self._raise_for_status(response)

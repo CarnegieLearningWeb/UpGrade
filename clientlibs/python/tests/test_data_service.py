@@ -100,7 +100,8 @@ class TestAssignmentCache:
         ds = DataService()
         ds.set_assignments([make_assignment("home", "banner")])
         new_assignment = make_assignment(
-            "home", "banner",
+            "home",
+            "banner",
             conditions=[AssignedCondition(id="cond-new", conditionCode="treatment")],
         )
         ds.set_assignments([new_assignment])
@@ -255,7 +256,8 @@ class TestCacheInvalidation:
         """
         ds = DataService()
         fresh_1 = make_assignment(
-            "home", "banner",
+            "home",
+            "banner",
             conditions=[AssignedCondition(id="c1", conditionCode="control")],
         )
         ds.set_assignments([fresh_1])
@@ -265,7 +267,8 @@ class TestCacheInvalidation:
         assert ds.get_all_assignments() is None  # cold after clear
 
         fresh_2 = make_assignment(
-            "home", "banner",
+            "home",
+            "banner",
             conditions=[AssignedCondition(id="c2", conditionCode="treatment")],
         )
         ds.set_assignments([fresh_2])

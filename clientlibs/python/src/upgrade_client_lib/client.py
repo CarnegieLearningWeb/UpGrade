@@ -146,17 +146,13 @@ class UpgradeClient:
     # set_group_membership
     # ------------------------------------------------------------------
 
-    async def set_group_membership(
-        self, group: dict[str, list[str]]
-    ) -> InitializeUserResponse:
+    async def set_group_membership(self, group: dict[str, list[str]]) -> InitializeUserResponse:
         """Update the user's group membership, then clear cached assignments and feature flags."""
         response = await self._api_service.set_group_membership(group)
         self._data_service.clear()
         return response
 
-    def set_group_membership_sync(
-        self, group: dict[str, list[str]]
-    ) -> InitializeUserResponse:
+    def set_group_membership_sync(self, group: dict[str, list[str]]) -> InitializeUserResponse:
         """Synchronous variant of :meth:`set_group_membership`."""
         response = self._api_service.set_group_membership_sync(group)
         self._data_service.clear()
@@ -166,17 +162,13 @@ class UpgradeClient:
     # set_working_group
     # ------------------------------------------------------------------
 
-    async def set_working_group(
-        self, working_group: dict[str, str]
-    ) -> InitializeUserResponse:
+    async def set_working_group(self, working_group: dict[str, str]) -> InitializeUserResponse:
         """Update the user's working group, then clear cached assignments and feature flags."""
         response = await self._api_service.set_working_group(working_group)
         self._data_service.clear()
         return response
 
-    def set_working_group_sync(
-        self, working_group: dict[str, str]
-    ) -> InitializeUserResponse:
+    def set_working_group_sync(self, working_group: dict[str, str]) -> InitializeUserResponse:
         """Synchronous variant of :meth:`set_working_group`."""
         response = self._api_service.set_working_group_sync(working_group)
         self._data_service.clear()
@@ -186,9 +178,7 @@ class UpgradeClient:
     # get_all_experiment_conditions
     # ------------------------------------------------------------------
 
-    async def get_all_experiment_conditions(
-        self, ignore_cache: bool = False
-    ) -> list[Assignment]:
+    async def get_all_experiment_conditions(self, ignore_cache: bool = False) -> list[Assignment]:
         """Return all experiment assignments for this user and context.
 
         Results are cached after the first fetch.  Pass ``ignore_cache=True``
@@ -198,9 +188,7 @@ class UpgradeClient:
         """
         return [self._wrap(a) for a in await self._raw_assignments(ignore_cache)]
 
-    def get_all_experiment_conditions_sync(
-        self, ignore_cache: bool = False
-    ) -> list[Assignment]:
+    def get_all_experiment_conditions_sync(self, ignore_cache: bool = False) -> list[Assignment]:
         """Synchronous variant of :meth:`get_all_experiment_conditions`."""
         return [self._wrap(a) for a in self._raw_assignments_sync(ignore_cache)]
 
@@ -208,9 +196,7 @@ class UpgradeClient:
     # get_decision_point_assignment
     # ------------------------------------------------------------------
 
-    async def get_decision_point_assignment(
-        self, site: str, target: str | None = ""
-    ) -> Assignment | None:
+    async def get_decision_point_assignment(self, site: str, target: str | None = "") -> Assignment | None:
         """Return the :class:`Assignment` for a specific decision point.
 
         Answered from the cache, without a network call, if
@@ -230,9 +216,7 @@ class UpgradeClient:
             self._data_service.add_decision_point_assignments(fresh)
         return self._assignment_for(site, target)
 
-    def get_decision_point_assignment_sync(
-        self, site: str, target: str | None = ""
-    ) -> Assignment | None:
+    def get_decision_point_assignment_sync(self, site: str, target: str | None = "") -> Assignment | None:
         """Synchronous variant of :meth:`get_decision_point_assignment`."""
         if not self._data_service.has_decision_point(site, target):
             fresh = self._api_service.get_all_experiment_conditions_sync(site=site, target=target)
@@ -289,9 +273,7 @@ class UpgradeClient:
     # get_all_feature_flags
     # ------------------------------------------------------------------
 
-    async def get_all_feature_flags(
-        self, ignore_cache: bool = False
-    ) -> list[FeatureFlag]:
+    async def get_all_feature_flags(self, ignore_cache: bool = False) -> list[FeatureFlag]:
         """Return all feature flags active for this user and context.
 
         Results are cached after the first fetch.  Pass ``ignore_cache=True``
@@ -299,9 +281,7 @@ class UpgradeClient:
         """
         return [FeatureFlag(key=k) for k in await self._feature_flag_keys(ignore_cache)]
 
-    def get_all_feature_flags_sync(
-        self, ignore_cache: bool = False
-    ) -> list[FeatureFlag]:
+    def get_all_feature_flags_sync(self, ignore_cache: bool = False) -> list[FeatureFlag]:
         """Synchronous variant of :meth:`get_all_feature_flags`."""
         return [FeatureFlag(key=k) for k in self._feature_flag_keys_sync(ignore_cache)]
 
