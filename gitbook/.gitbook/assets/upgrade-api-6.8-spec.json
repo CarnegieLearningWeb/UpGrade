@@ -1,9 +1,9 @@
 {
   "basePath": "/api",
   "info": {
-    "title": "A/B Testing Backend",
+    "title": "Backend for the UpGrade A/B Testing Platform",
     "description": "Backend for the UpGrade A/B Testing Platform",
-    "version": "6.7.0"
+    "version": "6.8.0"
   },
   "servers": [
     {
@@ -429,6 +429,42 @@
         }
       }
     },
+    "/segments/batch-delete": {
+      "post": {
+        "summary": "Delete the selected segments",
+        "description": "Deletes selected segments sequentially using the existing deletion workflow. Requires the Admin, Creator or User Manager role. Missing items are skipped; Used and global-exclude segments are refused and skipped. Execution failures stop the remaining items. Returns one result per ID.",
+        "tags": [
+          "Segment"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "selection",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BatchEntityIdsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-ID deletion outcomes, including failures and items not attempted.",
+            "schema": {
+              "$ref": "#/definitions/BatchDeleteResult"
+            }
+          },
+          "400": {
+            "description": "Expected a nonempty array of unique UUIDs."
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "403": {
+            "description": "The current user's role cannot delete segments. Nothing is deleted."
+          }
+        }
+      }
+    },
     "/segments": {
       "get": {
         "description": "Get all segments",
@@ -684,6 +720,12 @@
           },
           "401": {
             "description": "Authorization Required Error"
+          },
+          "403": {
+            "description": "The current user's role cannot delete segments"
+          },
+          "409": {
+            "description": "The segment is Used or is a global-exclude segment, and was not deleted"
           },
           "500": {
             "description": "Internal Server Error, SegmentId is not valid"
@@ -1761,6 +1803,42 @@
         }
       }
     },
+    "/flags/batch-delete": {
+      "post": {
+        "summary": "Delete the selected flags",
+        "description": "Deletes selected feature flags sequentially. Requires the Admin or Creator role. Missing items are skipped; Enabled flags are refused and skipped. Execution failures stop the remaining items. Returns one result per ID.",
+        "tags": [
+          "Feature Flags"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "selection",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BatchEntityIdsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-ID deletion outcomes, including failures and items not attempted.",
+            "schema": {
+              "$ref": "#/definitions/BatchDeleteResult"
+            }
+          },
+          "400": {
+            "description": "Expected a nonempty array of unique UUIDs."
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "403": {
+            "description": "The current user's role cannot delete feature flags. Nothing is deleted."
+          }
+        }
+      }
+    },
     "/flags": {
       "get": {
         "description": "Get all the feature flags",
@@ -1876,8 +1954,14 @@
           "200": {
             "description": "Delete Feature flag By Id"
           },
+          "403": {
+            "description": "The current user's role cannot delete feature flags"
+          },
           "404": {
             "description": "Feature flag not found"
+          },
+          "409": {
+            "description": "The feature flag is Enabled and was not deleted"
           }
         }
       },
@@ -2517,7 +2601,7 @@
         "parameters": [
           {
             "in": "path",
-            "flagId": "Id",
+            "name": "id",
             "description": "Feature Flag Id",
             "required": true,
             "schema": {
@@ -2593,7 +2677,7 @@
         "parameters": [
           {
             "in": "path",
-            "flagId": "Id",
+            "name": "id",
             "description": "Feature Flag Id",
             "required": true,
             "schema": {
@@ -2632,7 +2716,7 @@
         "parameters": [
           {
             "in": "path",
-            "flagId": "Id",
+            "name": "id",
             "description": "Feature Flag Id",
             "required": true,
             "schema": {
@@ -2737,6 +2821,42 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/experiments/batch-delete": {
+      "post": {
+        "summary": "Delete the selected experiments",
+        "description": "Deletes selected experiments sequentially. Requires the Admin or Creator role. Missing items are skipped; experiments that are not Draft, Inactive, Completed or Archived are refused and skipped. Execution failures stop the remaining items. Returns one result per ID.",
+        "tags": [
+          "Experiments"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "selection",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BatchEntityIdsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-ID deletion outcomes, including failures and items not attempted.",
+            "schema": {
+              "$ref": "#/definitions/BatchDeleteResult"
+            }
+          },
+          "400": {
+            "description": "Expected a nonempty array of unique UUIDs."
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "403": {
+            "description": "The current user's role cannot delete experiments. Nothing is deleted."
           }
         }
       }
@@ -3085,6 +3205,39 @@
         }
       }
     },
+    "/experiments/rewards/{id}/replay": {
+      "get": {
+        "description": "Get the inputs for replaying a Thompson Sampling experiment's posteriors reward by reward: its conditions with codes and priors, its most recent rewards oldest first (at most 1,000), per-condition counts for any older rewards, and its current algorithm config. Returns empty lists for an experiment with no Thompson Sampling config.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Experiment Id"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Conditions, recent rewards in arrival order, earlier reward counts, and config for the replay"
+          },
+          "400": {
+            "description": "ExperimentId should be a valid UUID."
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          }
+        }
+      }
+    },
     "/experiments/conditions/{id}": {
       "get": {
         "description": "Get experiment conditions",
@@ -3251,11 +3404,63 @@
           "401": {
             "description": "AuthorizationRequiredError"
           },
+          "403": {
+            "description": "The current user's role cannot delete experiments"
+          },
           "404": {
             "description": "Not found error"
           },
+          "409": {
+            "description": "The experiment is Running, Paused, Preview or Scheduled and was not deleted"
+          },
           "500": {
             "description": "id should be of type UUID"
+          }
+        }
+      },
+      "put": {
+        "description": "Update Experiment",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Experiment Id"
+          },
+          {
+            "in": "body",
+            "name": "experiment",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Experiment"
+            },
+            "description": "Experiment Structure"
+          }
+        ],
+        "tags": [
+          "Experiments"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiment is updated",
+            "schema": {
+              "$ref": "#/definitions/ExperimentResponse"
+            }
+          },
+          "401": {
+            "description": "AuthorizationRequiredError"
+          },
+          "500": {
+            "description": "invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database"
           }
         }
       }
@@ -3305,55 +3510,7 @@
         }
       }
     },
-    "/experiments/:id": {
-      "put": {
-        "description": "Update Experiment",
-        "consumes": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Experiment Id"
-          },
-          {
-            "in": "body",
-            "name": "experiment",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Experiment"
-            },
-            "description": "Experiment Structure"
-          }
-        ],
-        "tags": [
-          "Experiments"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "Experiment is updated",
-            "schema": {
-              "$ref": "#/definitions/ExperimentResponse"
-            }
-          },
-          "401": {
-            "description": "AuthorizationRequiredError"
-          },
-          "500": {
-            "description": "invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database"
-          }
-        }
-      }
-    },
-    "/experiments/{validation}": {
+    "/experiments/validation": {
       "post": {
         "description": "Validating Experiment",
         "consumes": [
@@ -3414,7 +3571,7 @@
         }
       }
     },
-    "/experiments/{import}": {
+    "/experiments/import": {
       "post": {
         "description": "Import New Experiment",
         "consumes": [
@@ -3475,29 +3632,21 @@
         }
       }
     },
-    "/experiments/{export}": {
+    "/experiments/export": {
       "get": {
         "description": "Export Experiment JSON",
         "parameters": [
           {
-            "in": "body",
-            "name": "experiments",
+            "in": "query",
+            "name": "ids",
             "required": true,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "fileName": {
-                    "type": "string"
-                  },
-                  "fileContent": {
-                    "type": "string"
-                  }
-                }
-              }
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
             },
-            "description": "Experiment Files"
+            "collectionFormat": "multi",
+            "description": "Ids of the experiments to export"
           }
         ],
         "tags": [
@@ -3512,15 +3661,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "type": "object",
-                "properties": {
-                  "fileName": {
-                    "type": "string"
-                  },
-                  "error": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/definitions/ExperimentResponse"
               }
             }
           },
@@ -3893,7 +4034,7 @@
         "parameters": [
           {
             "in": "path",
-            "id": "Id",
+            "name": "id",
             "description": "Experiment Id",
             "required": true,
             "schema": {
@@ -3932,7 +4073,7 @@
         "parameters": [
           {
             "in": "path",
-            "flagId": "Id",
+            "name": "id",
             "description": "Experiment Id",
             "required": true,
             "schema": {
@@ -4360,6 +4501,21 @@
                 "context": {
                   "type": "string",
                   "example": "add"
+                },
+                "decisionPoint": {
+                  "type": "object",
+                  "description": "Optional. Returns only this decision point's assignment (or an empty array).",
+                  "required": [
+                    "site"
+                  ],
+                  "properties": {
+                    "site": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             },
@@ -4781,7 +4937,7 @@
     },
     "/v6/reward": {
       "post": {
-        "description": "Send a reward signal for an adaptive (Thompson Sampling) experiment.\n\nThis endpoint allows sending binary reward feedback (SUCCESS or FAILURE) for adaptive experiments.\nThe reward is used by the adaptive algorithm to update its learning model and improve future assignments.\n\n**Lookup Methods:**\n\nThe endpoint supports two methods to identify the experiment:\n\n1. **Direct Lookup** - Provide the `experimentId` directly\n2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment\n\nAt least one of these methods must be provided.\n\n**Response mode:** By default this endpoint acknowledges receipt immediately and records the reward\n(config/enrollment lookup, posterior update) in the background \u2014 the response does not wait on it.\nA problem with the reward itself (unknown experiment, no matching enrollment, experiment no longer\nenrolling, etc.) is therefore not returned to the caller; it is only visible in server-side logs.\nPass `awaitResult=true` to instead wait for that work and receive the real outcome, including a\n409 if the reward could not be recorded.\n",
+        "description": "Send a reward signal for an adaptive (Thompson Sampling) experiment.\n\nThis endpoint allows sending binary reward feedback (SUCCESS or FAILURE) for adaptive experiments.\nThe reward is used by the adaptive algorithm to update its learning model and improve future assignments.\n\n**Lookup Methods:**\n\nThe endpoint supports two methods to identify the experiment:\n\n1. **Direct Lookup** - Provide the `experimentId` directly\n2. **Decision Point Lookup** - Provide `context` and `decisionPoint` (site and target) to look up the experiment\n\nAt least one of these methods must be provided.\n\n**Response mode:** By default this endpoint acknowledges receipt immediately and records the reward\n(config/enrollment lookup, posterior update) in the background — the response does not wait on it.\nA problem with the reward itself (unknown experiment, no matching enrollment, experiment no longer\nenrolling, etc.) is therefore not returned to the caller; it is only visible in server-side logs.\nPass `awaitResult=true` to instead wait for that work and receive the real outcome, including a\n409 if the reward could not be recorded.\n",
         "consumes": [
           "application/json"
         ],
@@ -5561,6 +5717,74 @@
         },
         "stratificationFactorValue": {
           "type": "string"
+        }
+      }
+    },
+    "BatchDeleteItemResult": {
+      "type": "object",
+      "required": [
+        "id",
+        "outcome"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "deleted",
+            "not_found",
+            "refused",
+            "failed",
+            "unknown",
+            "not_attempted"
+          ]
+        },
+        "reasonCode": {
+          "type": "string",
+          "enum": [
+            "not_found",
+            "delete_failed",
+            "lock_timeout",
+            "outcome_unknown",
+            "post_delete_failed",
+            "state_not_deletable",
+            "segment_in_use",
+            "global_exclude_protected"
+          ]
+        }
+      }
+    },
+    "BatchDeleteResult": {
+      "type": "object",
+      "required": [
+        "results"
+      ],
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BatchDeleteItemResult"
+          }
+        }
+      }
+    },
+    "BatchEntityIdsRequest": {
+      "type": "object",
+      "required": [
+        "ids"
+      ],
+      "properties": {
+        "ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
         }
       }
     },
