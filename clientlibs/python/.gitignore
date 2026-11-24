@@ -9,6 +9,10 @@ dist/
 .mypy_cache/
 .pytest_cache/
 
+# Local virtual environment and uv lockfile (uv sync / python -m venv)
+.venv/
+uv.lock
+
 # Local Python version pin
 .python-version
 
