@@ -206,6 +206,32 @@ class TestGetAllExperimentConditions:
         results = await make_service().get_all_experiment_conditions()
         assert results == []
 
+    @respx.mock
+    async def test_omits_decision_point_by_default(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
+        await make_service().get_all_experiment_conditions()
+        import json
+
+        assert "decisionPoint" not in json.loads(route.calls[0].request.content)
+
+    @respx.mock
+    async def test_sends_decision_point(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        await make_service().get_all_experiment_conditions(site="home", target="banner")
+        import json
+
+        body = json.loads(route.calls[0].request.content)
+        assert body["decisionPoint"] == {"site": "home", "target": "banner"}
+        assert body["context"] == CONTEXT
+
+    @respx.mock
+    def test_sync_sends_none_target_as_empty(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
+        make_service().get_all_experiment_conditions_sync(site="home", target=None)
+        import json
+
+        assert json.loads(route.calls[0].request.content)["decisionPoint"] == {"site": "home", "target": ""}
+
 
 # ---------------------------------------------------------------------------
 # mark_decision_point

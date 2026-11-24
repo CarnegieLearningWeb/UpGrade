@@ -73,9 +73,7 @@ class Assignment:
         self._condition_id: str | None = first.id if first else None
 
         # Take the head of the (already-rotated) factor list, matching JS behaviour.
-        self._assigned_factor: dict[str, AssignedFactor] | None = (
-            raw.assignedFactor[0] if raw.assignedFactor else None
-        )
+        self._assigned_factor: dict[str, AssignedFactor] | None = raw.assignedFactor[0] if raw.assignedFactor else None
 
         self._api_service = api_service
         self._on_marked = on_marked

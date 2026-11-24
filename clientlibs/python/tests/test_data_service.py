@@ -100,13 +100,85 @@ class TestAssignmentCache:
         ds = DataService()
         ds.set_assignments([make_assignment("home", "banner")])
         new_assignment = make_assignment(
-            "home", "banner",
+            "home",
+            "banner",
             conditions=[AssignedCondition(id="cond-new", conditionCode="treatment")],
         )
         ds.set_assignments([new_assignment])
         result = ds.get_assignment("home", "banner")
         assert result is not None
         assert result.assignedCondition[0].conditionCode == "treatment"
+
+
+# ---------------------------------------------------------------------------
+# Single decision point cache — add / has / full context
+# ---------------------------------------------------------------------------
+
+
+class TestDecisionPointCache:
+    def test_cold_cache_has_no_decision_point(self) -> None:
+        ds = DataService()
+        assert ds.has_decision_point("home", "banner") is False
+        assert ds.get_full_context_assignments() is None
+
+    def test_add_caches_decision_point_without_full_context(self) -> None:
+        ds = DataService()
+        ds.add_decision_point_assignments([make_assignment("home", "banner")])
+        assert ds.has_decision_point("home", "banner") is True
+        assert ds.has_decision_point("quiz", "hint") is False
+        assert ds.get_assignment("home", "banner") is not None
+        assert ds.get_full_context_assignments() is None
+
+    def test_empty_add_caches_nothing(self) -> None:
+        ds = DataService()
+        ds.add_decision_point_assignments([])
+        assert ds.has_decision_point("home", "banner") is False
+
+    def test_add_accumulates_decision_points(self) -> None:
+        ds = DataService()
+        ds.add_decision_point_assignments([make_assignment("home", "banner")])
+        ds.add_decision_point_assignments([make_assignment("quiz", "")])
+        assert ds.has_decision_point("home", "banner") is True
+        assert ds.has_decision_point("quiz", None) is True
+
+    def test_add_skips_decision_points_already_cached(self) -> None:
+        ds = DataService()
+        ds.add_decision_point_assignments([make_assignment("home", "banner")])
+        replacement = make_assignment(
+            "home", "banner", conditions=[AssignedCondition(id="cond-new", conditionCode="treatment")]
+        )
+        ds.add_decision_point_assignments([replacement])
+        result = ds.get_assignment("home", "banner")
+        assert result is not None
+        assert result.assignedCondition[0].conditionCode == "control"
+
+    def test_full_context_answers_any_decision_point(self) -> None:
+        ds = DataService()
+        ds.set_assignments([make_assignment("home", "banner")])
+        assert ds.has_decision_point("unknown", "dp") is True
+        full = ds.get_full_context_assignments()
+        assert full is not None
+        assert len(full) == 1
+
+    def test_add_after_full_context_is_ignored(self) -> None:
+        ds = DataService()
+        ds.set_assignments([make_assignment("home", "banner")])
+        ds.add_decision_point_assignments([make_assignment("quiz", "hint")])
+        assert ds.get_assignment("quiz", "hint") is None
+
+    def test_full_context_replaces_single_decision_points(self) -> None:
+        ds = DataService()
+        ds.add_decision_point_assignments([make_assignment("quiz", "hint")])
+        ds.set_assignments([make_assignment("home", "banner")])
+        assert ds.get_assignment("quiz", "hint") is None
+        assert ds.get_full_context_assignments() is not None
+
+    def test_clear_resets_full_context(self) -> None:
+        ds = DataService()
+        ds.set_assignments([make_assignment("home", "banner")])
+        ds.clear()
+        assert ds.has_decision_point("home", "banner") is False
+        assert ds.get_full_context_assignments() is None
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +256,8 @@ class TestCacheInvalidation:
         """
         ds = DataService()
         fresh_1 = make_assignment(
-            "home", "banner",
+            "home",
+            "banner",
             conditions=[AssignedCondition(id="c1", conditionCode="control")],
         )
         ds.set_assignments([fresh_1])
@@ -194,7 +267,8 @@ class TestCacheInvalidation:
         assert ds.get_all_assignments() is None  # cold after clear
 
         fresh_2 = make_assignment(
-            "home", "banner",
+            "home",
+            "banner",
             conditions=[AssignedCondition(id="c2", conditionCode="treatment")],
         )
         ds.set_assignments([fresh_2])

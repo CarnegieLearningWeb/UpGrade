@@ -129,8 +129,8 @@ Every method has an async variant (no suffix) and a synchronous variant (`_sync`
 | Method | Description |
 |---|---|
 | `get_all_experiment_conditions(ignore_cache=False)` | Return all `Assignment` objects for this user/context |
-| `get_decision_point_assignment(site, target="")` | Return the `Assignment` for a specific decision point, or `None` |
-| `mark_decision_point(condition, status, site, target="", uniquifier="", client_error="")` | Record that the user encountered a decision point |
+| `get_decision_point_assignment(site, target="")` | Return the `Assignment` for a specific decision point, or `None`. Site and target are matched exactly (case-sensitive); a `None` target is the same as `""`. Asks the server for just this decision point when the cache can't answer (see [Caching](#caching)) |
+| `mark_decision_point(condition, status, site, target="", uniquifier="", client_error="")` | Record that the user encountered a decision point. Sends the cached assignment's experiment and condition ids, but never fetches assignments itself |
 
 **Argument order differs from the JS and Java libraries**, which take `site, target` first and `condition, status` after (JS: `markDecisionPoint(site, target, condition, status, uniquifier, clientError)`; Java additionally puts `clientError` before `uniquifier`). If you're porting code from another library, pass keyword arguments so the order can't matter:
 
@@ -166,7 +166,7 @@ else:
     )
 ```
 
-Apply the condition's **payload** (`get_payload().value`) rather than its code, so code written this way keeps working when someone later gives the experiment custom payloads. Payloads default to the condition code, but an experiment created without them has none, so fall back to `get_condition()`. If you mark with `client.mark_decision_point(condition, status, site, target)` instead of through the assignment, pass the condition **code** (`assignment.get_condition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded.
+Apply the condition's **payload** (`get_payload().value`) rather than its code, so code written this way keeps working when someone later gives the experiment custom payloads. Payloads default to the condition code, but an experiment created without them has none, so fall back to `get_condition()`. If you mark with `client.mark_decision_point(condition, status, site, target)` instead of through the assignment, pass the condition **code** (`assignment.get_condition()`), not the payload value. For Thompson Sampling experiments, and group-assigned stratified random sampling ones, the server enrolls the user in the condition whose code matches what you send. A payload value matches nothing, so the user silently isn't enrolled, and their rewards can't be recorded. It also sends the experiment and condition ids of that decision point's cached assignment, so the server marks the experiment the user was actually assigned. It never fetches assignments itself, so look the decision point up first (with `get_decision_point_assignment` or `get_all_experiment_conditions`), or the mark goes without those ids.
 
 ### Feature Flags
 
@@ -267,7 +267,11 @@ UpgradeClient.BINARY_REWARD_VALUE.FAILURE
 ```
 
 ## Caching
-Assignments and feature flags are cached for the client's lifetime, with no expiry. Both caches are cleared once the server confirms `init`, `set_group_membership`, `set_working_group` or `set_alt_user_ids`, since what a user is assigned can depend on their identity and groups. `set_feature_flag_user_groups_for_session` also clears the flag cache.
+Assignments and feature flags are cached for the client's lifetime, with no expiry.
+
+`get_decision_point_assignment` is answered from the cache if `get_all_experiment_conditions` already fetched the full context, or if an earlier call fetched this decision point. Otherwise it asks the server for just this decision point, so the server doesn't evaluate the rest of the context, and caches the answer. A decision point with no assignment isn't cached, so looking it up again asks the server again. If you'll look up many decision points, call `get_all_experiment_conditions` first, so one request answers them all. `get_all_experiment_conditions` doesn't return the decision points cached one at a time: it fetches the full context instead.
+
+Both caches are cleared once the server confirms `init`, `set_group_membership`, `set_working_group` or `set_alt_user_ids`, since what a user is assigned can depend on their identity and groups. `set_feature_flag_user_groups_for_session` also clears the flag cache.
 
 This is best-effort. If a lookup is already in flight when one of those calls completes, its response, which reflects the user's previous groups, can still be cached afterwards. Await these calls before reading assignments or flags, or pass `ignore_cache=True` to `get_all_experiment_conditions` / `get_all_feature_flags` when you can't guarantee that. Also pass it when you need fresh data for any other reason, e.g. an experiment that started on the server after the first fetch.
 

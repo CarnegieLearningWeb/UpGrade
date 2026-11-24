@@ -114,6 +114,13 @@ class TestAssignRequest:
         req = AssignRequest(userId="user-1", context="my-app")
         assert req.userId == "user-1"
         assert req.context == "my-app"
+        assert req.decisionPoint is None
+
+    def test_with_decision_point(self) -> None:
+        req = AssignRequest(userId="user-1", context="my-app", decisionPoint={"site": "home", "target": ""})
+        assert req.decisionPoint is not None
+        assert req.decisionPoint.site == "home"
+        assert req.decisionPoint.target == ""
 
 
 class TestMarkDecisionPointRequest:

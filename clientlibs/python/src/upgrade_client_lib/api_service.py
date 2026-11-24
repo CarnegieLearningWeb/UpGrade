@@ -129,9 +129,7 @@ class ApiService:
             async with httpx.AsyncClient(timeout=self._timeout) as client:
                 yield client
 
-    async def _post_async(
-        self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None
-    ) -> Any:
+    async def _post_async(self, path: str, body: dict[str, Any], params: dict[str, bool] | None = None) -> Any:
         async with self._async_client_for_request() as client:
             response = await client.post(self._url(path), json=body, headers=self._headers(), params=params)
         self._raise_for_status(response)
@@ -211,13 +209,26 @@ class ApiService:
     # get_all_experiment_conditions  POST /api/v6/assign
     # ------------------------------------------------------------------
 
-    async def get_all_experiment_conditions(self) -> list[ExperimentAssignment]:
-        data = await self._post_async("assign", {"context": self._context, "userId": self._user_id})
+    # With a ``site``, the server evaluates only that decision point and responds with just its assignment (an empty
+    # list if it has none).  A ``None`` target is sent as ``""``, the targetless decision point.
+
+    async def get_all_experiment_conditions(
+        self, site: str | None = None, target: str | None = None
+    ) -> list[ExperimentAssignment]:
+        data = await self._post_async("assign", self._assign_body(site, target))
         return [ExperimentAssignment.model_validate(item) for item in data]
 
-    def get_all_experiment_conditions_sync(self) -> list[ExperimentAssignment]:
-        data = self._post_sync("assign", {"context": self._context, "userId": self._user_id})
+    def get_all_experiment_conditions_sync(
+        self, site: str | None = None, target: str | None = None
+    ) -> list[ExperimentAssignment]:
+        data = self._post_sync("assign", self._assign_body(site, target))
         return [ExperimentAssignment.model_validate(item) for item in data]
+
+    def _assign_body(self, site: str | None, target: str | None) -> dict[str, Any]:
+        body: dict[str, Any] = {"context": self._context, "userId": self._user_id}
+        if site is not None:
+            body["decisionPoint"] = {"site": site, "target": target or ""}
+        return body
 
     # ------------------------------------------------------------------
     # mark_decision_point  POST /api/v6/mark

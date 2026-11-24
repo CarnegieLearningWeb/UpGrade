@@ -34,9 +34,7 @@ ASSIGNMENT_PAYLOAD = [
         "site": "home",
         "target": "banner",
         "experimentType": "Simple",
-        "assignedCondition": [
-            {"id": "cond-1", "conditionCode": "control", "payload": None, "experimentId": "exp-1"}
-        ],
+        "assignedCondition": [{"id": "cond-1", "conditionCode": "control", "payload": None, "experimentId": "exp-1"}],
         "assignedFactor": None,
     }
 ]
@@ -138,9 +136,7 @@ class TestInit:
     @respx.mock
     async def test_passes_group_and_working_group(self) -> None:
         route = respx.post(f"{BASE}/init").mock(return_value=Response(200, json=USER_PAYLOAD))
-        await make_client().init(
-            group={"cls": ["a"]}, working_group={"cls": "a"}
-        )
+        await make_client().init(group={"cls": ["a"]}, working_group={"cls": "a"})
         body = json.loads(route.calls[0].request.content)
         assert body["group"] == {"cls": ["a"]}
         assert body["workingGroup"] == {"cls": "a"}
@@ -264,12 +260,83 @@ class TestGetDecisionPointAssignment:
         assert result is None
 
     @respx.mock
-    async def test_auto_fetches_when_cold(self) -> None:
+    async def test_asks_assign_for_just_that_decision_point_when_cold(self) -> None:
         route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
         client = make_client()
         assert client._data_service.get_all_assignments() is None
         await client.get_decision_point_assignment("home", "banner")
         assert route.call_count == 1
+        body = json.loads(route.calls[0].request.content)
+        assert body["decisionPoint"] == {"site": "home", "target": "banner"}
+        assert body["context"] == CTX
+
+    @respx.mock
+    async def test_none_target_is_sent_as_empty(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
+        await make_client().get_decision_point_assignment("home", None)
+        assert json.loads(route.calls[0].request.content)["decisionPoint"] == {"site": "home", "target": ""}
+
+    @respx.mock
+    async def test_full_context_cache_answers_without_request(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        client = make_client()
+        await client.get_all_experiment_conditions()
+        assert await client.get_decision_point_assignment("home", "banner") is not None
+        # The full context answers decision points with no assignment too
+        assert await client.get_decision_point_assignment("unknown", "dp") is None
+        assert route.call_count == 1
+        assert "decisionPoint" not in json.loads(route.calls[0].request.content)
+
+    @respx.mock
+    async def test_other_decision_point_asks_again(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(
+            side_effect=[Response(200, json=ASSIGNMENT_PAYLOAD), Response(200, json=FACTORIAL_PAYLOAD)]
+        )
+        client = make_client()
+        await client.get_decision_point_assignment("home", "banner")
+        result = await client.get_decision_point_assignment("quiz", "hint")
+        assert result is not None
+        assert result.get_condition() == "combo-A"
+        assert route.call_count == 2
+        assert json.loads(route.calls[1].request.content)["decisionPoint"] == {"site": "quiz", "target": "hint"}
+        # Both decision points are now cached
+        assert await client.get_decision_point_assignment("home", "banner") is not None
+        assert route.call_count == 2
+
+    @respx.mock
+    async def test_decision_point_with_no_assignment_asks_again(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=[]))
+        client = make_client()
+        assert await client.get_decision_point_assignment("home", "banner") is None
+        assert await client.get_decision_point_assignment("home", "banner") is None
+        assert route.call_count == 2
+
+    @respx.mock
+    async def test_get_all_fetches_full_context_after_single_decision_points(self) -> None:
+        route = respx.post(f"{BASE}/assign").mock(
+            side_effect=[
+                Response(200, json=ASSIGNMENT_PAYLOAD),
+                Response(200, json=ASSIGNMENT_PAYLOAD + FACTORIAL_PAYLOAD),
+            ]
+        )
+        client = make_client()
+        await client.get_decision_point_assignment("home", "banner")
+        results = await client.get_all_experiment_conditions()
+        assert len(results) == 2
+        assert route.call_count == 2
+        assert "decisionPoint" not in json.loads(route.calls[1].request.content)
+
+    @respx.mock
+    async def test_full_context_response_from_older_server_answers_lookup(self) -> None:
+        """A server that ignores decisionPoint returns the full context; it answers, but isn't treated as full."""
+        full_context = ASSIGNMENT_PAYLOAD + FACTORIAL_PAYLOAD
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=full_context))
+        client = make_client()
+        assert await client.get_decision_point_assignment("home", "banner") is not None
+        assert await client.get_decision_point_assignment("quiz", "hint") is not None
+        assert route.call_count == 1
+        await client.get_all_experiment_conditions()
+        assert route.call_count == 2
 
     @respx.mock
     async def test_uses_cache_on_second_call(self) -> None:
@@ -281,9 +348,13 @@ class TestGetDecisionPointAssignment:
 
     @respx.mock
     def test_sync(self) -> None:
-        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
-        result = make_client().get_decision_point_assignment_sync("home", "banner")
+        route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        client = make_client()
+        result = client.get_decision_point_assignment_sync("home", "banner")
         assert result is not None
+        assert json.loads(route.calls[0].request.content)["decisionPoint"] == {"site": "home", "target": "banner"}
+        assert client.get_decision_point_assignment_sync("home", "banner") is not None
+        assert route.call_count == 1
 
 
 # ---------------------------------------------------------------------------
@@ -324,23 +395,47 @@ class TestMarkDecisionPoint:
         client = make_client()
         await client.get_all_experiment_conditions()
         result = await client.mark_decision_point(
-             "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner",
+            "control",
+            MarkedDecisionPointStatus.CONDITION_APPLIED,
+            "home",
+            "banner",
         )
         assert result.site == "home"
         assert route.call_count == 1
 
     @respx.mock
-    async def test_auto_fetches_assignments_when_cold(self) -> None:
-        assign_route = respx.post(f"{BASE}/assign").mock(
-            return_value=Response(200, json=ASSIGNMENT_PAYLOAD)
-        )
-        respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+    async def test_never_fetches_assignments_when_cold(self) -> None:
+        """A decision point that was never looked up is marked without the cached ids, like JS and Java."""
+        assign_route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
         client = make_client()
-        assert client._data_service.get_all_assignments() is None
-        await client.mark_decision_point(
-            "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner"
-        )
+        await client.mark_decision_point("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner")
+        assert assign_route.call_count == 0
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"] == {"conditionCode": "control"}
+        assert "experimentType" not in body["data"]
+
+    @respx.mock
+    async def test_never_fetches_a_decision_point_missing_from_a_partial_cache(self) -> None:
+        assign_route = respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+        await client.get_decision_point_assignment("home", "banner")
+        await client.mark_decision_point("combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint")
         assert assign_route.call_count == 1
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"] == {"conditionCode": "combo-A"}
+
+    @respx.mock
+    async def test_sends_ids_from_a_single_decision_point_lookup(self) -> None:
+        respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
+        mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
+        client = make_client()
+        await client.get_decision_point_assignment("home", "banner")
+        await client.mark_decision_point("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner")
+        body = json.loads(mark_route.calls[0].request.content)
+        assert body["data"]["assignedCondition"]["experimentId"] == "exp-1"
+        assert body["data"]["assignedCondition"]["id"] == "cond-1"
 
     @respx.mock
     async def test_mark_body_contains_experiment_metadata(self) -> None:
@@ -349,7 +444,10 @@ class TestMarkDecisionPoint:
         client = make_client()
         await client.get_all_experiment_conditions()
         await client.mark_decision_point(
-            "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner",
+            "control",
+            MarkedDecisionPointStatus.CONDITION_APPLIED,
+            "home",
+            "banner",
             uniquifier="u-1",
         )
         body = json.loads(mark_route.calls[0].request.content)
@@ -380,13 +478,14 @@ class TestMarkDecisionPoint:
         await client.get_all_experiment_conditions()
 
         await client.mark_decision_point(
-            "combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED,"quiz", "hint",
+            "combo-A",
+            MarkedDecisionPointStatus.CONDITION_APPLIED,
+            "quiz",
+            "hint",
         )
         first_body = json.loads(mark_route.calls[0].request.content)
 
-        await client.mark_decision_point(
-            "combo-B", MarkedDecisionPointStatus.CONDITION_APPLIED,"quiz", "hint"
-        )
+        await client.mark_decision_point("combo-B", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint")
         second_body = json.loads(mark_route.calls[1].request.content)
 
         # After first mark, rotation advances so the second call sees cond-B's metadata
@@ -413,14 +512,10 @@ class TestMarkDecisionPoint:
         client = make_client()
         await client.get_all_experiment_conditions()
 
-        await client.mark_decision_point(
-            "combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint"
-        )
+        await client.mark_decision_point("combo-A", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint")
         first_body = json.loads(mark_route.calls[0].request.content)
 
-        await client.mark_decision_point(
-            "combo-B", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint"
-        )
+        await client.mark_decision_point("combo-B", MarkedDecisionPointStatus.CONDITION_APPLIED, "quiz", "hint")
         second_body = json.loads(mark_route.calls[1].request.content)
 
         assert first_body["data"]["assignedCondition"]["id"] == "cond-A"
@@ -433,9 +528,7 @@ class TestMarkDecisionPoint:
         mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
         client = make_client()
         await client.get_all_experiment_conditions()
-        await client.mark_decision_point(
-             "default", MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED,"unknown", "site"
-        )
+        await client.mark_decision_point("default", MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED, "unknown", "site")
         body = json.loads(mark_route.calls[0].request.content)
         assert body["data"]["site"] == "unknown"
         assert "experimentType" not in body["data"]
@@ -458,18 +551,16 @@ class TestMarkDecisionPoint:
         mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
         client = make_client()
         await client.get_all_experiment_conditions()
-        await client.mark_decision_point(
-             "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home"
-        )
+        await client.mark_decision_point("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home")
         body = json.loads(mark_route.calls[0].request.content)
-        assert body["data"]["target"] == ''
+        assert body["data"]["target"] == ""
 
     @respx.mock
     def test_sync(self) -> None:
         respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
         respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
         result = make_client().mark_decision_point_sync(
-            "control", MarkedDecisionPointStatus.CONDITION_APPLIED,"home", "banner"
+            "control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner"
         )
         assert result.userId == USER
 
@@ -482,9 +573,7 @@ class TestMarkDecisionPoint:
 class TestGetAllFeatureFlags:
     @respx.mock
     async def test_cold_cache_fetches_api(self) -> None:
-        route = respx.post(f"{BASE}/featureflag").mock(
-            return_value=Response(200, json=["dark-mode", "new-ui"])
-        )
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["dark-mode", "new-ui"]))
         client = make_client()
         results = await client.get_all_feature_flags()
         assert route.call_count == 1
@@ -492,9 +581,7 @@ class TestGetAllFeatureFlags:
 
     @respx.mock
     async def test_warm_cache_skips_api(self) -> None:
-        route = respx.post(f"{BASE}/featureflag").mock(
-            return_value=Response(200, json=["dark-mode"])
-        )
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["dark-mode"]))
         client = make_client()
         await client.get_all_feature_flags()
         await client.get_all_feature_flags()
@@ -502,9 +589,7 @@ class TestGetAllFeatureFlags:
 
     @respx.mock
     async def test_ignore_cache_refetches(self) -> None:
-        route = respx.post(f"{BASE}/featureflag").mock(
-            return_value=Response(200, json=["dark-mode"])
-        )
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["dark-mode"]))
         client = make_client()
         await client.get_all_feature_flags()
         await client.get_all_feature_flags(ignore_cache=True)
@@ -534,23 +619,17 @@ class TestGetAllFeatureFlags:
 class TestHasFeatureFlag:
     @respx.mock
     async def test_true_when_present(self) -> None:
-        respx.post(f"{BASE}/featureflag").mock(
-            return_value=Response(200, json=["dark-mode", "new-ui"])
-        )
+        respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["dark-mode", "new-ui"]))
         assert await make_client().has_feature_flag("dark-mode") is True
 
     @respx.mock
     async def test_false_when_absent(self) -> None:
-        respx.post(f"{BASE}/featureflag").mock(
-            return_value=Response(200, json=["dark-mode"])
-        )
+        respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["dark-mode"]))
         assert await make_client().has_feature_flag("other") is False
 
     @respx.mock
     async def test_auto_fetches_when_cold(self) -> None:
-        route = respx.post(f"{BASE}/featureflag").mock(
-            return_value=Response(200, json=["dark-mode"])
-        )
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["dark-mode"]))
         client = make_client()
         assert client._data_service.get_feature_flags() is None
         await client.has_feature_flag("dark-mode")
@@ -558,9 +637,7 @@ class TestHasFeatureFlag:
 
     @respx.mock
     async def test_warm_cache_skips_fetch(self) -> None:
-        route = respx.post(f"{BASE}/featureflag").mock(
-            return_value=Response(200, json=["dark-mode"])
-        )
+        route = respx.post(f"{BASE}/featureflag").mock(return_value=Response(200, json=["dark-mode"]))
         client = make_client()
         await client.get_all_feature_flags()
         await client.has_feature_flag("dark-mode")
@@ -581,17 +658,13 @@ class TestLog:
     @respx.mock
     async def test_async(self) -> None:
         respx.post(f"{BASE}/log").mock(return_value=Response(200, json=LOG_PAYLOAD))
-        results = await make_client().log(
-            [LogInput(timestamp="2024-01-01T00:00:00Z", metrics=LogMetrics())]
-        )
+        results = await make_client().log([LogInput(timestamp="2024-01-01T00:00:00Z", metrics=LogMetrics())])
         assert results[0].id == 1
 
     @respx.mock
     def test_sync(self) -> None:
         respx.post(f"{BASE}/log").mock(return_value=Response(200, json=LOG_PAYLOAD))
-        results = make_client().log_sync(
-            [LogInput(timestamp="2024-01-01T00:00:00Z", metrics=LogMetrics())]
-        )
+        results = make_client().log_sync([LogInput(timestamp="2024-01-01T00:00:00Z", metrics=LogMetrics())])
         assert results[0].id == 1
 
 
@@ -797,9 +870,9 @@ class TestSyncAndConnectionLifecycle:
     def test_sync_mark_sends_cached_experiment_metadata(self) -> None:
         respx.post(f"{BASE}/assign").mock(return_value=Response(200, json=ASSIGNMENT_PAYLOAD))
         mark_route = respx.post(f"{BASE}/mark").mock(return_value=Response(200, json=MARK_PAYLOAD))
-        make_client().mark_decision_point_sync(
-            "control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner"
-        )
+        client = make_client()
+        client.get_decision_point_assignment_sync("home", "banner")
+        client.mark_decision_point_sync("control", MarkedDecisionPointStatus.CONDITION_APPLIED, "home", "banner")
         body = json.loads(mark_route.calls[0].request.content)
         assert body["data"]["assignedCondition"]["experimentId"] == "exp-1"
         assert body["data"]["assignedCondition"]["id"] == "cond-1"
