@@ -1,5 +1,5 @@
 ---
-description: Swagger API details [added]
+description: Swagger API details
 ---
 
 # API
