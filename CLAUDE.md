@@ -198,3 +198,25 @@ Binary rewards only (SUCCESS=1, FAILURE=0). No `max_rating`/`min_rating`.
 - **conditionId as algorithm key**: `ThompsonSamplingService.selectCondition()` uses condition UUIDs (not `conditionCode`) as identifiers, since `conditionCode` is nullable. `ConditionPosteriorState` rows, `ConditionRewardSummary.conditionId`, and `selectCondition()`'s own `conditionIds` parameter are all named and keyed accordingly. The `priors` field in `ThompsonSamplingConfigDTO` is therefore also keyed by conditionId.
 
 - **Reward summary endpoint**: `GET /experiments/rewards/:id` delegates to `ThompsonSamplingExperimentCrudService.getRewardsSummary()`, which calls `ThompsonSamplingExperimentConfigRepository.findByExperimentIdWithConditions()` to load `ConditionPosteriorState` rows joined to their conditions, computes per condition `successes`, `failures`, `successRate`, `priorSuccess`/`priorFailure`, `successPosterior`/`failurePosterior` (α applied, via the shared `ThompsonSamplingService.computePosterior()`), `estimatedWeight`, and `totalRewardCount` (the table's Received column), and sorts by condition order. Experiment-wide it returns `pendingRewardsCount`, `totalRewardCount`, `warmupThreshold`, `batchSize` and `scalingFactor`. Both `totalRewardCount`s include rewards still pending in an unflushed batch (the measure warmup gates on), while counts and posteriors are flushed-only, so with batching active a condition's Received can exceed Successes + Failures. The reward card hides the warmup row when `warmupThreshold` is 0 and the pending-rewards row when `batchSize` ≤ 1, but always shows the α row, even at the default 1. The card fetches the summary on init and stays mounted through an edit, so `ExperimentEffects.refetchRewardsDataAfterExperimentUpdate$` refetches an already-loaded summary after any experiment upsert or conditions update. The summary is refetched, not patched from the updated experiment, because the backend computes posteriors and estimated weights with α.
+
+<!-- gitbook-agent-instructions:start -->
+
+## GitBook Documentation Editing
+
+This repository contains documentation synced with GitBook via Git Sync.
+
+Before editing GitBook-synced Markdown, YAML, or asset files, make sure the GitBook skill is available and up to date in your local agent environment. Prefer installing or updating it with:
+
+```bash
+npx skills add gitbookio/gitbook-skills
+```
+
+This command may add or update local agent skill files. Use them only as local agent instructions; do not commit those installed skill files or any tool-generated agent configuration unless the user explicitly asks for it.
+
+If `npx` is unavailable, load the skill from:
+
+https://gitbook.com/docs/skill.md
+
+When making changes, preserve GitBook sync metadata such as frontmatter, `SUMMARY.md`, `gitbook-docs.yaml`, `.gitbook/`, and asset links unless the requested edit explicitly requires changing them.
+
+<!-- gitbook-agent-instructions:end -->
